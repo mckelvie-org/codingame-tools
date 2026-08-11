@@ -78,18 +78,18 @@ class CgLanguageContext:
 
     root: Path
     """The puzzle/contribution working directory root (resolved absolute)--the directory holding
-       `data/`, `.meta/`, and the `solution.<ext>` symlink. Not `data/`, because the `solution.<ext>`
-       symlink and `.meta/` both sit beside it and both matter to a build."""
+       `data/` and `.meta/`. Not `data/`, because `.meta/` sits beside it and matters to a build."""
 
     solution_file: Path
-    """`<root>/data/solution.src`--the one real, editable, submittable file."""
+    """`<root>/data/solution.<ext>`--the one real, editable, submittable file, carrying its
+       language's own extension.
 
-    solution_link: Path | None
-    """`<root>/solution.<ext>` (the convenience symlink to `solution_file`) if it currently exists,
-       else `None`. Kept distinct from `solution_file` because a debug build wants to compile *this*
-       path when available: it's the path the user actually has open in an editor, so it's the one a
-       debugger's recorded source paths need to match (same reasoning as
-       `codingame_tools.test_runner.debug_stdin`'s no-realpath rule)."""
+       There is exactly one path here, and that is the point. cg used to keep a fixed
+       `data/solution.src` with a `solution.<ext>` symlink beside it, and a debug build had to
+       choose between them: compiling the link recorded a path the debugger then `realpath`'d back
+       to the real file, so the editor navigated away from the file the breakpoints were set in,
+       and the mapping that fixed navigation broke binding instead. One real file with the right
+       extension removes the choice."""
 
     meta_dir: Path
     """The working directory's `.meta/` (always `<root>/.meta`)--gitignored scratch space. Used for

@@ -1,7 +1,8 @@
 # Languages and toolchains
 
 A working directory has exactly one language at a time, recorded alongside its content and reflected
-in the `solution.<ext>` symlink.
+in the solution file's own extension — `data/solution.py`, `data/solution.cpp`, and so on. Switching
+language renames the file.
 
 ```bash
 cg puzzle set-language C++
@@ -14,7 +15,7 @@ CodinGame stores your most recent source **per language** for a puzzle. So switc
 language is reversible: anything you previously wrote in the target language comes back, and a
 language you've never used gets a placeholder.
 
-`cg puzzle set-language` refuses if `data/solution.src` holds work the server doesn't have — submit
+`cg puzzle set-language` refuses if the solution holds work the server doesn't have — submit
 it first, or pass `--force` to discard it. It needs the network even though it only changes local
 state, because restoring your previous code means fetching it.
 
@@ -27,7 +28,7 @@ switch back to. It refuses unless the current solution is still the stub `cg` ge
 `--force` is required to discard real work — save it somewhere outside the working directory first.
 
 There's a wrinkle worth knowing: only Python3 ships a starter stub that actually passes the seeded
-test cases, so switching to any other language leaves `data/solution.src` **empty**. That's
+test cases, so switching to any other language leaves the solution file **empty**. That's
 required, not a shortfall. `updateContribution` skips solution validation entirely when the solution
 is null, but validates any non-null one against every test case — so a comment-only placeholder in
 another language would fail validation and block your push.

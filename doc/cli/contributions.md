@@ -73,7 +73,7 @@ data/
     output-description.cgmd
     constraints.cgmd
     stub-generator.cgstub
-    solution.src              the reference solution
+    solution.<ext>            the reference solution
     cover.png
     tests/                    ordinal/named/{local,validator}/{input,output}.txt
     contribution-data.json    title, difficulty, topics, language
@@ -117,7 +117,19 @@ cg contribution push
 `push` sends your content, then updates the internal `server`/`version-data` branches to match. On
 first push for a `create`d directory it safely creates the server-side contribution.
 
-Two things worth knowing:
+**A push with nothing to push does nothing**, and says so:
+
+```
+$ cg contribution push
+…/contribution is already up to date on the server--nothing to push. Use --force to publish a new version anyway.
+```
+
+That's deliberate rather than a convenience. CodinGame has no notion of an empty update — it
+increments the version and re-runs moderation whether or not anything differs — so republishing
+identical content costs you a review cycle and buries your real changes among no-op versions. Pass
+`--force` when you want one anyway. The exit status is 0 either way.
+
+Two more things worth knowing:
 
 - **A contribution stores exactly one solution, with no history.** Each push overwrites the last
   durable copy. `.meta/`'s git repo is scaffolding for merges — not a backup.

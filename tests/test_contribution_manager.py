@@ -252,9 +252,8 @@ async def test_import_writes_identity_view_content_files_and_git_repo(tmp_path: 
     assert (tmp_path / "data" / "constraints.cgmd").read_text() == "1 <= N <= 100\n"
     assert (tmp_path / "data" / "stub_generator.cgstub").read_text() == "read int N;\n"
     assert (tmp_path / "data" / "cover.png").read_bytes() == COVER_CONTENT
-    assert (tmp_path / "data" / "solution.src").read_text() == "print('hi')\n"
-    assert (tmp_path / "solution.py").is_symlink()
-    assert (tmp_path / "solution.py").resolve() == (tmp_path / "data" / "solution.src").resolve()
+    assert (tmp_path / "data" / "solution.py").read_text() == "print('hi')\n"
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
     assert (tmp_path / "data" / "tests" / "01").is_dir()
 
     assert view.puzzle_type == "PUZZLE_INOUT"
@@ -457,7 +456,7 @@ async def test_contribution_json_plus_data_is_a_complete_portable_export(tmp_pat
     assert destination_manager.git_dir == destination / ".meta" / ".contribution-git"
     assert not (destination / "data" / ".git").exists()
     assert destination_manager.load_identity() == source_manager.load_identity()
-    for name in ("statement.cgmd", "solution.src", "contribution-data.json"):
+    for name in ("statement.cgmd", "solution.py", "contribution-data.json"):
         assert (destination / "data" / name).read_bytes() == (source / "data" / name).read_bytes(), name
 
     status = await destination_manager.status()
@@ -500,7 +499,7 @@ async def test_import_with_no_cover_image_leaves_cover_hash_none(tmp_path: Path)
     assert metadata.cover_binary_hash is None
 
 
-async def test_import_with_unmapped_language_writes_solution_src_without_symlink(tmp_path: Path) -> None:
+async def test_import_with_unmapped_language_uses_the_fallback_extension(tmp_path: Path) -> None:
     data = _make_full_data(solution_language="SomeUnknownLanguage")
     contribution = _make_contribution(data)
     client, _, _, _ = _make_fake_client(contribution)
@@ -508,8 +507,9 @@ async def test_import_with_unmapped_language_writes_solution_src_without_symlink
 
     await manager.import_("handle-1")
 
+    # No extension cg recognizes, so the file keeps the neutral fallback name.
     assert (tmp_path / "data" / "solution.src").read_text() == "print('hi')\n"
-    assert list(tmp_path.glob("solution.*")) == []  # no known extension to map--no symlink created
+    assert list(tmp_path.glob("solution.*")) == []  # nothing at the root
 
 
 async def test_import_refuses_to_retarget_an_existing_directory(tmp_path: Path) -> None:
@@ -583,7 +583,7 @@ async def test_reimport_with_language_change_regenerates_symlink(tmp_path: Path)
     client, _, _, _ = _make_fake_client(contribution)
     manager = CgContributionManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("handle-1")
-    assert (tmp_path / "solution.py").is_symlink()
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
     shutil.rmtree(manager.git_dir)  # force repair mode (fresh init_repo, per above)
     new_data = _make_full_data(solution_language="Java", solution="class Main {}")
@@ -595,8 +595,8 @@ async def test_reimport_with_language_change_regenerates_symlink(tmp_path: Path)
 
     # Repair mode preserves data/'s on-disk content (the OLD Python3 solution.src)--this isn't a
     # live re-fetch overwrite, so the symlink still reflects what was already there.
-    assert (tmp_path / "data" / "solution.src").read_text() == "print('hi')\n"
-    assert (tmp_path / "solution.py").is_symlink()
+    assert (tmp_path / "data" / "solution.py").read_text() == "print('hi')\n"
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
 
 # --- repair ----------------------------------------------------------------------------------
@@ -728,9 +728,8 @@ async def test_create_default_language_is_python_with_a_working_stub(tmp_path: P
 
     assert view.data.solution_language == "Python3"
     # The stub's own value ends in a newline; the file additionally carries its terminator.
-    assert (tmp_path / "data" / "solution.src").read_text() == "n = input()\nprint(n)\n\n"
-    assert (tmp_path / "solution.py").is_symlink()
-    assert (tmp_path / "solution.py").resolve() == (tmp_path / "data" / "solution.src").resolve()
+    assert (tmp_path / "data" / "solution.py").read_text() == "n = input()\nprint(n)\n\n"
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
 
 async def test_create_non_python_language_leaves_an_empty_source_file(tmp_path: Path) -> None:
@@ -746,14 +745,15 @@ async def test_create_non_python_language_leaves_an_empty_source_file(tmp_path: 
     view = await manager.create(title="My Puzzle", language="Java")
 
     assert view.data.solution_language == "Java"
-    solution_file = tmp_path / "data" / "solution.src"
-    assert solution_file.is_file()  # present, so the symlink resolves and there's a file to edit
+    # The file carries Java's own extension, and is a real file rather than a link to one.
+    solution_file = tmp_path / "data" / "solution.java"
+    assert solution_file.is_file()
+    assert not solution_file.is_symlink()
     assert solution_file.read_text().strip() == ""
-    assert (tmp_path / "solution.java").is_symlink()
-    assert (tmp_path / "solution.java").exists()  # resolves, unlike when the target was omitted
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
 
-async def test_create_unmapped_language_creates_no_symlink(tmp_path: Path) -> None:
+async def test_create_unmapped_language_uses_the_fallback_extension(tmp_path: Path) -> None:
     data = _make_full_data()
     contribution = _make_contribution(data)
     client, _, _, _ = _make_fake_client(contribution)
@@ -761,7 +761,8 @@ async def test_create_unmapped_language_creates_no_symlink(tmp_path: Path) -> No
 
     await manager.create(title="My Puzzle", language="SomeUnknownLanguage")
 
-    # No known extension, so no symlink--but solution.src still exists (empty) to type into.
+    # No known extension, so the fallback name is used--but the file still exists (empty) to
+    # type into.
     assert (tmp_path / "data" / "solution.src").read_text().strip() == ""
     assert list(tmp_path.glob("solution.*")) == []
 
@@ -954,7 +955,7 @@ async def test_push_reuses_cover_binary_id_when_content_unchanged(tmp_path: Path
     manager = CgContributionManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("handle-1")
 
-    result = await manager.push()
+    result = await manager.push(force=True)
 
     assert result.last_version.version == 4
     assert len(service.update_calls) == 1
@@ -1039,7 +1040,7 @@ async def test_untouched_import_then_push_is_the_identity(tmp_path: Path) -> Non
         manager = CgContributionManager(root, client)  # type: ignore[arg-type]
         await manager.import_("handle-1")
 
-        await manager.push()  # no edits at all
+        await manager.push(force=True)  # no edits at all
 
         submitted = service.update_calls[0]["contribution_data"]
         assert submitted.statement == data.statement
@@ -1064,7 +1065,7 @@ async def test_create_seeds_every_editable_file(tmp_path: Path) -> None:
     await manager.create(title="My Puzzle")
 
     for name in ("statement.cgmd", "input_description.cgmd", "output_description.cgmd",
-                 "constraints.cgmd", "stub_generator.cgstub", "solution.src", "cover.png"):
+                 "constraints.cgmd", "stub_generator.cgstub", "solution.py", "cover.png"):
         assert (tmp_path / "data" / name).is_file(), f"create() did not seed data/{name}"
 
 
@@ -1124,7 +1125,7 @@ async def test_push_passes_view_puzzle_type_and_flags(tmp_path: Path) -> None:
     assert view.draft is False
     assert view.ready_for_moderation is True
 
-    await manager.push()
+    await manager.push(force=True)
 
     call = service.update_calls[0]
     assert call["puzzle_type"] == "PUZZLE_INOUT"
@@ -1158,7 +1159,7 @@ async def test_push_refreshes_stale_active_version_via_find_contribution(tmp_pat
 
     service.find_result = _make_contribution(data, version=4)  # active_version=4
 
-    result = await manager.push()
+    result = await manager.push(force=True)
 
     assert result.active_version == 4
 
@@ -1177,7 +1178,7 @@ async def test_push_gives_up_refreshing_after_max_attempts(tmp_path: Path, monke
 
     service.find_result = stale_update_result
 
-    result = await manager.push()
+    result = await manager.push(force=True)
 
     assert result.active_version == 3  # gave up, still stale--but didn't hang or raise
 
@@ -1690,7 +1691,7 @@ async def test_discard_local_discards_local_edits_and_untracked_files_without_ne
     assert view.data.title == "My Puzzle"
     assert service.find_call_count == find_calls_before
     assert file_servlet.calls == []
-    assert (tmp_path / "solution.py").is_symlink()  # symlink regenerated
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
 
 async def test_discard_local_requires_a_prior_import(tmp_path: Path) -> None:
@@ -1803,7 +1804,7 @@ async def test_merge_start_leaves_local_only_change_untouched(tmp_path: Path) ->
     assert result.status == CgMergeStartStatus.STARTED
     assert result.text_conflicts == ()
     assert (tmp_path / "data" / "statement.cgmd").read_text() == "Local edit\n"
-    assert (tmp_path / "data" / "solution.src").read_text() == "print('server')\n"
+    assert (tmp_path / "data" / "solution.py").read_text() == "print('server')\n"
 
 
 async def test_merge_start_writes_diff3_markers_for_text_conflict(tmp_path: Path) -> None:
@@ -1892,13 +1893,13 @@ async def test_merge_start_leaves_solution_symlink_untouched_while_conflicted(tm
     manager.git_repo.commit_worktree("local edit")
     new_data = _make_full_data(statement="Server edit")
     service.find_result = _make_contribution(new_data, version=4)  # conflicting change -> stays in progress
-    assert (tmp_path / "solution.py").is_symlink()
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
     result = await manager.merge_start()
 
     assert manager.merge_in_progress
     assert "statement.cgmd" in result.text_conflicts
-    assert (tmp_path / "solution.py").is_symlink()
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
 
 
 async def test_merge_start_handles_added_test_case_from_remote(tmp_path: Path) -> None:
@@ -1992,7 +1993,7 @@ async def test_merge_continue_succeeds_once_markers_resolved(tmp_path: Path) -> 
     metadata = manager.server_metadata()
     assert metadata is not None
     assert metadata.version == 4
-    assert (tmp_path / "solution.py").is_symlink()  # regenerated at continue time
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
     repo = manager.git_repo
     assert repo.merge_base("main", "server") == repo.resolve_ref("server")
 
@@ -2023,7 +2024,7 @@ async def test_merge_abort_restores_pre_merge_state(tmp_path: Path) -> None:
 
     assert not manager.merge_in_progress
     assert (tmp_path / "data" / "statement.cgmd").read_text() == "Local edit\n"  # restored to pre-merge local state
-    assert (tmp_path / "solution.py").is_symlink()
+    assert not any(tmp_path.glob("solution.*"))  # nothing at the root; the file lives in data/
     metadata = manager.server_metadata()
     assert metadata is not None
     # server itself is NOT rolled back--merge_start()'s fetch() (step 1) already advanced it
@@ -2194,3 +2195,75 @@ async def test_delete_keep_local_and_keep_server_are_mutually_exclusive(tmp_path
 
     assert service.delete_calls == []
     assert tmp_path.exists()
+
+
+# --- a push with nothing to push -----------------------------------------------------------------
+
+
+async def test_push_with_no_local_changes_does_nothing(tmp_path: Path) -> None:
+    """`updateContribution` has no empty update: it increments the version and re-runs moderation
+       whether or not anything differs. So republishing identical content costs a review cycle and
+       buries the history of real changes behind no-op versions--it has to be asked for."""
+    data = _make_full_data()
+    contribution = _make_contribution(data)
+    client, service, _, _ = _make_fake_client(
+            contribution, update_result=_make_contribution(data, version=4))
+    manager = CgContributionManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("handle-1")
+
+    assert await manager.push() is None
+    assert service.update_calls == []
+
+
+async def test_push_force_publishes_identical_content_anyway(tmp_path: Path) -> None:
+    data = _make_full_data()
+    contribution = _make_contribution(data)
+    client, service, _, _ = _make_fake_client(
+            contribution, update_result=_make_contribution(data, version=4))
+    manager = CgContributionManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("handle-1")
+
+    result = await manager.push(force=True)
+
+    assert result is not None
+    assert len(service.update_calls) == 1
+
+
+async def test_push_detects_a_change_to_any_content_file(tmp_path: Path) -> None:
+    """The check compares whole trees, so it covers every file under data/--not just the ones a
+       hand-written list would have remembered."""
+    data = _make_full_data()
+    for name, content in (("statement.cgmd", "new statement\n"),
+                          ("constraints.cgmd", "new constraints\n"),
+                          ("cover.png", None)):
+        root = tmp_path / name.replace(".", "_")
+        contribution = _make_contribution(data)
+        client, service, _, _ = _make_fake_client(
+                contribution, update_result=_make_contribution(data, version=4))
+        manager = CgContributionManager(root, client)  # type: ignore[arg-type]
+        await manager.import_("handle-1")
+        target = root / "data" / name
+        if content is None:
+            target.write_bytes(b"\x89PNG\r\n\x1a\n" + b"different cover bytes")
+        else:
+            target.write_text(content)
+
+        assert await manager.push() is not None, f"editing {name} should be pushable"
+        assert len(service.update_calls) == 1
+
+
+async def test_push_after_a_no_op_push_still_sees_a_later_edit(tmp_path: Path) -> None:
+    """The no-op must not leave anything behind that makes the *next* real push look unchanged--it
+       returns before touching any ref."""
+    data = _make_full_data()
+    contribution = _make_contribution(data)
+    client, service, _, _ = _make_fake_client(
+            contribution, update_result=_make_contribution(data, version=4))
+    manager = CgContributionManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("handle-1")
+
+    assert await manager.push() is None
+
+    (tmp_path / "data" / "statement.cgmd").write_text("a real edit\n")
+    assert await manager.push() is not None
+    assert len(service.update_calls) == 1

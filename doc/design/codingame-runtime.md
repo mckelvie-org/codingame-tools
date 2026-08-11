@@ -111,7 +111,7 @@ The probes are ordinary solutions that write to stderr, which CodinGame returns 
 
 ```bash
 cg --profile dev puzzle import /tmp/probe temperatures --language C++
-# ...write a probe into /tmp/probe/data/solution.src...
+# ...write a probe into /tmp/probe/data/solution.cpp...
 cg --profile dev puzzle --puzzle-dir /tmp/probe play-server --show-stdout 1
 ```
 

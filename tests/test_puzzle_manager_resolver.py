@@ -12,7 +12,7 @@ import pytest
 
 from codingame_tools.config.cg_config import CgConfigData
 from codingame_tools.config.resolver import CgConfig
-from codingame_tools.puzzle_manager.layout import DATA_SUBDIR_NAME, SOLUTION_FILE_NAME
+from codingame_tools.puzzle_manager.layout import DATA_SUBDIR_NAME, solution_file_name
 from codingame_tools.puzzle_manager.resolver import (
     CG_PUZZLE_DIR_ENV_VAR,
     DEFAULT_PUZZLE_SUBDIR_NAME,
@@ -24,6 +24,10 @@ from codingame_tools.puzzle_manager.resolver import (
 )
 from codingame_tools.puzzle_manager.schema import PUZZLE_IDENTITY_FILE_NAME
 from codingame_tools.settings import CgSettings, CgSettingsData
+
+SOLUTION_FILE_NAME = solution_file_name("py")
+"""These tests all write Python solutions, so the solution file is `solution.py`. The name is no
+   longer fixed: it carries the language's extension and is renamed when the language changes."""
 
 
 @pytest.fixture(autouse=True)

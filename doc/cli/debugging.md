@@ -88,12 +88,10 @@ contribution, since validators are the hidden scoring ones and landing in one wo
 
 ## Python
 
-The debugger launches your solution in-process, so a breakpoint set directly in `solution.py` is
+The debugger launches your solution in-process, so a breakpoint set directly in `data/solution.py` is
 hit. Stdin is bound to the selected test's input.
 
-It works through the symlink too: whether you have `solution.py` or `data/solution.src` open, the
-breakpoint matches. The target is run at exactly the path you had focused, so there's no
-symlink-resolution mismatch to work around.
+The target runs at exactly the path you had focused, so there is no path mismatch to work around.
 
 ## C++ (and other containerised languages)
 
@@ -109,20 +107,21 @@ adapter reads only the debugger's stdout, so an unmerged `stderr` would vanish �
 being exactly what you reach for while debugging. Both are unbuffered, so they appear as they happen
 rather than in a lump when the program exits.
 
-### Breakpoints and the symlink
+### Why there is no path mapping
 
-You set breakpoints in `solution.cpp` and the editor stays there when they're hit — but what gets
-compiled is the real `data/solution.src`, and one mapping in the launch configuration reconciles the
-two.
+You set breakpoints in `data/solution.cpp`, that is what gets compiled, and that is where the editor
+stays when they are hit. The generated launch configuration contains **no `sourceFileMap` at all**.
 
-That indirection is load-bearing. A debugger reports two paths for a stop location: the one recorded
-in the debug info, and its own `realpath` of that. Compiling the symlink makes those disagree, and
-the editor navigates by the resolved one — so a breakpoint bound correctly and then yanked you over
-to `data/solution.src`. Adding a `sourceFileMap` fixes the navigation but applies in *both*
-directions, so the editor started translating breakpoints back to the real path before sending them;
-with the symlink in the debug info, the debugger couldn't place them and they went hollow.
-Compiling the real file makes both paths agree, which is what lets the mapping handle display
-without disturbing binding.
+Two things make that possible, and each was learned the hard way. Through 1.x there was a fixed
+`data/solution.src` with a `solution.<ext>` symlink beside it, and a debug build had to compile one
+or the other. Both choices were wrong: a debugger reports two paths for a stop location — the one in
+the debug info, and its own `realpath` of it — and the editor navigates by the second. Compiling the
+symlink made them disagree, so a breakpoint bound and then yanked you to `data/solution.src`; adding
+a `sourceFileMap` to fix that broke the *binding* instead, because the mapping applies in **both**
+directions and the editor began translating breakpoints back to the real path before sending them.
+Hollow breakpoints. There is one real file now, so the two paths are identical.
+
+The second is the mount, below.
 
 Your **workspace** is bind-mounted read-only into the container *at its own path* — `/home/me/work`
 inside the container is `/home/me/work` on the host. Two things follow. Breakpoints need no path
@@ -134,7 +133,7 @@ to show unless the build fails, in which case compiler errors appear in the Prob
 launch stops. You can run it by hand:
 
 ```bash
-cg debug start --file puzzle/solution.cpp
+cg debug start --file puzzle/data/solution.cpp
 ```
 
 > **Why no gdbserver?** It exists for targets that can't run gdb — embedded boards, foreign

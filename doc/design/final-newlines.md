@@ -38,7 +38,7 @@ file -> server    strip up to one trailing "\n"
 
 `file_to_server_text(server_text_to_file(s)) == s` for every `s`, so an untouched fetch/push cycle is
 exactly the identity. The zero-length carve-out is what keeps an empty server value a genuinely
-empty file, which matters because a zero-length `solution.src` is how "no reference solution" is
+empty file, which matters because a zero-length solution file is how "no reference solution" is
 spelled.
 
 ## Why it mattered more than the rate suggests
@@ -69,7 +69,7 @@ bringing its terminator along as one. The sample shows it directly: one C# solut
 newline at all, which no file-semantics editor produces.
 
 So a trailing newline on solution source means what it means everywhere else — an extra blank line —
-and `solution.src` will show that blank line for the ~40% of solutions carrying one. That's the file
+and the solution file will show that blank line for the ~40% of solutions carrying one. That's the file
 being honest.
 
 ## Puzzles are different, and must stay different

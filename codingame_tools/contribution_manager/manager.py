@@ -138,7 +138,7 @@ from .layout import (
     SELECTED_TEST_FILE_NAME,
     SERVER_BRANCH_NAME,
     SERVER_TAG_PREFIX,
-    SOLUTION_FILE_NAME,
+    SOLUTION_FILE_STEM,
     SOLUTION_SNAPSHOT_FILE_NAME,
     STATEMENT_FILE_NAME,
     STUB_GENERATOR_FILE_NAME,
@@ -148,6 +148,8 @@ from .layout import (
     TRAILER_VERSION,
     VERSION_DATA_BRANCH_NAME,
     VERSION_DATA_TAG_PREFIX,
+    find_solution_file,
+    solution_file_name,
 )
 from .schema import (
     CONTRIBUTION_DATA_FILE_NAME,
@@ -175,7 +177,9 @@ __all__ = [
     "OUTPUT_DESCRIPTION_FILE_NAME",
     "CONSTRAINTS_FILE_NAME",
     "STUB_GENERATOR_FILE_NAME",
-    "SOLUTION_FILE_NAME",
+    "SOLUTION_FILE_STEM",
+    "find_solution_file",
+    "solution_file_name",
     "COVER_IMAGE_FILE_NAME",
     "CgContributionManagerError",
     "CgRebaseStatus",
@@ -528,22 +532,43 @@ def _ordinal_matches(requested: str, actual: str) -> bool:
     return requested.isdigit() and actual.isdigit() and int(requested) == int(actual)
 
 
-def _refresh_solution_symlink(contribution_dir: Path, solution_language: str | None) -> None:
-    """Remove any existing `solution.<ext>` convenience symlink at `contribution_dir`'s root, then
-       recreate one pointing at `data/solution.src` if `solution_language` maps to a known
-       extension. Never touches `solution.src` itself, and doesn't require it to already exist--
-       `create()` relies on this to still point the user at the right filename/extension even
-       before they've written anything there yet (a dangling symlink until they do)."""
-    for path in contribution_dir.glob("solution.*"):
-        if path.is_symlink() and path.name != SOLUTION_FILE_NAME:
-            path.unlink()
+def _align_solution_file_name(root_dir: Path, solution_language: str | None) -> None:
+    """Make `data/solution.*` carry the extension for `solution_language`, renaming it if it
+       doesn't already, and sweep away the `solution.<ext>` symlink older versions left at the
+       working directory root.
+
+       A language change is a rename, and deliberately so. The file has to carry its language's
+       real extension--every tool that reads it dispatches on that--and cg used to get there with a
+       fixed `data/solution.src` plus a symlink beside it, which cost a day of debugging when the
+       debug info named one path and the editor resolved the other. One real file has no such gap.
+
+       For a contribution this rename lands in `data/`, which is a git work tree, so `git` sees it
+       on both `main` and the `server` mirror (which derives the same extension from the server's
+       own `solutionLanguage`). That is the intended behaviour: git's similarity detection then
+       does the right thing at both extremes--a Python solution replaced by a C++ one is
+       dissimilar, so it surfaces as a structural add/delete conflict rather than a meaningless
+       line-by-line merge of two languages, while a C solution edited into a C++ one is similar
+       enough to be tracked as a rename and carry server-side edits across.
+
+       Does nothing when there is no solution file yet; `create()` may run before the author has
+       written anything."""
+    data_dir = root_dir / DATA_SUBDIR_NAME
+    # Older cg kept `data/solution.src` and a `solution.<ext>` symlink at the root. The symlink is
+    # never right again, so remove it whatever it points at -- but only if it is a symlink, so a
+    # real file a user put there is untouched.
+    for stale in root_dir.glob(f"{SOLUTION_FILE_STEM}.*"):
+        if stale.is_symlink():
+            stale.unlink()
+
     extension = get_language(solution_language).extension if solution_language else None
-    if extension is None:
+    wanted = data_dir / solution_file_name(extension)
+    existing = find_solution_file(data_dir, extension)
+    if existing is None or existing == wanted:
         return
-    link_name = f"solution.{extension}"
-    if link_name == SOLUTION_FILE_NAME:
+    if wanted.exists():
+        # Two real solution files: refuse rather than clobber one. repair() reports it.
         return
-    (contribution_dir / link_name).symlink_to(f"{DATA_SUBDIR_NAME}/{SOLUTION_FILE_NAME}")
+    existing.rename(wanted)
 
 
 def _minimal_valid_contribution_data(title: str) -> CgContributionData:
@@ -685,10 +710,16 @@ def _materialize_data(
     _write_sidecar(target_dir / OUTPUT_DESCRIPTION_FILE_NAME, data.output_description)
     _write_sidecar(target_dir / CONSTRAINTS_FILE_NAME, data.constraints)
     _write_sidecar(target_dir / STUB_GENERATOR_FILE_NAME, data.stub_generator)
-    # solution.src is always written, empty when there is no solution--never removed. An empty
-    # file is this client's representation of a null solutionSource (see _read_local_data), which
-    # keeps the `solution.<ext>` symlink from dangling and gives the author a file to type into.
-    _write_sidecar(target_dir / SOLUTION_FILE_NAME, data.solution or "")
+    # The solution file is always written, empty when there is no solution--never removed. An
+    # empty file is this client's representation of a null solutionSource (see _read_local_data)
+    # and gives the author something to type into.
+    #
+    # Its extension comes from this view's own solution_language, which is what keeps the `server`
+    # mirror and the working tree naming the same file: both derive it from the same field, so a
+    # language change moves them together and git sees one rename rather than two unrelated trees.
+    _solution_extension = (
+            get_language(data.solution_language).extension if data.solution_language else None)
+    _write_sidecar(target_dir / solution_file_name(_solution_extension), data.solution or "")
 
     cover_path = target_dir / COVER_IMAGE_FILE_NAME
     if cover_bytes is not None:
@@ -738,7 +769,8 @@ def _read_local_data(data_dir: Path, working_data: CgContributionData) -> tuple[
     # This does conflate a server-side solution that is genuinely `""` with a null one. Accepted
     # deliberately: an empty program passes no test cases, so no contribution could have been
     # accepted with one.
-    solution = _read_sidecar(data_dir / SOLUTION_FILE_NAME)
+    solution_path = find_solution_file(data_dir)
+    solution = _read_sidecar(solution_path) if solution_path is not None else None
     if solution == "":
         solution = None
     cover_path = data_dir / COVER_IMAGE_FILE_NAME
@@ -846,7 +878,14 @@ class CgContributionManager:
 
     @property
     def solution_file(self) -> Path:
-        return self.data_dir / SOLUTION_FILE_NAME
+        """The one real solution file, `data/solution.<ext>`.
+
+           Resolved by looking for whatever is actually there rather than by deriving the name from
+           the recorded language: the two can disagree--a working directory written by an older cg
+           still has `solution.src`, and a fetch can change the language before the rename runs--and
+           the file that exists is the one the user has been editing."""
+        found = find_solution_file(self.data_dir)
+        return found if found is not None else self.data_dir / solution_file_name(None)
 
     @property
     def meta_dir(self) -> Path:
@@ -1204,7 +1243,7 @@ class CgContributionManager:
                 )
             _write_meta_gitignore(self.contribution_dir)
             self._save_identity(contribution_id)
-            _refresh_solution_symlink(self.contribution_dir, data.solution_language)
+            _align_solution_file_name(self.contribution_dir, data.solution_language)
 
         if repairing:
             # Unlike the fresh-import path above (which built data/ itself, via
@@ -1281,6 +1320,10 @@ class CgContributionManager:
 
         _write_meta_gitignore(self.contribution_dir)
         renormalize_test_case_dirs(self.tests_dir)  # see import_()'s repair mode for why
+        # Before the first commit, so the rename lands in the initial tree rather than showing up
+        # as an uncommitted change immediately afterwards. This is also the migration path for a
+        # working directory an older cg left holding `data/solution.src` plus a root symlink.
+        _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
 
         self._save_meta(git_dir)
         init_repo(git_dir, self.data_dir)
@@ -1333,7 +1376,7 @@ class CgContributionManager:
                          manager has been exercised against).
             language:    The reference solution's language (see `CgSolutionLanguage`). Defaults
                          to "Python3". Always gets the `solution.<ext>` convenience symlink (see
-                         `_refresh_solution_symlink`) if `language` maps to a known extension--but
+                         `_align_solution_file_name`) if `language` maps to a known extension--but
                          `data/solution.src` itself (the symlink's target) is only pre-populated
                          with a real stub if `codingame_tools.language.get_language(language).
                          build_contribution_create_stub_source()` returns one (currently only
@@ -1364,7 +1407,7 @@ class CgContributionManager:
         # passes both. codingame_tools.language.CgLanguage.build_contribution_create_stub_source
         # only returns one for languages with such a trivial stub (currently just Python3); an
         # empty `data/solution.src` isn't meaningfully better than no file at all otherwise (the
-        # symlink itself--see _refresh_solution_symlink--already tells the user exactly where to
+        # symlink itself--see _align_solution_file_name--already tells the user exactly where to
         # put their code, for every language, regardless of this).
         solution = await get_language(language).build_contribution_create_stub_source()
         data = dataclasses.replace(
@@ -1379,7 +1422,7 @@ class CgContributionManager:
         # Record the generated stub, so `set_language()` can tell a brand-new contribution (nothing
         # to lose) from one whose solution.src holds real work.
         self._write_solution_snapshot(language, solution)
-        _refresh_solution_symlink(self.contribution_dir, data.solution_language)
+        _align_solution_file_name(self.contribution_dir, data.solution_language)
 
         init_repo(git_dir, self.data_dir)
         repo = CgGitRepo(git_dir, self.data_dir)
@@ -1388,7 +1431,7 @@ class CgContributionManager:
 
         return self.load()
 
-    async def push(self, *, direct_create: bool = False) -> CgContribution:
+    async def push(self, *, direct_create: bool = False, force: bool = False) -> CgContribution | None:
         """Push this working directory's content to the server, updating `server`/`version-data`
            to reflect the result on success, then auto-committing `main` to match (its content
            already matches what was just pushed, by construction).
@@ -1449,10 +1492,27 @@ class CgContributionManager:
            is already set but `server` still doesn't resolve, this raises instead of guessing--see
            `Raises` below.
 
+           **A push with nothing to push is a no-op**, returning None without contacting the server,
+           because `updateContribution` has no notion of an empty update: it increments the version
+           and re-runs moderation regardless of whether anything differs. Publishing a new version
+           of identical content costs a review cycle and buries the history of real changes, so it
+           has to be asked for explicitly rather than happening by accident.
+
+           "Nothing to push" is decided by comparing the working tree against `server`'s tip *tree*,
+           which is exactly what the last push or fetch recorded--so it covers every content file
+           including the cover image, and is unaffected by commit metadata. Checked before the cover
+           upload, so an unchanged cover isn't re-uploaded just to discover there was no update to
+           make.
+
         Args:
             direct_create: Skip the minimal-stub-first safety step on a first push, and call
                             `createContribution` once, directly, with the real content--see above.
                             Ignored (has no effect) on anything but a first push.
+            force:         Push even when the working tree is identical to what the server already
+                            has. Ignored on a first push, which always has something to establish.
+
+        Returns:
+            The contribution as the server now holds it, or None if there was nothing to push.
 
         Raises:
             FileNotFoundError: if this working directory hasn't been created/imported yet.
@@ -1515,6 +1575,15 @@ class CgContributionManager:
         # Only true if direct_create was requested--the stub step above (when it ran) already
         # turned this into an ordinary update, same as any push against an existing contribution.
         needs_direct_create = first_push and direct_create
+
+        # Nothing to push? Say so and stop, before the cover upload below spends a request finding
+        # out. server's tip tree is what the last push/fetch recorded, so comparing the worktree
+        # against it covers every content file, cover image included.
+        if not first_push and not force:
+            assert server_sha is not None  # guaranteed by the raise above for a non-first push
+            server_tree = repo.rev_parse(f"{server_sha}^{{tree}}", check=False)
+            if server_tree is not None and repo.write_tree_from_worktree() == server_tree:
+                return None
 
         # No prior server state to compare a cover image's hash against when creating (directly,
         # or via the stub established above, which never has a cover either)--the empty metadata
@@ -1722,7 +1791,7 @@ class CgContributionManager:
             # bring the working tree/index along with it.
             repo.checkout_all(SERVER_BRANCH_NAME)
             repo.update_ref(f"refs/heads/{MAIN_BRANCH_NAME}", server_after)
-            _refresh_solution_symlink(self.contribution_dir, self.load().data.solution_language)
+            _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
             return CgRebaseStatus.FAST_FORWARDED
 
         return CgRebaseStatus.CONFLICT
@@ -1757,7 +1826,7 @@ class CgContributionManager:
             raise FileNotFoundError(f"{self.git_dir} has no {SERVER_BRANCH_NAME} branch--nothing to discard local changes to.")
         repo.checkout_all(SERVER_BRANCH_NAME)
         repo.update_ref(f"refs/heads/{MAIN_BRANCH_NAME}", server_sha)
-        _refresh_solution_symlink(self.contribution_dir, self.load().data.solution_language)
+        _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
         return self.load()
 
     async def merge_discard_server(self) -> CgContribution:
@@ -1814,7 +1883,7 @@ class CgContributionManager:
         if clean:
             renormalize_test_case_dirs(self.tests_dir)
             repo.restage_and_amend_if_dirty()
-            _refresh_solution_symlink(self.contribution_dir, self.load().data.solution_language)
+            _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
             return CgMergeStartResult(status=CgMergeStartStatus.STARTED)
 
         conflicts = repo.status_conflicts()
@@ -1854,7 +1923,7 @@ class CgContributionManager:
             raise CgContributionManagerError(str(e)) from e
         renormalize_test_case_dirs(self.tests_dir)
         repo.restage_and_amend_if_dirty()
-        _refresh_solution_symlink(self.contribution_dir, self.load().data.solution_language)
+        _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
 
     def merge_abort(self) -> None:
         """Abort an in-progress merge: restore `main`'s pre-merge working tree state and discard
@@ -1867,7 +1936,7 @@ class CgContributionManager:
         if not self.merge_in_progress:
             raise CgContributionManagerError("No merge in progress.")
         self.git_repo.merge_abort()
-        _refresh_solution_symlink(self.contribution_dir, self.load().data.solution_language)
+        _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
 
     # --- discard_local -------------------------------------------------------------------------
 
@@ -1904,7 +1973,7 @@ class CgContributionManager:
         if repo.resolve_ref(SERVER_BRANCH_NAME) is None:
             raise FileNotFoundError(f"{self.git_dir} has no {SERVER_BRANCH_NAME} branch--nothing to discard to.")
         repo.checkout_all(SERVER_BRANCH_NAME)
-        _refresh_solution_symlink(self.contribution_dir, self.load().data.solution_language)
+        _align_solution_file_name(self.contribution_dir, self.load().data.solution_language)
         return self.load()
 
     # --- delete --------------------------------------------------------------------------------
@@ -2122,15 +2191,13 @@ class CgContributionManager:
 
            Infallible by design: never requires this directory to have been imported (`meta_dir`
            falls back to the non-`data/` layout when there's no `contribution.json` to say
-           otherwise). `solution_language` is only used to locate the `solution.<ext>` symlink; pass
-           `None` (or a language with no known extension) and `solution_link` is simply `None`.
+           otherwise). `solution_language` is accepted for signature stability but no longer selects
+           a path: there is one real solution file and `solution_file` finds it whatever extension
+           it carries.
         """
-        extension = get_language(solution_language).extension if solution_language else None
-        link = self.contribution_dir / f"solution.{extension}" if extension else None
         return CgLanguageContext(
                 root=self.contribution_dir,
                 solution_file=self.solution_file,
-                solution_link=link if link is not None and link.exists() else None,
                 meta_dir=self.meta_dir,
                 toolchain_dir=self.toolchain_dir,
                 mount_root=mount_root or self.mount_root or find_workspace_root(self.contribution_dir),
@@ -2289,7 +2356,7 @@ class CgContributionManager:
         self._write_solution_snapshot(language, stub)
         self.save(dataclasses.replace(
                 view, data=dataclasses.replace(view.data, solution_language=language)))
-        _refresh_solution_symlink(self.contribution_dir, language)
+        _align_solution_file_name(self.contribution_dir, language)
         return CgContributionSetLanguageResult(
                 language=language, previous_language=previous_language, wrote_stub=stub is not None,
             )

@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .layout import DATA_SUBDIR_NAME, SOLUTION_FILE_NAME
+from .layout import DATA_SUBDIR_NAME, SOLUTION_FILE_STEM
 from .schema import CONTRIBUTION_IDENTITY_FILE_NAME
 
 if TYPE_CHECKING:
@@ -144,9 +144,12 @@ def infer_contribution_dir(target_file: Path | str) -> Path:
                                           present at the inferred root.
     """
     resolved = Path(target_file).resolve()
-    if resolved.name != SOLUTION_FILE_NAME or resolved.parent.name != DATA_SUBDIR_NAME:
+    # Matched on the stem, not the full name: the solution file carries its language's extension
+    # and is renamed when the language changes, so `solution.cpp` and `solution.py` are equally
+    # valid here and the set of legal names is open-ended.
+    if resolved.stem != SOLUTION_FILE_STEM or resolved.parent.name != DATA_SUBDIR_NAME:
         raise CgContributionDirInferenceError(
-                f"{target_file} does not resolve to a {DATA_SUBDIR_NAME}/{SOLUTION_FILE_NAME} "
+                f"{target_file} does not resolve to a {DATA_SUBDIR_NAME}/{SOLUTION_FILE_STEM}.* "
                 "file--not part of a contribution working directory."
             )
     root = resolved.parent.parent

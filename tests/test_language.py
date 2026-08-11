@@ -41,15 +41,13 @@ def _ctx(root: Path, source: str | None = None, *, extension: str = "py") -> CgL
        directory with no solution file at all."""
     data_dir = root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
-    solution_file = data_dir / "solution.src"
-    link: Path | None = None
+    # One real file carrying the language's own extension--there is no symlink, and no second path
+    # a build could pick instead.
+    solution_file = data_dir / f"solution.{extension}"
     if source is not None:
         solution_file.write_text(source)
-        link = root / f"solution.{extension}"
-        if not link.exists():
-            link.symlink_to(Path("data") / "solution.src")
     return CgLanguageContext(
-            root=root, solution_file=solution_file, solution_link=link,
+            root=root, solution_file=solution_file,
             meta_dir=root / ".meta", toolchain_dir=root / ".toolchain",
             mount_root=root.parent,
         )

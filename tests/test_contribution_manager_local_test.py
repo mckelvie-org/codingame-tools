@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from codingame_tools.client.common.protocol.contribution import CgContributionData, CgTestCase
+from codingame_tools.contribution_manager.layout import solution_file_name
 from codingame_tools.contribution_manager.manager import (
     CgContributionLocalTestFailedError,
     CgContributionManager,
@@ -38,8 +39,13 @@ def _setup(
         ) -> CgContributionManager:
     manager = CgContributionManager(tmp_path, object())  # type: ignore[arg-type]
     manager.save(CgContributionView(data=CgContributionData(title="T", solution_language=solution_language)))
-    manager.solution_file.parent.mkdir(parents=True, exist_ok=True)
-    manager.solution_file.write_text(solution_code)
+    # Named from the language, the way every production writer does it. `manager.solution_file`
+    # reports whatever is on disk and falls back to the neutral name when nothing is--which is right
+    # for reading, but would write `solution.src` for a Python contribution.
+    extension = get_language(solution_language).extension if solution_language else None
+    solution_path = manager.data_dir / solution_file_name(extension)
+    solution_path.parent.mkdir(parents=True, exist_ok=True)
+    solution_path.write_text(solution_code)
     import_test_cases(test_cases, manager.tests_dir)
     return manager
 
@@ -214,17 +220,19 @@ def test_language_context_is_infallible_on_a_bare_directory(tmp_path: Path) -> N
 
     assert ctx.root == manager.contribution_dir
     assert ctx.solution_file == manager.solution_file
-    assert ctx.solution_link is None  # no symlink on disk
     assert ctx.meta_dir == manager.contribution_dir / ".meta"
 
 
-def test_language_context_finds_the_solution_symlink_when_present(tmp_path: Path) -> None:
+def test_language_context_points_at_the_one_real_solution_file(tmp_path: Path) -> None:
+    """One path, carrying the language's own extension, and not a symlink--so a build and a
+       debugger cannot disagree about which file they are looking at."""
     manager = _setup(tmp_path, [_tc("A", "1", "1", is_test=True, is_validator=False)])
-    (tmp_path / "solution.py").symlink_to(Path("data") / "solution.src")
 
     ctx = manager.language_context("Python3")
 
-    assert ctx.solution_link == tmp_path / "solution.py"
+    assert ctx.solution_file == tmp_path / "data" / "solution.py"
+    assert ctx.solution_file.is_file()
+    assert not ctx.solution_file.is_symlink()
 
 
 async def test_build_solution_is_a_no_op_success_for_python(tmp_path: Path) -> None:
@@ -260,7 +268,9 @@ async def test_set_language_switches_a_freshly_created_contribution(tmp_path: Pa
     assert result.previous_language == "Python3"
     assert result.language == "C++"
     assert manager.load().data.solution_language == "C++"
-    assert (tmp_path / "solution.cpp").is_symlink()
+    # The file is renamed to follow the language; the previous name is gone.
+    assert (tmp_path / "data" / "solution.cpp").is_file()
+    assert sorted(q.name for q in (tmp_path / "data").glob("solution.*")) == ["solution.cpp"]
 
 
 async def test_set_language_leaves_an_empty_solution_when_a_language_has_no_stub(tmp_path: Path) -> None:
@@ -375,7 +385,7 @@ async def test_writing_an_empty_sidecar_leaves_a_zero_length_file(tmp_path: Path
        solution" would have no representation at all."""
     from codingame_tools.contribution_manager.manager import _read_sidecar, _write_sidecar
 
-    path = tmp_path / "solution.src"
+    path = tmp_path / "solution.py"
     _write_sidecar(path, "")
     assert path.read_bytes() == b""
 

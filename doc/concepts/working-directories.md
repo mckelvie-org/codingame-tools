@@ -5,15 +5,15 @@ Both managers put a single puzzle or contribution into a directory on disk, with
 ```
 <root>/
     data/            your content -- the only thing that is ever pushed
+        solution.py      the solution, carrying its language's extension
     .meta/           server-derived cache and scaffolding -- gitignored, disposable
-    solution.py      convenience symlink -> data/solution.src
     puzzle.json      identity: which puzzle/contribution this directory is
 ```
 
 ## `data/` is yours
 
 Everything under `data/` is content you edit and that gets sent to the server. For a puzzle that's
-just `solution.src`. For a contribution it's the solution plus the statement, constraints,
+just the solution. For a contribution it's the solution plus the statement, constraints,
 input/output descriptions, stub generator, cover image, and a `tests/` tree.
 
 ## `.meta/` is a cache
@@ -78,14 +78,21 @@ git --git-dir=.meta/.contribution-git --work-tree=data log --oneline main
 
 Either way `.meta/` stays at the root. Only the repository moves.
 
-## The solution symlink
+## The solution file
 
-`solution.<ext>` at the root points at `data/solution.src`. The single real file has a fixed name so
-tooling can find it; the symlink gives it an extension so your editor picks the right language,
-syntax highlighting and language server. Change languages and the symlink is re-pointed for you.
+`data/solution.<ext>` is the one real file, and it carries its language's own extension so your
+editor picks the right language, syntax highlighting and language server. Change languages and the
+file is renamed for you.
 
-Open whichever you like — the debugger is wired to work through either, no matter how many symlink
-hops sit between the file you have open and the file that runs.
+**There is deliberately only one path.** Through 1.x there was a fixed `data/solution.src` with a
+`solution.<ext>` symlink beside it, and the second path caused real trouble: a debugger reports both
+the path recorded in the debug info and its own `realpath` of it, and the editor navigates by the
+second. Compiling the symlink made them disagree, so breakpoints bound and then jumped the editor to
+the target; the mapping that fixed the navigation applied in *both* directions and broke the binding
+instead. One file with the right extension makes the two paths identical.
+
+Working directories created by 1.x are migrated by `cg puzzle repair` / `cg contribution repair`,
+which renames the file and removes the stale symlink.
 
 ## Test cases
 

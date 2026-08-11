@@ -24,11 +24,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 __all__ = [
     "DATA_SUBDIR_NAME",
     "META_SUBDIR_NAME",
     "GITIGNORE_FILE_NAME",
-    "SOLUTION_FILE_NAME",
+    "SOLUTION_FILE_STEM",
+    "SOLUTION_FALLBACK_EXTENSION",
+    "solution_file_name",
+    "find_solution_file",
     "STATEMENT_FILE_NAME",
     "STUB_GENERATOR_FILE_NAME",
 ]
@@ -51,13 +56,53 @@ GITIGNORE_FILE_NAME = ".gitignore"
    `.meta/`'s contents can never end up tracked by whatever project comes to track the rest of the
    working directory, now or later."""
 
-SOLUTION_FILE_NAME = "solution.src"
-"""The one real, editable/submittable file--never varies. Same rationale as
-   `contribution_manager.layout.SOLUTION_FILE_NAME` for the `.src` extension (lets editors that
-   infer syntax highlighting from a shebang line win, rather than a recognized-as-plain-text
-   extension like `.txt` forcing no highlighting). A convenience symlink `solution.<ext>` ->
-   `data/solution.src` is additionally maintained at the working directory's own root (never
-   inside `data/`), same as `codingame_tools.contribution_manager`'s--disposable/regeneratable."""
+SOLUTION_FILE_STEM = "solution"
+"""Stem of the one real, editable/submittable solution file, which lives in `data/`."""
+
+SOLUTION_FALLBACK_EXTENSION = "src"
+"""Extension used when the solution language isn't known, or maps to no extension cg recognizes.
+
+   Deliberately not `.txt`: editors that infer syntax highlighting from a shebang line (VS Code
+   among them) only bother for extensions they don't already recognize as plain text, so `.txt`
+   would force no highlighting where `.src` lets the shebang win."""
+
+
+def solution_file_name(extension: str | None) -> str:
+    """`solution.<ext>` for a known language extension, else `solution.src`.
+
+       The file carries the language's real extension rather than a fixed one because every tool
+       that reads it--language servers, debuggers, the compiler--dispatches on the extension. cg
+       previously kept `data/solution.src` fixed and maintained a `solution.<ext>` symlink beside
+       it, which cost a day of debugging: the debug info named one path, the editor resolved the
+       other, and breakpoints silently failed to bind. One real file with the right name has no
+       such gap, and needs no symlink support from the filesystem (which Windows only grants with
+       developer mode enabled)."""
+    return f"{SOLUTION_FILE_STEM}.{extension or SOLUTION_FALLBACK_EXTENSION}"
+
+
+def find_solution_file(data_dir: Path, extension: str | None = None) -> Path | None:
+    """The existing solution file in `data_dir`, whatever extension it currently carries.
+
+       Callers generally know the language and so know the name, but not always: a working
+       directory whose language changed out from under it, or one written by an older cg that used
+       a fixed `solution.src`, still has to be found. The expected name wins when present, so a
+       stray leftover can never shadow the real file; otherwise a lone `solution.*` is accepted.
+
+       Returns None if there is no solution file, or if several exist with no way to choose--the
+       caller decides whether that's an error or a thing to repair."""
+    if extension is not None:
+        expected = data_dir / solution_file_name(extension)
+        if expected.is_file():
+            return expected
+    candidates = sorted(p for p in data_dir.glob(f"{SOLUTION_FILE_STEM}.*") if p.is_file())
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        return None
+    # Ambiguous: prefer the fallback name if it is one of them, since that is what an older cg
+    # wrote and what a migration is most likely looking at.
+    fallback = data_dir / solution_file_name(None)
+    return fallback if fallback in candidates else None
 
 STATEMENT_FILE_NAME = "statement.html"
 """Read-only reference copy of the puzzle's rendered problem statement (see

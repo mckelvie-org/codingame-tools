@@ -234,6 +234,39 @@ class CgClientErrorResponse(JSONWizardX):
     """The error message returned by the API."""
 
 
+_MAX_ERROR_DETAIL_CHARS = 600
+"""How much of an unrecognized error body to put in the exception message. Enough for CodinGame's
+   validation errors, which name the offending field, without pasting a whole HTML error page into a
+   traceback."""
+
+
+def _describe_error_content(content: JsonData | bytes | None) -> str:
+    """A one-line rendering of a response body for an error message, or "" if there is nothing
+       useful to say.
+
+       Exists because the body is the only thing that distinguishes one 422 from another. CodinGame
+       returns a structured `{"code": ...}` object for many failures, and `CgClientErrorResponse`
+       handles those--but not all of them, and a bare "422 Unprocessable Entity" with the
+       explanation sitting unused in `content` is close to useless to whoever has to act on it."""
+    if content is None:
+        return ""
+    if isinstance(content, (bytes, bytearray, memoryview)):
+        text = bytes(content).decode("utf-8", errors="replace")
+    elif isinstance(content, str):
+        text = content
+    else:
+        with contextlib.suppress(Exception):
+            text = json.dumps(content, separators=(",", ":"))
+        if not isinstance(text, str):  # pragma: no cover--json.dumps only fails on exotic input
+            text = repr(content)
+    text = " ".join(text.split())
+    if not text:
+        return ""
+    if len(text) > _MAX_ERROR_DETAIL_CHARS:
+        text = text[:_MAX_ERROR_DETAIL_CHARS] + f"... ({len(text)} chars total)"
+    return text
+
+
 class CgClientHttpError(Exception):
     """Raised for HTTP-level failures making a request to the CodinGame API. Contains the status
        code and content of the response, if available, and--since the client is built on
@@ -295,15 +328,20 @@ class CgClientHttpError(Exception):
         self.content = content
         self.response = response
         if self.api_error_response is None:
-            message = f"CodingGame HTTP Error: {status_code} {self.raw_message}"
+            message = f"CodinGame HTTP Error: {status_code} {self.raw_message}"
+            # The body is the only thing that tells one 422 from another, so say it rather than
+            # leaving it in `content` for someone to find with a debugger.
+            detail = _describe_error_content(content)
+            if detail:
+                message = f"{message}: {detail}"
         else:
             if self.api_error_response.message is not None:
                 message = (
-                        f"CodingGame API Error: {status_code} {self.raw_message}: "
+                        f"CodinGame API Error: {status_code} {self.raw_message}: "
                         f"{self.api_error_response.code}: {self.api_error_response.message}"
                     )
             else:
-                message = f"CodingGame API Error: {status_code} {self.raw_message}: {self.api_error_response.code}"
+                message = f"CodinGame API Error: {status_code} {self.raw_message}: {self.api_error_response.code}"
         super().__init__(message)
 
     def __repr__(self) -> str:

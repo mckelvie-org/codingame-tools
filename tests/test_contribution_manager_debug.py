@@ -14,7 +14,7 @@ import pytest
 
 from codingame_tools.client.common.protocol.contribution import CgTestCase
 from codingame_tools.contribution_manager.debug import main
-from codingame_tools.contribution_manager.layout import DATA_SUBDIR_NAME, SOLUTION_FILE_NAME
+from codingame_tools.contribution_manager.layout import DATA_SUBDIR_NAME, solution_file_name
 from codingame_tools.contribution_manager.resolver import CgContributionDirInferenceError
 from codingame_tools.contribution_manager.schema import CONTRIBUTION_IDENTITY_FILE_NAME
 from codingame_tools.contribution_manager.test_cases_dir import (
@@ -23,6 +23,10 @@ from codingame_tools.contribution_manager.test_cases_dir import (
     list_local_test_cases,
 )
 from codingame_tools.test_runner.debug_stdin import CgDebugStdinOutputMismatchError
+
+SOLUTION_FILE_NAME = solution_file_name("py")
+"""These tests all write Python solutions, so the solution file is `solution.py`. The name is no
+   longer fixed: it carries the language's extension and is renamed when the language changes."""
 
 
 def _tc(title: str, i: str, o: str, *, is_test: bool, is_validator: bool) -> CgTestCase:

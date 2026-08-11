@@ -286,7 +286,7 @@ options:
 ## `cg contribution push`
 
 ```text
-usage: cg contribution push [-h] [--direct-create]
+usage: cg contribution push [-h] [--direct-create] [--force]
 
 Push this working directory's content to the server (with 524 retry/polling and test-case data
 normalization), then update `server`/`version-data` to reflect the result and fast-forward `main`
@@ -306,6 +306,10 @@ options:
   --direct-create  On a first push, skip the minimal-stub-first safety step and call
                    createContribution once, directly, with the real content. Ignored on anything
                    but a first push.
+  --force, -f      Push even when nothing has changed. Without it, a push with no local changes
+                   does nothing: updateContribution has no empty update--it increments the version
+                   and re-runs moderation regardless--so republishing identical content costs a
+                   review cycle and buries the history of real changes.
 ```
 
 ## `cg contribution debug`

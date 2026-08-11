@@ -2352,10 +2352,16 @@ class CgCli(CliBase):
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
             direct_create: bool = self.args.direct_create
+            force: bool = self.args.force
             resolved_dir = resolve_contribution_dir(contribution_dir, settings=self.resolve_default_settings())
             client = await self.get_client(require_credentials=True)
             manager = CgContributionManager(resolved_dir, client)
-            result = await manager.push(direct_create=direct_create)
+            result = await manager.push(direct_create=direct_create, force=force)
+            if result is None:
+                # Not an error: nothing needed doing, so the exit status stays 0 for scripts.
+                self.eprint(f"{resolved_dir} is already up to date on the server--nothing to push. "
+                            "Use --force to publish a new version anyway.")
+                return
             self.eprint(
                     f"Pushed {resolved_dir} -> contribution {result.public_handle!r}, "
                     f"version {result.last_version.version}"
@@ -2365,6 +2371,12 @@ class CgCli(CliBase):
                        help="On a first push, skip the minimal-stub-first safety step and call "
                             "createContribution once, directly, with the real content. Ignored "
                             "on anything but a first push.")
+        p.add_argument("--force", "-f", default=False, action="store_true",
+                       help="Push even when nothing has changed. Without it, a push with no local "
+                            "changes does nothing: updateContribution has no empty update--it "
+                            "increments the version and re-runs moderation regardless--so "
+                            "republishing identical content costs a review cycle and buries the "
+                            "history of real changes.")
         return handler
 
     @cli_command("Debug-session plumbing for languages whose debugger attaches to a running target "

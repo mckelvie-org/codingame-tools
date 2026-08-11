@@ -114,12 +114,10 @@ def _remove_test_container(request: pytest.FixtureRequest, tmp_path: Path) -> It
 def _ctx(tmp_path: Path, source: str) -> CgLanguageContext:
     root = tmp_path / "puzzle"
     (root / "data").mkdir(parents=True)
-    solution = root / "data" / "solution.src"
+    solution = root / "data" / "solution.cpp"
     solution.write_text(source)
-    link = root / "solution.cpp"
-    link.symlink_to(Path("data") / "solution.src")
     return CgLanguageContext(
-            root=root, solution_file=solution, solution_link=link,
+            root=root, solution_file=solution,
             meta_dir=root / ".meta", toolchain_dir=tmp_path / "toolchain",
             # The enclosing workspace, not the working directory--see _docker's mount-root comment.
             mount_root=tmp_path,
@@ -392,19 +390,23 @@ def test_build_stamp_covers_the_source_path_not_just_its_contents() -> None:
     assert real_hash_line != link_hash_line
 
 
-def test_cpp_always_compiles_the_real_file_never_the_symlink(tmp_path: Path) -> None:
-    """Compiling the symlink makes the debugger's two paths for a location disagree--`file` from the
-       DWARF and `fullname`, its own realpath of it--and cppdbg navigates by `fullname`. Worse, the
-       `sourceFileMap` that fixes the navigation applies in *both* directions, so the editor
-       translates a breakpoint back to the real path before sending it; if the DWARF names the
-       symlink, gdb can't place it and the breakpoint goes hollow. Observed exactly that.
+def test_cpp_compiles_the_solution_file_itself_at_its_real_path(tmp_path: Path) -> None:
+    """There is one path to compile and every profile compiles it.
 
-       Compiling the real file makes `file` and `fullname` agree, which is what lets one explicit
-       mapping handle display without disturbing binding."""
+       This used to be a choice, and both options were wrong. With a `solution.<ext>` symlink over a
+       fixed `data/solution.src`, a debugger reports two paths per stop location--`file` from the
+       DWARF and `fullname`, its own realpath of it--and cppdbg navigates by `fullname`. Compiling
+       the symlink made them disagree, so breakpoints bound and then yanked the editor to the
+       target; the `sourceFileMap` that fixed navigation applied in *both* directions and broke
+       binding instead, leaving hollow breakpoints. Observed exactly that.
+
+       One real file carrying its language's extension makes the two paths identical, so there is
+       nothing left to choose and nothing to map."""
     language = get_language("C++")
     ctx = _ctx(tmp_path, ECHO_DOUBLE)
 
-    assert ctx.solution_link is not None  # the symlink exists; it is simply not what we compile
+    assert ctx.solution_file.suffix == ".cpp"
+    assert not ctx.solution_file.is_symlink()
     for profile in ("run", "debug"):
         assert language.source_path_in_container(ctx, profile) == str(ctx.solution_file)  # type: ignore[attr-defined]
     # A plain host path: the mount root is bind-mounted at its own location, so nothing translates.
@@ -610,12 +612,10 @@ async def test_cpp_debug_launch_has_gdb_run_the_program_itself(tmp_path: Path) -
     # But gdb still runs *in the container*, since the host can't debug a Linux binary.
     assert config["pipeTransport"]["pipeProgram"] == "docker"
     assert container_name_for(tmp_path) in config["pipeTransport"]["pipeArgs"]
-    # The only sourceFileMap entry undoes gdb's own symlink resolution (see _SOURCE_FILE_MAP); the
-    # mount needs no path translation, since it is mounted at its own path.
-    assert list(config["sourceFileMap"]) == ["${fileDirname}/data/solution.src"]
-    # Relative to the launched file, not absolute--an absolute mapping would need one launch
-    # configuration per working directory, which is what this whole design avoids.
-    assert all("${fileDirname}" in v for v in config["sourceFileMap"].values())
+    # No sourceFileMap at all. Two things had to be true for that: the workspace is mounted at its
+    # own path, so compiled paths are already the paths VS Code has open; and the solution is one
+    # real file rather than a symlink over data/solution.src, so gdb's `file` and `fullname` agree.
+    assert "sourceFileMap" not in config
 
 
 async def test_cpp_debug_launch_declares_the_target_architecture(tmp_path: Path) -> None:

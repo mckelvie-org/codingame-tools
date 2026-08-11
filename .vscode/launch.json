@@ -40,7 +40,7 @@
       },
       "type": "cppdbg",
       "request": "launch",
-      "program": "/build/debug/solution",
+      "program": "/build/cpp/debug/solution",
       "cwd": "/build",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
@@ -52,7 +52,7 @@
         "pipeArgs": [
           "exec",
           "-i",
-          "cg-cpp-9e84e543be86",
+          "cg-toolchain-9e84e543be86",
           "sh",
           "-c"
         ],
@@ -80,9 +80,6 @@
           "ignoreFailures": true
         }
       ],
-      "sourceFileMap": {
-        "${fileDirname}/data/solution.src": "${fileDirname}/solution.cpp"
-      },
       "preLaunchTask": "CG C++: Prepare debug session"
     },
     {

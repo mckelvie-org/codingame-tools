@@ -13,11 +13,15 @@ from pathlib import Path
 import pytest
 
 from codingame_tools.puzzle_manager.debug import main
-from codingame_tools.puzzle_manager.layout import DATA_SUBDIR_NAME, META_SUBDIR_NAME, SOLUTION_FILE_NAME
+from codingame_tools.puzzle_manager.layout import DATA_SUBDIR_NAME, META_SUBDIR_NAME, solution_file_name
 from codingame_tools.puzzle_manager.resolver import CgPuzzleDirInferenceError
 from codingame_tools.puzzle_manager.schema import PUZZLE_IDENTITY_FILE_NAME
 from codingame_tools.puzzle_manager.test_cases_dir import TEST_META_FILE_NAME, TESTS_SUBDIR_NAME, CgPuzzleTestCaseMeta
 from codingame_tools.test_runner.debug_stdin import CgDebugStdinOutputMismatchError
+
+SOLUTION_FILE_NAME = solution_file_name("py")
+"""These tests all write Python solutions, so the solution file is `solution.py`. The name is no
+   longer fixed: it carries the language's extension and is renamed when the language changes."""
 
 
 def _make_puzzle_dir(root: Path) -> Path:

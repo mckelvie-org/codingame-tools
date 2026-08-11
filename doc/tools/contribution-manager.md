@@ -71,7 +71,7 @@ against **every** test case server-side and rejects the whole push if any disagr
 
 ## The empty-solution rule
 
-A zero-length `data/solution.src` means "no reference solution" and is pushed as a null
+A zero-length `data/solution.<ext>` means "no reference solution" and is pushed as a null
 `solutionSource`. This isn't a quirk — it's required. `updateContribution` skips solution validation
 entirely when the solution is null but validates any non-null one against every test case, so a
 language with no working stub must leave the file empty rather than write a placeholder that would

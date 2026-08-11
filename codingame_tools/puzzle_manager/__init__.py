@@ -23,7 +23,7 @@ from ..client.common.protocol.report import CgSubmissionReport
 from .manager import (
     DATA_SUBDIR_NAME,
     META_SUBDIR_NAME,
-    SOLUTION_FILE_NAME,
+    SOLUTION_FILE_STEM,
     STATEMENT_FILE_NAME,
     STUB_GENERATOR_FILE_NAME,
     TESTS_SUBDIR_NAME,
@@ -36,6 +36,8 @@ from .manager import (
     CgPuzzleRemoteTestResult,
     CgPuzzleSetLanguageResult,
     CgPuzzleStatus,
+    find_solution_file,
+    solution_file_name,
 )
 from .resolver import (
     CG_PUZZLE_DIR_ENV_VAR,
@@ -75,7 +77,9 @@ __all__ = [
     "PUZZLE_SCHEMA_VERSION",
     "DATA_SUBDIR_NAME",
     "META_SUBDIR_NAME",
-    "SOLUTION_FILE_NAME",
+    "SOLUTION_FILE_STEM",
+    "find_solution_file",
+    "solution_file_name",
     "STATEMENT_FILE_NAME",
     "STUB_GENERATOR_FILE_NAME",
     "TESTS_SUBDIR_NAME",

@@ -62,7 +62,7 @@ cg whoami
 cg puzzle import --language Python3 ./puzzle temperatures
 
 # implement a solution
-$EDITOR "$(cg puzzle where)/solution.py"
+$EDITOR "$(cg puzzle where)/data/solution.py"
 
 cg puzzle play                    # Test locally against downloaded test cases -- no network
 cg puzzle submit                  # graded submission
@@ -84,7 +84,7 @@ $EDITOR data/stub_generator.cgstub
 cp $COVER_ART_1920x1080_PNG data/cover.png
 
 # Create a reference solution
-$EDITOR solution.py
+$EDITOR data/solution.py
 
 # Create a suite of test cases (both local and validator)
 $EDITOR data/tests/**/*

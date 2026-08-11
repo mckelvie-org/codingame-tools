@@ -247,25 +247,6 @@ def target_architecture() -> str | None:
     return _TARGET_ARCHITECTURES.get(platform.machine())
 
 
-_SOURCE_FILE_MAP = {
-        "${fileDirname}/data/solution.src": "${fileDirname}/solution.cpp",
-    }
-"""Maps the *resolved* solution path back to the `solution.<ext>` symlink, so the editor keeps
-   showing the file you launched from.
-
-   The debug build deliberately compiles the symlink, and the DWARF records it faithfully--but gdb
-   reports two paths for a stop location, `file` (what the DWARF says) and `fullname` (its own
-   `realpath` of it), and the editor navigates by `fullname`. So a breakpoint set in `solution.cpp`
-   binds correctly and then yanks the editor over to `data/solution.src`. Neither we nor the compiler
-   resolve anything; gdb does, downstream of everything we control, and this maps it back.
-
-   Written with `${fileDirname}` rather than an absolute path, which is what keeps this one
-   configuration serving every C++ working directory in the workspace. VS Code substitutes its
-   variables before the adapter sees the config, so this resolves per launch--exactly like the
-   `${file}` the prepare task already relies on. An absolute mapping would mean one launch
-   configuration per working directory, which is the whole thing this design exists to avoid."""
-
-
 _TASK_PRESENTATION = {
         "reveal": "silent",
         "panel": "dedicated",
@@ -323,26 +304,24 @@ class CgCppLanguage(CgLanguage):
         return "//"
 
     def source_path_in_container(self, ctx: CgLanguageContext, profile: CgBuildProfile) -> str:
-        """Which path inside the container to compile: always the real `data/solution.src`, never the
-           `solution.<ext>` symlink, and the same for every profile.
+        """Which path inside the container to compile: the solution file itself, the same for every
+           profile.
 
-           A debug build used to compile the symlink, on the theory that the path g++ records is the
-           path breakpoints must match. That turned out to be exactly backwards once the editor was
-           in the picture, because the debugger reports *two* paths for a location--`file` from the
-           DWARF, and `fullname`, its own `realpath` of it. Compiling the symlink makes those two
-           disagree, and cppdbg navigates by `fullname`, so a breakpoint bound correctly and then
-           yanked the editor to `data/solution.src`.
-
-           Fixing the navigation with a `sourceFileMap` then broke the binding, because that mapping
-           applies in *both* directions: the editor translated a breakpoint in `solution.cpp` back to
-           `data/solution.src` before sending it, and the DWARF said `solution.cpp`, so gdb could not
-           place it (a hollow breakpoint). Compiling the real file makes `file` and `fullname` agree,
-           which is what lets one explicit mapping handle display without disturbing binding.
+           There is only one path to choose from now, which is the point. When a `solution.<ext>`
+           symlink sat over a fixed `data/solution.src` this had to pick one, and both choices were
+           wrong in different ways: gdb reports *two* paths per stop location--`file` from the DWARF
+           and `fullname`, its own `realpath` of it--and the editor navigates by `fullname`.
+           Compiling the symlink made them disagree, so a breakpoint bound and then yanked the editor
+           to the target; adding a `sourceFileMap` to fix the navigation broke the *binding* instead,
+           since it applied in both directions. One real file carrying its language's own extension
+           makes the two paths identical and deletes the problem rather than balancing it.
 
            The host path *is* the in-container path--the mount root is bind-mounted at its own
            location (see `codingame_tools.language._docker`)--so there is nothing to translate here.
 
-           `-x c++` is mandatory: g++ doesn't recognize a `.src` extension and would treat the file
+           `-x c++` is kept although the file is now named `solution.cpp`: it costs nothing, and it
+           still compiles a working directory an older cg left holding `data/solution.src`, whose
+           extension g++ doesn't recognize and would treat as a
            as a linker input ("file format not recognized")."""
         return str(ctx.solution_file)
 
@@ -534,11 +513,13 @@ class CgCppLanguage(CgLanguage):
            per *workspace*, so its name is a constant--see
            `codingame_tools.language._docker.container_name_for`.
 
-           No `sourceFileMap`: the workspace is mounted at its own path, so the paths the compiler
-           recorded are already the paths VS Code has open. The debug build compiles the
-           `solution.<ext>` symlink so that path is the one the user is looking at--though note gdb
-           reports the symlink as `file` and its *resolved* target as `fullname`, and the editor
-           opens `fullname`.
+           **No `sourceFileMap` at all.** Two separate things make that possible: the workspace is
+           bind-mounted at its own path, so the paths the compiler recorded are already the paths VS
+           Code has open; and the solution is one real file rather than a `solution.<ext>` symlink
+           over a fixed `data/solution.src`, so gdb's `file` (from the DWARF) and `fullname` (its own
+           `realpath`) name the same thing. While that symlink existed, a mapping was needed to stop
+           the editor navigating away from the file the breakpoints were set in--and it applied in
+           *both* directions, which then broke binding.
 
            The task passes `${workspaceFolder}` explicitly rather than letting cg guess the mount
            root, so VS Code's real workspace wins over `find_workspace_root`'s heuristic. A mismatch
@@ -570,9 +551,6 @@ class CgCppLanguage(CgLanguage):
                                 "pipeCwd": "",
                             },
                             "setupCommands": _SETUP_COMMANDS,
-                            # Undoes gdb's symlink resolution, so the editor shows the file you
-                            # launched from rather than its target -- see _SOURCE_FILE_MAP.
-                            "sourceFileMap": _SOURCE_FILE_MAP,
                             "preLaunchTask": entry_name(self.cg_id, ACTION_PREPARE_DEBUG),
                             **({"logging": _ADAPTER_LOGGING}
                                if request.debug_adapter_logging else {}),

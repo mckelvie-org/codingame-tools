@@ -55,7 +55,7 @@ Needs the network despite only changing local state: CodinGame keeps your latest
 language, so switching restores your own previous work rather than generating a stub. `from_server`
 tells you which happened, which is otherwise invisible.
 
-It refuses when `data/solution.src` holds work the server doesn't have. "Safe to discard" means the
+It refuses when `data/solution.<ext>` holds work the server doesn't have. "Safe to discard" means the
 local text matches either the server's saved code for the current language, or the snapshot of the
 stub `cg` itself wrote — recorded in `.meta/` precisely so this doesn't depend on stub generation
 being byte-stable across releases.

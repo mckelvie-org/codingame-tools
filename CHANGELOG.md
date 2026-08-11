@@ -2,6 +2,65 @@
 
 ## {{UNRELEASED}}
 
+- **BREAKING: the solution is one real file, `data/solution.<ext>`, renamed when the language
+  changes.** The `solution.<ext>` symlink at the working directory root is gone, and so is the fixed
+  `data/solution.src` behind it. Existing working directories migrate on the next
+  `cg puzzle repair` / `cg contribution repair`: the file is renamed and the stale symlink removed.
+
+  The symlink existed so editors would syntax-highlight a language-neutral `.src` file. It cost a
+  day of debugging to find out what else it did. A debugger reports *two* paths for a stop location
+  -- `file` from the debug info and `fullname`, its own `realpath` of it -- and the editor navigates
+  by `fullname`. Compiling the symlink made them disagree, so a breakpoint bound correctly and then
+  yanked the editor to `data/solution.src`. Adding a `sourceFileMap` to fix the navigation broke the
+  *binding* instead, because that mapping applies in **both** directions: the editor translated the
+  breakpoint back to the real path before sending it, the debug info named the symlink, and gdb
+  could not place it. Hollow breakpoints.
+
+  Every language server we add would have hit some version of that, because they all resolve the
+  file and walk up from wherever it really is -- and `.src` is an extension none of them recognize.
+  One real file with its language's own extension makes the two paths identical and deletes the
+  problem rather than balancing it. `sourceFileMap` is now absent from the generated launch
+  configuration entirely. Symlink support is also no longer required of the filesystem, which
+  Windows grants only in developer mode.
+
+  For a contribution the rename lands in `data/`, a git work tree, so git sees it on both `main` and
+  the `server` mirror (which derives the same extension from the server's own `solutionLanguage`).
+  That is deliberate: git's similarity detection then does the right thing at both extremes. A
+  Python solution replaced by a C++ one is dissimilar, so it surfaces as a structural add/delete
+  conflict rather than a meaningless line-by-line merge of two languages; a C solution edited into a
+  C++ one is similar enough to be tracked as a rename and carry server-side edits across.
+
+- **`cg contribution push` does nothing when nothing has changed.** `--force` overrides; exit status
+  stays 0 either way, since nothing needing doing is not a failure.
+
+  `updateContribution` has no notion of an empty update -- it increments the version and re-runs
+  moderation whether or not anything differs -- so republishing identical content costs a review
+  cycle and buries the history of real changes behind no-op versions. Observed in the wild as two
+  such pushes twelve seconds apart.
+
+  "Nothing to push" compares the working tree against `server`'s tip tree, which is exactly what the
+  last push or fetch recorded. That covers every file under `data/`, cover image included, without a
+  hand-maintained list of fields to check, and it runs *before* the cover upload, so an unchanged
+  cover is not uploaded only to discover there was no update to make.
+
+- **Fixed: `cg puzzle diff` compared against the wrong language.** It asked `TestSession/startTestSession`
+  for the current answer and diffed against that -- whatever language the session happened to hold.
+  CodinGame stores a puzzle's code *per language*, so a local C++ file could be diffed against saved
+  Python, producing a whole-file diff that meant nothing. It now reads
+  `getPreviousCodeByLanguageId` for the language the working directory is actually in. `cg puzzle
+  status`'s `local_dirty` is computed from the same comparison and was wrong in the same way.
+
+- **Fixed: HTTP errors threw away the server's explanation.** A failed `cg contribution push`
+  reported exactly `Error: CodingGame HTTP Error: 422 Unprocessable Entity` and nothing else.
+
+  The response body was decoded and stored, but only *rendered* when it was a JSON object carrying a
+  `"code"` key -- the one shape `CgClientErrorResponse` parses. A dict without `code`, a JSON array,
+  a bare string, an HTML error page: all left the message as a bare status line with the explanation
+  sitting unused in `content`. The body now reaches the message whatever its shape, whitespace
+  collapsed onto one line and truncated at 600 characters with the true length reported, so a
+  cut-off body cannot be mistaken for the whole story. Also corrects `CodingGame` to `CodinGame` in
+  the message text.
+
 - **One container image now carries every language, composed from dependency-ordered fragments.**
   Previously each language had its own image (`cg-cpp:<hash>`, `FROM gcc:14`) and its own container,
   so a workspace with two languages ran two containers, each bind-mounting the whole workspace. Now

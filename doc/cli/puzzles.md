@@ -7,7 +7,7 @@ the network, and submit when you're happy.
 
 ```bash
 cg puzzle import ./puzzle temperatures    # pull it down; becomes the active puzzle
-$EDITOR "$(cg puzzle where)/solution.py"  # solve it
+$EDITOR "$(cg puzzle where)/data/solution.py"  # solve it
 cg puzzle play                            # run every test case, locally
 cg puzzle submit                          # graded submission
 ```
@@ -39,7 +39,7 @@ cg puzzle description     # the problem statement, rendered, no network needed
 `where` writes nothing but the path to stdout, so it composes:
 
 ```bash
-$EDITOR "$(cg puzzle where)/solution.py"
+$EDITOR "$(cg puzzle where)/data/solution.py"
 cd "$(cg puzzle where)"
 ```
 
@@ -86,7 +86,7 @@ cg puzzle set-language C++
 ```
 
 CodinGame keeps your latest source per language, so this restores your previous C++ work if you had
-any. It refuses if `data/solution.src` holds edits the server doesn't have; submit them first or
+any. It refuses if `data/solution.<ext>` holds edits the server doesn't have; submit them first or
 pass `--force`. See [languages](../concepts/languages.md).
 
 ## When local and server disagree

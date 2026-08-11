@@ -91,9 +91,11 @@ from .layout import (
     DATA_SUBDIR_NAME,
     GITIGNORE_FILE_NAME,
     META_SUBDIR_NAME,
-    SOLUTION_FILE_NAME,
+    SOLUTION_FILE_STEM,
     STATEMENT_FILE_NAME,
     STUB_GENERATOR_FILE_NAME,
+    find_solution_file,
+    solution_file_name,
 )
 from .schema import (
     PUZZLE_IDENTITY_FILE_NAME,
@@ -114,7 +116,9 @@ from .test_cases_dir import (
 __all__ = [
     "DATA_SUBDIR_NAME",
     "META_SUBDIR_NAME",
-    "SOLUTION_FILE_NAME",
+    "SOLUTION_FILE_STEM",
+    "find_solution_file",
+    "solution_file_name",
     "STATEMENT_FILE_NAME",
     "STUB_GENERATOR_FILE_NAME",
     "TESTS_SUBDIR_NAME",
@@ -307,22 +311,35 @@ class CgPuzzleStatus:
        `None` unless `status(refresh=True)` fetched it."""
 
 
-def _refresh_solution_symlink(puzzle_dir: Path, solution_language: str | None) -> None:
-    """Remove any existing `solution.<ext>` convenience symlink at `puzzle_dir`'s root, then
-       recreate one pointing at `data/solution.src` if `solution_language` maps to a known
-       extension. Never touches `solution.src` itself. Same logic as
-       `contribution_manager.manager._refresh_solution_symlink` (kept as an independent copy--see
+def _align_solution_file_name(puzzle_dir: Path, solution_language: str | None) -> None:
+    """Make `data/solution.*` carry the extension for `solution_language`, renaming it if it
+       doesn't already, and sweep away the `solution.<ext>` symlink older versions left at the
+       working directory root.
+
+       The file carries its language's real extension because every tool that reads it--language
+       server, debugger, compiler--dispatches on that. cg used to get there with a fixed
+       `data/solution.src` plus a symlink beside it, which cost a day of debugging when the debug
+       info named one path and the editor resolved the other and breakpoints stopped binding. One
+       real file has no such gap.
+
+       Unlike a contribution's, a puzzle's rename has no merge consequences: there is no git repo
+       here, and CodinGame stores a puzzle's code *per language*, so switching language moves to a
+       different server-side slot rather than conflicting with the old one. Same logic otherwise as
+       `contribution_manager.manager._align_solution_file_name` (kept as an independent copy--see
        this module's docstring for why the two packages aren't cross-coupled)."""
-    for path in puzzle_dir.glob("solution.*"):
-        if path.is_symlink() and path.name != SOLUTION_FILE_NAME:
-            path.unlink()
+    data_dir = puzzle_dir / DATA_SUBDIR_NAME
+    for stale in puzzle_dir.glob(f"{SOLUTION_FILE_STEM}.*"):
+        if stale.is_symlink():
+            stale.unlink()
+
     extension = get_language(solution_language).extension if solution_language else None
-    if extension is None:
+    wanted = data_dir / solution_file_name(extension)
+    existing = find_solution_file(data_dir, extension)
+    if existing is None or existing == wanted:
         return
-    link_name = f"solution.{extension}"
-    if link_name == SOLUTION_FILE_NAME:
+    if wanted.exists():
         return
-    (puzzle_dir / link_name).symlink_to(f"{DATA_SUBDIR_NAME}/{SOLUTION_FILE_NAME}")
+    existing.rename(wanted)
 
 
 def _placeholder_solution(language: CgSolutionLanguage, title: str, puzzle_pretty_id: str) -> str:
@@ -424,7 +441,13 @@ class CgPuzzleManager:
 
     @property
     def solution_file(self) -> Path:
-        return self.data_dir / SOLUTION_FILE_NAME
+        """The one real solution file, `data/solution.<ext>`.
+
+           Resolved by looking for whatever is actually there rather than by deriving the name from
+           the recorded language: a working directory written by an older cg still has
+           `solution.src`, and the file that exists is the one the user has been editing."""
+        found = find_solution_file(self.data_dir)
+        return found if found is not None else self.data_dir / solution_file_name(None)
 
     @property
     def solution_snapshot_file(self) -> Path:
@@ -727,7 +750,7 @@ class CgPuzzleManager:
         puzzle_data = CgPuzzleData(solution_language=solution_language)
         puzzle_data.save(self.puzzle_data_file)
 
-        _refresh_solution_symlink(self.puzzle_dir, solution_language)
+        _align_solution_file_name(self.puzzle_dir, solution_language)
         return puzzle_data
 
     # --- repair ----------------------------------------------------------------------------------
@@ -812,7 +835,7 @@ class CgPuzzleManager:
 
         puzzle_data = self.load_puzzle_data()
         if puzzle_data is not None:
-            _refresh_solution_symlink(self.puzzle_dir, puzzle_data.solution_language)
+            _align_solution_file_name(self.puzzle_dir, puzzle_data.solution_language)
         return server_data
 
     # --- diff / discard_local / submit ----------------------------------------------------------
@@ -829,6 +852,19 @@ class CgPuzzleManager:
             return None
         return answer.code, answer.programming_language_id
 
+    async def _fetch_saved_code_for_language(
+                self, language: CgSolutionLanguage) -> str | None:
+        """The codingamer's most recently saved server-side code *for one language*, or None if
+           they have never written anything in it for this puzzle.
+
+           CodinGame stores a puzzle's code per language, so this is the honest counterpart to a
+           local file: it answers "what does the server hold in the language I am working in?"
+           rather than "what language was I last using on the website?". A pure read--unlike
+           `TestSession/play`, it saves nothing."""
+        _, server_data, _ = self._require_state()
+        return await self.client.services.test_session.get_previous_code_by_language_id(
+                server_data.test_session_handle, language)
+
     async def diff(self) -> str:
         """A unified text diff between the local `data/solution.src` and the server's current
            last-submitted answer for this puzzle--empty if they're identical, or if there's no
@@ -838,18 +874,23 @@ class CgPuzzleManager:
             FileNotFoundError: if this working directory has never been imported.
             CgPuzzleManagerError: if `.meta/` is missing (run `repair()` first).
         """
-        self._require_state()
+        _, _, puzzle_data = self._require_state()
         local_lines = file_to_server_text(
                 self.solution_file.read_text(encoding="utf-8")).splitlines(keepends=True) \
             if self.solution_file.is_file() else []
-        current = await self._fetch_current_answer_code()
-        server_lines = current[0].splitlines(keepends=True) if current is not None else []
+        # Compared against the server's code *in the local language*, not against whatever language
+        # the test session happens to be sitting in. CodinGame stores a puzzle's code per language,
+        # so the session's answer can easily be a different language entirely -- diffing a local C++
+        # file against a saved Python one produced a whole-file diff that meant nothing.
+        language = puzzle_data.solution_language
+        saved = await self._fetch_saved_code_for_language(language) if language else None
+        server_lines = saved.splitlines(keepends=True) if saved is not None else []
         return "".join(difflib.unified_diff(server_lines, local_lines, fromfile="server", tofile="local"))
 
     def _write_solution(self, code: str, language: CgSolutionLanguage) -> None:
-        """Write `data/solution.src` and record exactly what was written.
+        """Write `data/solution.<ext>` and record exactly what was written.
 
-           Every writer of `solution.src` goes through here so the snapshot can never drift from
+           Every writer of the solution goes through here so the snapshot can never drift from
            the file--that snapshot is what lets `set_language()` tell "the user edited this" from
            "this is still what we generated", without re-deriving anything.
 
@@ -857,7 +898,14 @@ class CgPuzzleManager:
            `common.text_files.server_text_to_file`) and stored in the snapshot as the value, so
            the snapshot compares directly against what `load_solution()` reads back out."""
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        self.solution_file.write_text(server_text_to_file(code), encoding="utf-8")
+        # Named from the language being written, not from whatever is on disk: this is the one
+        # place a language change actually takes effect, so the new name has to win. Any solution
+        # file under the previous extension is removed rather than left to be found later.
+        target = self.data_dir / solution_file_name(get_language(language).extension)
+        existing = find_solution_file(self.data_dir)
+        if existing is not None and existing != target:
+            existing.unlink()
+        target.write_text(server_text_to_file(code), encoding="utf-8")
         self.meta_dir.mkdir(parents=True, exist_ok=True)
         CgPuzzleSolutionSnapshot(solution_language=language, code=code).save(
                 self.solution_snapshot_file)
@@ -965,7 +1013,7 @@ class CgPuzzleManager:
 
         self._write_solution(code, language)
         dataclasses.replace(puzzle_data, solution_language=language).save(self.puzzle_data_file)
-        _refresh_solution_symlink(self.puzzle_dir, language)
+        _align_solution_file_name(self.puzzle_dir, language)
         return CgPuzzleSetLanguageResult(
                 language=language, previous_language=previous_language,
                 code=code, from_server=from_server,
@@ -995,7 +1043,7 @@ class CgPuzzleManager:
         self._write_solution(code, solution_language)
         if solution_language != puzzle_data.solution_language:
             dataclasses.replace(puzzle_data, solution_language=solution_language).save(self.puzzle_data_file)
-        _refresh_solution_symlink(self.puzzle_dir, solution_language)
+        _align_solution_file_name(self.puzzle_dir, solution_language)
         return CgPuzzleDiscardResult(code=code, solution_language=solution_language)
 
     async def submit(self) -> CgSubmissionReport:
@@ -1189,15 +1237,13 @@ class CgPuzzleManager:
            real workspace is known, since `find_workspace_root` is only a guess.
 
            Infallible by design: never reads `puzzle.json`, never needs the directory to have been
-           imported. `solution_language` is only used to locate the `solution.<ext>` symlink; pass
-           `None` (or a language with no known extension) and `solution_link` is simply `None`.
+           imported. `solution_language` is accepted for signature stability but no longer selects
+           a path: there is one real solution file and `solution_file` finds it whatever extension
+           it carries.
         """
-        extension = get_language(solution_language).extension if solution_language else None
-        link = self.puzzle_dir / f"solution.{extension}" if extension else None
         return CgLanguageContext(
                 root=self.puzzle_dir,
                 solution_file=self.solution_file,
-                solution_link=link if link is not None and link.exists() else None,
                 meta_dir=self.meta_dir,
                 toolchain_dir=self.toolchain_dir,
                 mount_root=mount_root or self.mount_root or find_workspace_root(self.puzzle_dir),

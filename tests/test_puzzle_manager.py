@@ -381,7 +381,7 @@ async def test_import_refuses_unsupported_contribution_type(tmp_path: Path) -> N
         await manager.import_("literary-alfabet-soupe")
 
     assert manager.load_identity() is None
-    assert not (tmp_path / "data" / "solution.src").exists()
+    assert not (tmp_path / "data" / "solution.py").exists()
 
 
 async def test_import_refuses_if_already_imported(tmp_path: Path) -> None:
@@ -584,7 +584,7 @@ async def test_repair_refuses_if_no_local_solution(tmp_path: Path) -> None:
     await manager.import_("literary-alfabet-soupe")
 
     shutil.rmtree(tmp_path / ".meta")
-    (tmp_path / "data" / "solution.src").unlink()
+    (tmp_path / "data" / "solution.py").unlink()
 
     with pytest.raises(FileNotFoundError):
         await manager.repair()
@@ -599,7 +599,7 @@ async def test_submit_submits_current_local_content(tmp_path: Path) -> None:
     client, _, test_session_service, _ = _make_fake_client(session)
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
-    (tmp_path / "data" / "solution.src").write_text("print('new solution')\n")
+    (tmp_path / "data" / "solution.py").write_text("print('new solution')\n")
 
     report = await manager.submit()
 
@@ -772,7 +772,9 @@ async def test_play_is_equivalent_to_looping_resolve_play_indices_and_play_one(t
 async def test_diff_empty_when_matching(tmp_path: Path) -> None:
     answer = CgTestSessionAnswer(code="print('same')\n", programming_language_id="Python3")
     session = _make_test_session(answer=answer)
-    client, _, _, _ = _make_fake_client(session)
+    # diff() compares against the server's saved code *for the local language*, not against
+    # whatever language the session happens to be in--so the fake has to hold it per language.
+    client, _, _, _ = _make_fake_client(session, previous_code={"Python3": "print('same')\n"})
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
 
@@ -782,10 +784,11 @@ async def test_diff_empty_when_matching(tmp_path: Path) -> None:
 async def test_diff_shows_local_vs_server_differences(tmp_path: Path) -> None:
     answer = CgTestSessionAnswer(code="print('server version')\n", programming_language_id="Python3")
     session = _make_test_session(answer=answer)
-    client, _, _, _ = _make_fake_client(session)
+    client, _, _, _ = _make_fake_client(
+            session, previous_code={"Python3": "print('server version')\n"})
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
-    (tmp_path / "data" / "solution.src").write_text("print('local version')\n")
+    (tmp_path / "data" / "solution.py").write_text("print('local version')\n")
 
     diff_text = await manager.diff()
 
@@ -802,7 +805,7 @@ async def test_discard_local_overwrites_with_server_answer(tmp_path: Path) -> No
     client, _, _, _ = _make_fake_client(session)
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
-    (tmp_path / "data" / "solution.src").write_text("print('local edit')\n")
+    (tmp_path / "data" / "solution.py").write_text("print('local edit')\n")
 
     result = await manager.discard_local()
 
@@ -855,7 +858,7 @@ async def test_load_solution_returns_current_content(tmp_path: Path) -> None:
     client, _, _, _ = _make_fake_client(session)
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
-    (tmp_path / "data" / "solution.src").write_text("print('hi')\n")
+    (tmp_path / "data" / "solution.py").write_text("print('hi')\n")
 
     # The file's terminator is this client's, not part of the value--see common.text_files.
     assert manager.load_solution() == "print('hi')"
@@ -880,7 +883,7 @@ async def _import_with_doubling_solution(tmp_path: Path) -> CgPuzzleManager:
     client, _, _, _ = _make_fake_client(session)
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
-    (tmp_path / "data" / "solution.src").write_text("n = int(input())\nprint(n * 2)\n")
+    (tmp_path / "data" / "solution.py").write_text("n = int(input())\nprint(n * 2)\n")
     shutil.rmtree(manager.tests_dir)
     _write_downloaded_test_case(manager.tests_dir, 1, "Doubles", "21\n", "42\n")
     _write_downloaded_test_case(manager.tests_dir, 2, "Doubles Again", "10\n", "20\n")
@@ -924,7 +927,7 @@ async def test_play_local_unknown_test_index_raises(tmp_path: Path) -> None:
 
 async def test_play_local_raises_and_reports_mismatch(tmp_path: Path) -> None:
     manager = await _import_with_doubling_solution(tmp_path)
-    (tmp_path / "data" / "solution.src").write_text("n = int(input())\nprint(n * 3)\n")  # wrong
+    (tmp_path / "data" / "solution.py").write_text("n = int(input())\nprint(n * 3)\n")  # wrong
 
     with pytest.raises(CgPuzzleLocalTestFailedError) as exc_info:
         await manager.play_local()
@@ -999,7 +1002,7 @@ async def test_play_local_one_runs_a_single_test_case(tmp_path: Path) -> None:
 
 async def test_play_local_one_never_raises_for_a_failing_test(tmp_path: Path) -> None:
     manager = await _import_with_doubling_solution(tmp_path)
-    (tmp_path / "data" / "solution.src").write_text("n = int(input())\nprint(n * 3)\n")  # wrong
+    (tmp_path / "data" / "solution.py").write_text("n = int(input())\nprint(n * 3)\n")  # wrong
     test_case = manager.resolve_play_local_test_cases([1])[0]
 
     result = await manager.play_local_one(test_case)
@@ -1072,14 +1075,15 @@ async def test_status_puzzle_type_and_difficulty_none_for_pre_existing_cache(tmp
 async def test_status_refresh_detects_matching_and_diverging_local_edits(tmp_path: Path) -> None:
     answer = CgTestSessionAnswer(code="print('same')\n", programming_language_id="Python3")
     session = _make_test_session(answer=answer)
-    client, _, _, _ = _make_fake_client(session)
+    # local_dirty is bool(diff()), and diff() reads the server's code for the *local* language.
+    client, _, _, _ = _make_fake_client(session, previous_code={"Python3": "print('same')\n"})
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
     await manager.import_("literary-alfabet-soupe")
 
     status = await manager.status(refresh=True)
     assert status.local_dirty is False
 
-    (tmp_path / "data" / "solution.src").write_text("print('local edit')\n")
+    (tmp_path / "data" / "solution.py").write_text("print('local edit')\n")
     status2 = await manager.status(refresh=True)
     assert status2.local_dirty is True
 
@@ -1161,22 +1165,29 @@ async def test_language_context_is_infallible_on_a_bare_directory(tmp_path: Path
 
     assert ctx.root == manager.puzzle_dir
     assert ctx.solution_file == manager.solution_file
-    assert ctx.solution_link is None
     assert ctx.meta_dir == manager.meta_dir
 
 
-async def test_language_context_finds_the_solution_symlink_when_present(tmp_path: Path) -> None:
+async def test_language_context_points_at_the_one_real_solution_file(tmp_path: Path) -> None:
+    """One path, carrying the language's own extension, and not a symlink. There is no second
+       candidate for a build or a debugger to choose between."""
     manager = await _import_with_doubling_solution(tmp_path)
 
     ctx = manager.language_context("Python3")
 
-    assert ctx.solution_link == tmp_path / "solution.py"
+    assert ctx.solution_file == tmp_path / "data" / "solution.py"
+    assert ctx.solution_file.is_file()
+    assert not ctx.solution_file.is_symlink()
 
 
-async def test_language_context_has_no_symlink_for_a_language_with_no_extension(tmp_path: Path) -> None:
+async def test_language_context_ignores_the_language_it_is_handed(tmp_path: Path) -> None:
+    """The solution file is whatever is on disk, not a name derived from the argument. That matters
+       because the two can disagree--a directory written by an older cg, or a fetch that changed the
+       language before the rename ran--and the file that exists is the one being edited."""
     manager = await _import_with_doubling_solution(tmp_path)
 
-    assert manager.language_context("TotallyUnknownLang").solution_link is None
+    assert (manager.language_context("TotallyUnknownLang").solution_file
+            == manager.language_context("Python3").solution_file)
 
 
 async def test_build_solution_is_a_no_op_success_for_python(tmp_path: Path) -> None:
@@ -1288,7 +1299,11 @@ async def test_set_language_restores_saved_code_for_the_new_language(tmp_path: P
     puzzle_data = manager.load_puzzle_data()
     assert puzzle_data is not None
     assert puzzle_data.solution_language == "C++"
-    assert (tmp_path / "solution.cpp").is_symlink()  # symlink follows the language
+    # The file itself is renamed to follow the language, and the old name is gone--there is never
+    # more than one solution file.
+    assert (tmp_path / "data" / "solution.cpp").is_file()
+    assert not (tmp_path / "data" / "solution.py").exists()
+    assert sorted(p.name for p in (tmp_path / "data").glob("solution.*")) == ["solution.cpp"]
 
 
 async def test_set_language_writes_a_placeholder_for_a_never_used_language(tmp_path: Path) -> None:
