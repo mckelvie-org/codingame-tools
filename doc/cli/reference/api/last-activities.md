@@ -4,6 +4,8 @@
 
 The `last-activities` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api last-activities`](#cg-api-last-activities) | LastActivities service commands. |
@@ -11,34 +13,28 @@ The `last-activities` service endpoint. See [`cg api`](index.md) for how these r
 
 ## `cg api last-activities`
 
-```text
-usage: cg api last-activities [-h] COMMAND ...
-
 LastActivities service commands.
 
-positional arguments:
-  COMMAND
-    get-last-activities
-                        Get a codingamer's most recent activity feed entries.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api last-activities [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`get-last-activities`** — Get a codingamer's most recent activity feed entries.
 
 ## `cg api last-activities get-last-activities`
 
-```text
-usage: cg api last-activities get-last-activities [-h] [--codingamer-id ID] [--limit N]
-
 Get a codingamer's most recent activity feed entries.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose recent activity to list. Defaults to the logged-in
-                        codingamer's ID.
-  --limit, -n N         Maximum number of activity entries to return. Defaults to 4.
+```text
+usage: cg api last-activities get-last-activities [-h] [--codingamer-id ID] [--limit N]
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose recent activity to list. Defaults to the logged-in codingamer's ID.
+- **`-n, --limit N`** *(default: `4`)* — Maximum number of activity entries to return. Defaults to 4.
 
 ---
 

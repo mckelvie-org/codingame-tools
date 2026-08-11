@@ -4,6 +4,8 @@
 
 The `report` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api report`](#cg-api-report) | Report service commands. |
@@ -11,33 +13,27 @@ The `report` service endpoint. See [`cg api`](index.md) for how these relate to 
 
 ## `cg api report`
 
-```text
-usage: cg api report [-h] COMMAND ...
-
 Report service commands.
 
-positional arguments:
-  COMMAND
-    find-report-by-submission
-                        Find the results report for a single puzzle submission.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api report [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-report-by-submission`** — Find the results report for a single puzzle submission.
 
 ## `cg api report find-report-by-submission`
 
-```text
-usage: cg api report find-report-by-submission [-h] SUBMISSION-ID
-
 Find the results report for a single puzzle submission.
 
-positional arguments:
-  SUBMISSION-ID  Numeric ID of the submission.
-
-options:
-  -h, --help     show this help message and exit
+```text
+usage: cg api report find-report-by-submission [-h] SUBMISSION-ID
 ```
+
+**Arguments**
+
+- **`SUBMISSION-ID`** — Numeric ID of the submission.
 
 ---
 

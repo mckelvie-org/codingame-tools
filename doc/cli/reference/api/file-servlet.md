@@ -4,25 +4,24 @@
 
 The `file-servlet` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
-## `cg api file-servlet`
+Every command also accepts `-h` / `--help`.
 
-```text
-usage: cg api file-servlet [-h] [--format FORMAT] [--timestamp TIMESTAMP] ID
+## `cg api file-servlet`
 
 Download a file by server object ID (the fileservlet servlet).
 
-positional arguments:
-  ID                    Server file ID number.
-
-options:
-  -h, --help            show this help message and exit
-  --format FORMAT       Optional format string to append to the URL as a query parameter; e.g.,
-                        'puzzle_tile'.
-  --timestamp TIMESTAMP
-                        Optional timestamp. Can be milliseconds since epoch (e.g.,
-                        '1680000000000'), a duration string (e.g., '1h30m'), a relative duration
-                        from now (e.g., '-1h30m'), or an ISO 8601 datetime string.
+```text
+usage: cg api file-servlet [-h] [--format FORMAT] [--timestamp TIMESTAMP] ID
 ```
+
+**Arguments**
+
+- **`ID`** — Server file ID number.
+
+**Options**
+
+- **`--format FORMAT`** — Optional format string to append to the URL as a query parameter; e.g., 'puzzle_tile'.
+- **`--timestamp TIMESTAMP`** — Optional timestamp. Can be milliseconds since epoch (e.g., '1680000000000'), a duration string (e.g., '1h30m'), a relative duration from now (e.g., '-1h30m'), or an ISO 8601 datetime string.
 
 ---
 

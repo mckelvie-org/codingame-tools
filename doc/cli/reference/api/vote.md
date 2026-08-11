@@ -4,6 +4,8 @@
 
 The `vote` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api vote`](#cg-api-vote) | Vote service commands. |
@@ -11,40 +13,31 @@ The `vote` service endpoint. See [`cg api`](index.md) for how these relate to th
 
 ## `cg api vote`
 
-```text
-usage: cg api vote [-h] COMMAND ...
-
 Vote service commands.
 
-positional arguments:
-  COMMAND
-    find-votable-values-by-id
-                        Find a votable's current up/down-vote tally (e.g. a contribution's
-                        CgContribution.votable_id)--CodinGame's generic community vote, distinct
-                        from the moderator approve/reject gate (no known API for that yet).
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api vote [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-votable-values-by-id`** — Find a votable's current up/down-vote tally (e.g. a contribution's CgContribution.votable_id)--CodinGame's generic community vote, distinct from the moderator approve/reject gate (no known API for that yet).
 
 ## `cg api vote find-votable-values-by-id`
 
+Find a votable's current up/down-vote tally (e.g. a contribution's CgContribution.votable_id)--CodinGame's generic community vote, distinct from the moderator approve/reject gate (no known API for that yet).
+
 ```text
 usage: cg api vote find-votable-values-by-id [-h] [--codingamer-id ID] VOTABLE-ID
-
-Find a votable's current up/down-vote tally (e.g. a contribution's
-CgContribution.votable_id)--CodinGame's generic community vote, distinct from the moderator
-approve/reject gate (no known API for that yet).
-
-positional arguments:
-  VOTABLE-ID            The votable entity's ID, e.g. a contribution's votableId.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose own vote to report. Defaults to the logged-in
-                        codingamer's ID.
 ```
+
+**Arguments**
+
+- **`VOTABLE-ID`** — The votable entity's ID, e.g. a contribution's votableId.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose own vote to report. Defaults to the logged-in codingamer's ID.
 
 ---
 

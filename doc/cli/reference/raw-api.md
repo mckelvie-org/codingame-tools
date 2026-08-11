@@ -4,6 +4,8 @@
 
 Every `cg raw-api` subcommand.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg raw-api`](#cg-raw-api) | Raw (unstructured JSON) API commands. |
@@ -11,37 +13,32 @@ Every `cg raw-api` subcommand.
 
 ## `cg raw-api`
 
-```text
-usage: cg raw-api [-h] COMMAND ...
-
 Raw (unstructured JSON) API commands.
 
-positional arguments:
-  COMMAND
-    service-request  Invoke a raw API request on a service endpoint. stdin must be a json-encoded
-                     list of args.
-
-options:
-  -h, --help         show this help message and exit
+```text
+usage: cg raw-api [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`service-request`** — Invoke a raw API request on a service endpoint. stdin must be a json-encoded list of args.
 
 ## `cg raw-api service-request`
 
-```text
-usage: cg raw-api service-request [-h] [--req-args JSON-ARGS] SERVICE-NAME FUNC-NAME
-
 Invoke a raw API request on a service endpoint. stdin must be a json-encoded list of args.
 
-positional arguments:
-  SERVICE-NAME          Service name; e.g., 'CodingamerService'.
-  FUNC-NAME             Endpoint name; e.g., 'getCodingamer'.
-
-options:
-  -h, --help            show this help message and exit
-  --req-args, -a JSON-ARGS
-                        Optional JSON-encoded list to send as the request arg. If not provided,
-                        stdin is read for the JSON-encoded list of args.
+```text
+usage: cg raw-api service-request [-h] [--req-args JSON-ARGS] SERVICE-NAME FUNC-NAME
 ```
+
+**Arguments**
+
+- **`SERVICE-NAME`** — Service name; e.g., 'CodingamerService'.
+- **`FUNC-NAME`** — Endpoint name; e.g., 'getCodingamer'.
+
+**Options**
+
+- **`-a, --req-args JSON-ARGS`** — Optional JSON-encoded list to send as the request arg. If not provided, stdin is read for the JSON-encoded list of args.
 
 ---
 

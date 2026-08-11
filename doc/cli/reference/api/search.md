@@ -4,6 +4,8 @@
 
 The `search` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api search`](#cg-api-search) | Search service commands. |
@@ -11,35 +13,32 @@ The `search` service endpoint. See [`cg api`](index.md) for how these relate to 
 
 ## `cg api search`
 
-```text
-usage: cg api search [-h] COMMAND ...
-
 Search service commands.
 
-positional arguments:
-  COMMAND
-    search    Search for codingamers, puzzles, and other objects by name.
-
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg api search [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`search`** — Search for codingamers, puzzles, and other objects by name.
 
 ## `cg api search search`
 
-```text
-usage: cg api search search [-h] [--locale LOCALE] [--type TYPE] QUERY
-
 Search for codingamers, puzzles, and other objects by name.
 
-positional arguments:
-  QUERY                Search query text, e.g. a codingamer's pseudo or part of a puzzle title.
-
-options:
-  -h, --help           show this help message and exit
-  --locale, -l LOCALE  Locale code for localized result names, e.g. 'en', 'fr'. Defaults to 'en'.
-  --type, -t TYPE      Restrict results to a single result type, e.g. 'USER', 'PUZZLE'. Defaults
-                       to no filter (all types).
+```text
+usage: cg api search search [-h] [--locale LOCALE] [--type TYPE] QUERY
 ```
+
+**Arguments**
+
+- **`QUERY`** — Search query text, e.g. a codingamer's pseudo or part of a puzzle title.
+
+**Options**
+
+- **`-l, --locale LOCALE`** *(default: `en`)* — Locale code for localized result names, e.g. 'en', 'fr'. Defaults to 'en'.
+- **`-t, --type TYPE`** — Restrict results to a single result type, e.g. 'USER', 'PUZZLE'. Defaults to no filter (all types).
 
 ---
 

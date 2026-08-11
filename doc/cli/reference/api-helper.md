@@ -4,6 +4,8 @@
 
 Every `cg api-helper` subcommand.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api-helper`](#cg-api-helper) | Higher-level helper commands, layered on top of the plain API wrappers (retries, polling, data normalization). |
@@ -13,95 +15,72 @@ Every `cg api-helper` subcommand.
 
 ## `cg api-helper`
 
+Higher-level helper commands, layered on top of the plain API wrappers (retries, polling, data normalization).
+
 ```text
 usage: cg api-helper [-h] COMMAND ...
-
-Higher-level helper commands, layered on top of the plain API wrappers (retries, polling, data
-normalization).
-
-positional arguments:
-  COMMAND
-    contribution  Contribution service helper commands.
-
-options:
-  -h, --help      show this help message and exit
 ```
+
+**Subcommands**
+
+- **`contribution`** — Contribution service helper commands.
 
 ## `cg api-helper contribution`
 
-```text
-usage: cg api-helper contribution [-h] COMMAND ...
-
 Contribution service helper commands.
 
-positional arguments:
-  COMMAND
-    update-contribution
-                        Submit a new version of a contribution's content, with 524 retry/polling.
-                        A JSON-serialized CgContributionData object is read from stdin.
-    create-contribution
-                        Create a brand new contribution (deliberately with no 524 retry--see
-                        CgContributionServiceHelper.create_contribution). A JSON-serialized
-                        CgContributionData object is read from stdin.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api-helper contribution [-h] COMMAND ...
 ```
 
+**Subcommands**
+
+- **`update-contribution`** — Submit a new version of a contribution's content, with 524 retry/polling. A JSON-serialized CgContributionData object is read from stdin.
+- **`create-contribution`** — Create a brand new contribution (deliberately with no 524 retry--see CgContributionServiceHelper.create_contribution). A JSON-serialized CgContributionData object is read from stdin.
+
 ## `cg api-helper contribution update-contribution`
+
+Submit a new version of a contribution's content, with 524 retry/polling. A JSON-serialized CgContributionData object is read from stdin.
 
 ```text
 usage: cg api-helper contribution update-contribution [-h] [--draft] [--ready-for-moderation]
                                                       [--codingamer-id ID]
                                                       [--max-wait-seconds SECONDS]
                                                       CONTRIBUTION-ID PUZZLE-TYPE PREV-VERSION
-
-Submit a new version of a contribution's content, with 524 retry/polling. A JSON-serialized
-CgContributionData object is read from stdin.
-
-positional arguments:
-  CONTRIBUTION-ID       Opaque contribution ID string.
-  PUZZLE-TYPE           The type of the contribution, e.g. 'PUZZLE_INOUT'.
-  PREV-VERSION          The contribution's current version number, as last retrieved via find-
-                        contribution (an idempotency/concurrency check--rejected if stale).
-
-options:
-  -h, --help            show this help message and exit
-  --draft               Submit as a private, unpublished draft. Defaults to false.
-  --ready-for-moderation
-                        Formally submit for moderation. Defaults to false.
-  --codingamer-id, -g ID
-                        The authoring codingamer's numeric ID. Defaults to the logged-in
-                        codingamer's ID.
-  --max-wait-seconds SECONDS
-                        If the server returns HTTP 524 (Cloudflare/origin timeout), how long to
-                        keep polling find-contribution for the version to increment before giving
-                        up, in seconds. Defaults to 0, meaning wait indefinitely.
 ```
 
+**Arguments**
+
+- **`CONTRIBUTION-ID`** — Opaque contribution ID string.
+- **`PUZZLE-TYPE`** — The type of the contribution, e.g. 'PUZZLE_INOUT'.
+- **`PREV-VERSION`** — The contribution's current version number, as last retrieved via find-contribution (an idempotency/concurrency check--rejected if stale).
+
+**Options**
+
+- **`--draft`** — Submit as a private, unpublished draft. Defaults to false.
+- **`--ready-for-moderation`** — Formally submit for moderation. Defaults to false.
+- **`-g, --codingamer-id ID`** — The authoring codingamer's numeric ID. Defaults to the logged-in codingamer's ID.
+- **`--max-wait-seconds SECONDS`** — If the server returns HTTP 524 (Cloudflare/origin timeout), how long to keep polling find-contribution for the version to increment before giving up, in seconds. Defaults to 0, meaning wait indefinitely.
+
 ## `cg api-helper contribution create-contribution`
+
+Create a brand new contribution (deliberately with no 524 retry--see CgContributionServiceHelper.create_contribution). A JSON-serialized CgContributionData object is read from stdin.
 
 ```text
 usage: cg api-helper contribution create-contribution [-h] [--draft] [--ready-for-moderation]
                                                       [--codingamer-id ID]
                                                       PUZZLE-TYPE
-
-Create a brand new contribution (deliberately with no 524 retry--see
-CgContributionServiceHelper.create_contribution). A JSON-serialized CgContributionData object is
-read from stdin.
-
-positional arguments:
-  PUZZLE-TYPE           The type of the contribution, e.g. 'PUZZLE_INOUT'.
-
-options:
-  -h, --help            show this help message and exit
-  --draft               Create as a private, unpublished draft. Defaults to false.
-  --ready-for-moderation
-                        Formally submit for moderation. Defaults to false.
-  --codingamer-id, -g ID
-                        The authoring codingamer's numeric ID. Defaults to the logged-in
-                        codingamer's ID.
 ```
+
+**Arguments**
+
+- **`PUZZLE-TYPE`** — The type of the contribution, e.g. 'PUZZLE_INOUT'.
+
+**Options**
+
+- **`--draft`** — Create as a private, unpublished draft. Defaults to false.
+- **`--ready-for-moderation`** — Formally submit for moderation. Defaults to false.
+- **`-g, --codingamer-id ID`** — The authoring codingamer's numeric ID. Defaults to the logged-in codingamer's ID.
 
 ---
 

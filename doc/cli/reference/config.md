@@ -4,6 +4,8 @@
 
 Every `cg config` subcommand.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg config`](#cg-config) | Configuration commands. |
@@ -13,64 +15,46 @@ Every `cg config` subcommand.
 
 ## `cg config`
 
-```text
-usage: cg config [-h] COMMAND ...
-
 Configuration commands.
 
-positional arguments:
-  COMMAND
-    init      Create a new config.yaml--project-local (under the current directory, or --at DIR)
-              by default, or the shared per-user fallback location with --global. Does not consult
-              the top-level --config/-c flag or CG_CONFIG--that's a discovery override for reading
-              an existing config, not a placement option for creating a new one.
-    where     Show which config.yaml (if any) would be used, and where its persistent data
-              directory resolves to.
-    dump      Dump the resolved configuration as JSON.
-
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg config [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`init`** — Create a new config.yaml--project-local (under the current directory, or --at DIR) by default, or the shared per-user fallback location with --global. Does not consult the top-level --config/-c flag or CG_CONFIG--that's a discovery override for reading an existing config, not a placement option for creating a new one.
+- **`where`** — Show which config.yaml (if any) would be used, and where its persistent data directory resolves to.
+- **`dump`** — Dump the resolved configuration as JSON.
 
 ## `cg config init`
 
+Create a new config.yaml--project-local (under the current directory, or --at DIR) by default, or the shared per-user fallback location with --global. Does not consult the top-level --config/-c flag or CG_CONFIG--that's a discovery override for reading an existing config, not a placement option for creating a new one.
+
 ```text
 usage: cg config init [-h] [--global] [--at DIR] [--force]
-
-Create a new config.yaml--project-local (under the current directory, or --at DIR) by default, or
-the shared per-user fallback location with --global. Does not consult the top-level --config/-c
-flag or CG_CONFIG--that's a discovery override for reading an existing config, not a placement
-option for creating a new one.
-
-options:
-  -h, --help   show this help message and exit
-  --global     Create the shared, per-user fallback config instead of a project-local one.
-  --at DIR     Project-local only: directory to create .cg/config/config.yaml under. Defaults to
-               the current directory.
-  --force, -f  Overwrite an existing config file at the target location.
 ```
+
+**Options**
+
+- **`--global`** — Create the shared, per-user fallback config instead of a project-local one.
+- **`--at DIR`** *(default: `/Users/sam/projects/pypi/codingame-tools`)* — Project-local only: directory to create .cg/config/config.yaml under. Defaults to the current directory.
+- **`-f, --force`** — Overwrite an existing config file at the target location.
 
 ## `cg config where`
 
+Show which config.yaml (if any) would be used, and where its persistent data directory resolves to.
+
 ```text
 usage: cg config where [-h]
-
-Show which config.yaml (if any) would be used, and where its persistent data directory resolves
-to.
-
-options:
-  -h, --help  show this help message and exit
 ```
 
 ## `cg config dump`
 
-```text
-usage: cg config dump [-h]
-
 Dump the resolved configuration as JSON.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg config dump [-h]
 ```
 
 ---

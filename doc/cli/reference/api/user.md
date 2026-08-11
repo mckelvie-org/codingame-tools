@@ -4,6 +4,8 @@
 
 The `user` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api user`](#cg-api-user) | User service commands. |
@@ -11,37 +13,29 @@ The `user` service endpoint. See [`cg api`](index.md) for how these relate to th
 
 ## `cg api user`
 
-```text
-usage: cg api user [-h] COMMAND ...
-
 User service commands.
 
-positional arguments:
-  COMMAND
-    update-user-properties
-                        Update a subset of a codingamer's account properties.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api user [-h] COMMAND ...
 ```
 
+**Subcommands**
+
+- **`update-user-properties`** — Update a subset of a codingamer's account properties.
+
 ## `cg api user update-user-properties`
+
+Update a subset of a codingamer's account properties.
 
 ```text
 usage: cg api user update-user-properties [-h] [--codingamer-id ID]
                                           [--contributions-list-last-visit TIMESTAMP]
-
-Update a subset of a codingamer's account properties.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer to update. Defaults to the logged-in codingamer's ID.
-  --contributions-list-last-visit TIMESTAMP
-                        Set the codingamer's last-visit time for their contributions list. Can be
-                        milliseconds since epoch, a duration string (e.g., '1h30m'), a relative
-                        duration from now (e.g., '-1h30m'), or an ISO 8601 datetime string.
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer to update. Defaults to the logged-in codingamer's ID.
+- **`--contributions-list-last-visit TIMESTAMP`** — Set the codingamer's last-visit time for their contributions list. Can be milliseconds since epoch, a duration string (e.g., '1h30m'), a relative duration from now (e.g., '-1h30m'), or an ISO 8601 datetime string.
 
 ---
 

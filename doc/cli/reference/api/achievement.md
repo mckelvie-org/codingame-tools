@@ -4,6 +4,8 @@
 
 The `achievement` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api achievement`](#cg-api-achievement) | Achievement service commands. |
@@ -11,33 +13,27 @@ The `achievement` service endpoint. See [`cg api`](index.md) for how these relat
 
 ## `cg api achievement`
 
-```text
-usage: cg api achievement [-h] COMMAND ...
-
 Achievement service commands.
 
-positional arguments:
-  COMMAND
-    find-by-codingamer-id
-                        Find the achievements a codingamer has unlocked.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api achievement [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-by-codingamer-id`** — Find the achievements a codingamer has unlocked.
 
 ## `cg api achievement find-by-codingamer-id`
 
-```text
-usage: cg api achievement find-by-codingamer-id [-h] [--codingamer-id ID]
-
 Find the achievements a codingamer has unlocked.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose achievements to list. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api achievement find-by-codingamer-id [-h] [--codingamer-id ID]
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose achievements to list. Defaults to the logged-in codingamer's ID.
 
 ---
 

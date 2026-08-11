@@ -2547,7 +2547,7 @@ class CgCli(CliBase):
                 self.eprint(f"Active contribution directory cleared (was {previous})")
         return handler
 
-    @cli_command("Choose which test case  (and ) runs "
+    @cli_command("Choose which test case `cg contribution debug` (and `cg play --selected`) runs "
                  "against. Debugging feeds one stdin, so it needs exactly one test. Recorded in "
                  ".meta/selected-test.json rather than in launch.json, which is what lets one VS "
                  "Code debug configuration serve every contribution directory instead of being "

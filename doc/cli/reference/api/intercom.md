@@ -4,6 +4,8 @@
 
 The `intercom` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api intercom`](#cg-api-intercom) | Intercom service commands. |
@@ -11,28 +13,22 @@ The `intercom` service endpoint. See [`cg api`](index.md) for how these relate t
 
 ## `cg api intercom`
 
-```text
-usage: cg api intercom [-h] COMMAND ...
-
 Intercom service commands.
 
-positional arguments:
-  COMMAND
-    generate-token  Generate an Intercom identity-verification JWT for the logged-in codingamer.
-
-options:
-  -h, --help        show this help message and exit
+```text
+usage: cg api intercom [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`generate-token`** — Generate an Intercom identity-verification JWT for the logged-in codingamer.
 
 ## `cg api intercom generate-token`
 
-```text
-usage: cg api intercom generate-token [-h]
-
 Generate an Intercom identity-verification JWT for the logged-in codingamer.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg api intercom generate-token [-h]
 ```
 
 ---

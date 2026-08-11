@@ -4,6 +4,8 @@
 
 The `contribution` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api contribution`](#cg-api-contribution) | Contribution service commands. |
@@ -18,196 +20,151 @@ The `contribution` service endpoint. See [`cg api`](index.md) for how these rela
 
 ## `cg api contribution`
 
-```text
-usage: cg api contribution [-h] COMMAND ...
-
 Contribution service commands.
 
-positional arguments:
-  COMMAND
-    find-contribution   Find a contribution by its opaque contribution ID.
-    find-new-contribution-count
-                        Count new contributions published since a given point in time.
-    find-contribution-moderators
-                        List the moderators who have cast a given vote ('validate'/'deny') on a
-                        PENDING contribution's approve/reject moderation gate--the privileged gate
-                        that actually decides whether it gets published or rejected (3 votes
-                        either way, confirmed live). Distinct from the ungated community vote (`cg
-                        api vote find-votable-values-by-id`)--do not conflate the two.
-    get-all-pending-contributions
-                        Get pending (community-review-queue) contributions.
-    get-personal-contributions
-                        List every contribution (any status--draft/PENDING/APPROVED/REFUSED/etc.)
-                        authored by a codingamer. Unlike `get-all-pending-contributions`, this
-                        genuinely filters to just that codingamer's own contributions.
-    update-contribution
-                        Submit a new version of a contribution's content. A JSON-serialized
-                        CgContributionData object is read from stdin.
-    create-contribution
-                        Create a brand new contribution. A JSON-serialized CgContributionData
-                        object is read from stdin.
-    delete-contribution
-                        Delete a contribution.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api contribution [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-contribution`** — Find a contribution by its opaque contribution ID.
+- **`find-new-contribution-count`** — Count new contributions published since a given point in time.
+- **`find-contribution-moderators`** — List the moderators who have cast a given vote ('validate'/'deny') on a PENDING contribution's approve/reject moderation gate--the privileged gate that actually decides whether it gets published or rejected (3 votes either way, confirmed live). Distinct from the ungated community vote (`cg api vote find-votable-values-by-id`)--do not conflate the two.
+- **`get-all-pending-contributions`** — Get pending (community-review-queue) contributions.
+- **`get-personal-contributions`** — List every contribution (any status--draft/PENDING/APPROVED/REFUSED/etc.) authored by a codingamer. Unlike `get-all-pending-contributions`, this genuinely filters to just that codingamer's own contributions.
+- **`update-contribution`** — Submit a new version of a contribution's content. A JSON-serialized CgContributionData object is read from stdin.
+- **`create-contribution`** — Create a brand new contribution. A JSON-serialized CgContributionData object is read from stdin.
+- **`delete-contribution`** — Delete a contribution.
 
 ## `cg api contribution find-contribution`
 
-```text
-usage: cg api contribution find-contribution [-h] [--arg2-false] CONTRIBUTION-ID
-
 Find a contribution by its opaque contribution ID.
 
-positional arguments:
-  CONTRIBUTION-ID  Opaque contribution ID string.
-
-options:
-  -h, --help       show this help message and exit
-  --arg2-false     Set the API's second (purpose unknown) argument to False instead of the default
-                   True.
+```text
+usage: cg api contribution find-contribution [-h] [--arg2-false] CONTRIBUTION-ID
 ```
 
+**Arguments**
+
+- **`CONTRIBUTION-ID`** — Opaque contribution ID string.
+
+**Options**
+
+- **`--arg2-false`** — Set the API's second (purpose unknown) argument to False instead of the default True.
+
 ## `cg api contribution find-new-contribution-count`
+
+Count new contributions published since a given point in time.
 
 ```text
 usage: cg api contribution find-new-contribution-count [-h] [--codingamer-id ID]
                                                        [--since TIMESTAMP]
-
-Count new contributions published since a given point in time.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer to count new contributions for. Defaults to the logged-in
-                        codingamer's ID.
-  --since TIMESTAMP     Count contributions published after this point in time. Can be
-                        milliseconds since epoch (e.g., '1680000000000'), a duration string (e.g.,
-                        '1h30m'), a relative duration from now (e.g., '-1h30m'), or an ISO 8601
-                        datetime string. Defaults to now.
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer to count new contributions for. Defaults to the logged-in codingamer's ID.
+- **`--since TIMESTAMP`** — Count contributions published after this point in time. Can be milliseconds since epoch (e.g., '1680000000000'), a duration string (e.g., '1h30m'), a relative duration from now (e.g., '-1h30m'), or an ISO 8601 datetime string. Defaults to now.
 
 ## `cg api contribution find-contribution-moderators`
 
+List the moderators who have cast a given vote ('validate'/'deny') on a PENDING contribution's approve/reject moderation gate--the privileged gate that actually decides whether it gets published or rejected (3 votes either way, confirmed live). Distinct from the ungated community vote (`cg api vote find-votable-values-by-id`)--do not conflate the two.
+
 ```text
 usage: cg api contribution find-contribution-moderators [-h] CONTRIBUTION-NUMERIC-ID ACTION
-
-List the moderators who have cast a given vote ('validate'/'deny') on a PENDING contribution's
-approve/reject moderation gate--the privileged gate that actually decides whether it gets
-published or rejected (3 votes either way, confirmed live). Distinct from the ungated community
-vote (`cg api vote find-votable-values-by-id`)--do not conflate the two.
-
-positional arguments:
-  CONTRIBUTION-NUMERIC-ID
-                        The contribution's *numeric* ID (CgContribution.id)--NOT the opaque public
-                        handle used by every other `cg api contribution` command.
-  ACTION                'validate' (approve) or 'deny' (reject).
-
-options:
-  -h, --help            show this help message and exit
 ```
 
+**Arguments**
+
+- **`CONTRIBUTION-NUMERIC-ID`** — The contribution's *numeric* ID (CgContribution.id)--NOT the opaque public handle used by every other `cg api contribution` command.
+- **`ACTION`** — 'validate' (approve) or 'deny' (reject).
+
 ## `cg api contribution get-all-pending-contributions`
+
+Get pending (community-review-queue) contributions.
 
 ```text
 usage: cg api contribution get-all-pending-contributions [-h] [--type-filter FILTER]
                                                          [--codingamer-id ID] [--page PAGE]
-
-Get pending (community-review-queue) contributions.
-
-options:
-  -h, --help            show this help message and exit
-  --type-filter, -t FILTER
-                        Category filter: 'ALL', 'CLASHOFCODE', or 'PUZZLE'. Defaults to 'ALL'.
-  --codingamer-id, -g ID
-                        Must equal the logged-in codingamer's own ID (server-enforced). Defaults
-                        to the logged-in codingamer's ID.
-  --page, -n PAGE       Assumed 1-indexed page number; unconfirmed. Defaults to 1.
 ```
+
+**Options**
+
+- **`-t, --type-filter FILTER`** *(default: `ALL`)* — Category filter: 'ALL', 'CLASHOFCODE', or 'PUZZLE'. Defaults to 'ALL'.
+- **`-g, --codingamer-id ID`** — Must equal the logged-in codingamer's own ID (server-enforced). Defaults to the logged-in codingamer's ID.
+- **`-n, --page PAGE`** *(default: `1`)* — Assumed 1-indexed page number; unconfirmed. Defaults to 1.
 
 ## `cg api contribution get-personal-contributions`
 
+List every contribution (any status--draft/PENDING/APPROVED/REFUSED/etc.) authored by a codingamer. Unlike `get-all-pending-contributions`, this genuinely filters to just that codingamer's own contributions.
+
 ```text
 usage: cg api contribution get-personal-contributions [-h] [--codingamer-id ID] [--page PAGE]
-
-List every contribution (any status--draft/PENDING/APPROVED/REFUSED/etc.) authored by a
-codingamer. Unlike `get-all-pending-contributions`, this genuinely filters to just that
-codingamer's own contributions.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Must equal the logged-in codingamer's own ID (server-enforced). Defaults
-                        to the logged-in codingamer's ID.
-  --page, -n PAGE       1-indexed page number (confirmed live via the server's own INVALID_PAGE
-                        error detail). Defaults to 1.
 ```
 
+**Options**
+
+- **`-g, --codingamer-id ID`** — Must equal the logged-in codingamer's own ID (server-enforced). Defaults to the logged-in codingamer's ID.
+- **`-n, --page PAGE`** *(default: `1`)* — 1-indexed page number (confirmed live via the server's own INVALID_PAGE error detail). Defaults to 1.
+
 ## `cg api contribution update-contribution`
+
+Submit a new version of a contribution's content. A JSON-serialized CgContributionData object is read from stdin.
 
 ```text
 usage: cg api contribution update-contribution [-h] [--draft] [--ready-for-moderation]
                                                [--codingamer-id ID]
                                                CONTRIBUTION-ID PUZZLE-TYPE PREV-VERSION
-
-Submit a new version of a contribution's content. A JSON-serialized CgContributionData object is
-read from stdin.
-
-positional arguments:
-  CONTRIBUTION-ID       Opaque contribution ID string.
-  PUZZLE-TYPE           The type of the contribution, e.g. 'PUZZLE_INOUT'.
-  PREV-VERSION          The contribution's current version number, as last retrieved via find-
-                        contribution (an idempotency/concurrency check--rejected if stale).
-
-options:
-  -h, --help            show this help message and exit
-  --draft               Submit as a private, unpublished draft. Defaults to false.
-  --ready-for-moderation
-                        Formally submit for moderation. Defaults to false.
-  --codingamer-id, -g ID
-                        The authoring codingamer's numeric ID. Defaults to the logged-in
-                        codingamer's ID.
 ```
 
+**Arguments**
+
+- **`CONTRIBUTION-ID`** — Opaque contribution ID string.
+- **`PUZZLE-TYPE`** — The type of the contribution, e.g. 'PUZZLE_INOUT'.
+- **`PREV-VERSION`** — The contribution's current version number, as last retrieved via find-contribution (an idempotency/concurrency check--rejected if stale).
+
+**Options**
+
+- **`--draft`** — Submit as a private, unpublished draft. Defaults to false.
+- **`--ready-for-moderation`** — Formally submit for moderation. Defaults to false.
+- **`-g, --codingamer-id ID`** — The authoring codingamer's numeric ID. Defaults to the logged-in codingamer's ID.
+
 ## `cg api contribution create-contribution`
+
+Create a brand new contribution. A JSON-serialized CgContributionData object is read from stdin.
 
 ```text
 usage: cg api contribution create-contribution [-h] [--draft] [--ready-for-moderation]
                                                [--codingamer-id ID]
                                                PUZZLE-TYPE
-
-Create a brand new contribution. A JSON-serialized CgContributionData object is read from stdin.
-
-positional arguments:
-  PUZZLE-TYPE           The type of the contribution, e.g. 'PUZZLE_INOUT'.
-
-options:
-  -h, --help            show this help message and exit
-  --draft               Create as a private, unpublished draft. Defaults to false.
-  --ready-for-moderation
-                        Formally submit for moderation. Defaults to false.
-  --codingamer-id, -g ID
-                        The authoring codingamer's numeric ID. Defaults to the logged-in
-                        codingamer's ID.
 ```
+
+**Arguments**
+
+- **`PUZZLE-TYPE`** — The type of the contribution, e.g. 'PUZZLE_INOUT'.
+
+**Options**
+
+- **`--draft`** — Create as a private, unpublished draft. Defaults to false.
+- **`--ready-for-moderation`** — Formally submit for moderation. Defaults to false.
+- **`-g, --codingamer-id ID`** — The authoring codingamer's numeric ID. Defaults to the logged-in codingamer's ID.
 
 ## `cg api contribution delete-contribution`
 
-```text
-usage: cg api contribution delete-contribution [-h] [--codingamer-id ID] CONTRIBUTION-ID
-
 Delete a contribution.
 
-positional arguments:
-  CONTRIBUTION-ID       Opaque contribution ID string of the contribution to delete.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        The authoring codingamer's numeric ID. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api contribution delete-contribution [-h] [--codingamer-id ID] CONTRIBUTION-ID
 ```
+
+**Arguments**
+
+- **`CONTRIBUTION-ID`** — Opaque contribution ID string of the contribution to delete.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — The authoring codingamer's numeric ID. Defaults to the logged-in codingamer's ID.
 
 ---
 

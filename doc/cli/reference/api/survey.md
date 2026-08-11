@@ -4,6 +4,8 @@
 
 The `survey` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api survey`](#cg-api-survey) | Survey service commands. |
@@ -11,34 +13,28 @@ The `survey` service endpoint. See [`cg api`](index.md) for how these relate to 
 
 ## `cg api survey`
 
-```text
-usage: cg api survey [-h] COMMAND ...
-
 Survey service commands.
 
-positional arguments:
-  COMMAND
-    find-survey  Find a survey to potentially show a codingamer (UNVERIFIED--response shape
-                 unconfirmed).
-
-options:
-  -h, --help     show this help message and exit
+```text
+usage: cg api survey [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-survey`** — Find a survey to potentially show a codingamer (UNVERIFIED--response shape unconfirmed).
 
 ## `cg api survey find-survey`
 
-```text
-usage: cg api survey find-survey [-h] [--codingamer-id ID] [--limit N]
-
 Find a survey to potentially show a codingamer (UNVERIFIED--response shape unconfirmed).
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer to find a survey for. Defaults to the logged-in codingamer's
-                        ID.
-  --limit, -n N         Assumed maximum number of results; unconfirmed. Defaults to 2.
+```text
+usage: cg api survey find-survey [-h] [--codingamer-id ID] [--limit N]
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer to find a survey for. Defaults to the logged-in codingamer's ID.
+- **`-n, --limit N`** *(default: `2`)* — Assumed maximum number of results; unconfirmed. Defaults to 2.
 
 ---
 

@@ -4,6 +4,8 @@
 
 The `clash-of-code` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api clash-of-code`](#cg-api-clash-of-code) | ClashOfCode service commands. |
@@ -12,50 +14,40 @@ The `clash-of-code` service endpoint. See [`cg api`](index.md) for how these rel
 
 ## `cg api clash-of-code`
 
-```text
-usage: cg api clash-of-code [-h] COMMAND ...
-
 ClashOfCode service commands.
 
-positional arguments:
-  COMMAND
-    get-clash-rank-by-codingamer-id
-                        Get a codingamer's global Clash of Code ranking.
-    find-clash-by-handle
-                        Find a Clash of Code session by its handle.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api clash-of-code [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`get-clash-rank-by-codingamer-id`** — Get a codingamer's global Clash of Code ranking.
+- **`find-clash-by-handle`** — Find a Clash of Code session by its handle.
 
 ## `cg api clash-of-code get-clash-rank-by-codingamer-id`
 
-```text
-usage: cg api clash-of-code get-clash-rank-by-codingamer-id [-h] [--codingamer-id ID]
-
 Get a codingamer's global Clash of Code ranking.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer numeric ID. Defaults to the logged-in codingamer's ID.
+```text
+usage: cg api clash-of-code get-clash-rank-by-codingamer-id [-h] [--codingamer-id ID]
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer numeric ID. Defaults to the logged-in codingamer's ID.
 
 ## `cg api clash-of-code find-clash-by-handle`
 
-```text
-usage: cg api clash-of-code find-clash-by-handle [-h] HANDLE
-
 Find a Clash of Code session by its handle.
 
-positional arguments:
-  HANDLE      Opaque clash-instance handle string (a per-slot handle from 'api featured-event
-              find-clash-slots'; not a codingamer handle or the parent featured event's own handle
-              --both are rejected by the server).
-
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg api clash-of-code find-clash-by-handle [-h] HANDLE
 ```
+
+**Arguments**
+
+- **`HANDLE`** — Opaque clash-instance handle string (a per-slot handle from 'api featured-event find-clash-slots'; not a codingamer handle or the parent featured event's own handle--both are rejected by the server).
 
 ---
 

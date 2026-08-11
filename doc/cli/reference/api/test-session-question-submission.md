@@ -4,6 +4,8 @@
 
 The `test-session-question-submission` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api test-session-question-submission`](#cg-api-test-session-question-submission) | TestSessionQuestionSubmission service commands. |
@@ -11,33 +13,27 @@ The `test-session-question-submission` service endpoint. See [`cg api`](index.md
 
 ## `cg api test-session-question-submission`
 
-```text
-usage: cg api test-session-question-submission [-h] COMMAND ...
-
 TestSessionQuestionSubmission service commands.
 
-positional arguments:
-  COMMAND
-    find-all-submissions
-                        Find all past submissions for a puzzle, most recent first.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api test-session-question-submission [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-all-submissions`** — Find all past submissions for a puzzle, most recent first.
 
 ## `cg api test-session-question-submission find-all-submissions`
 
-```text
-usage: cg api test-session-question-submission find-all-submissions [-h] TEST-SESSION-HANDLE
-
 Find all past submissions for a puzzle, most recent first.
 
-positional arguments:
-  TEST-SESSION-HANDLE  The puzzle's test session handle.
-
-options:
-  -h, --help           show this help message and exit
+```text
+usage: cg api test-session-question-submission find-all-submissions [-h] TEST-SESSION-HANDLE
 ```
+
+**Arguments**
+
+- **`TEST-SESSION-HANDLE`** — The puzzle's test session handle.
 
 ---
 

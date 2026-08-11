@@ -4,6 +4,8 @@
 
 The `codingamer-puzzle-topic` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api codingamer-puzzle-topic`](#cg-api-codingamer-puzzle-topic) | CodingamerPuzzleTopic service commands. |
@@ -12,55 +14,45 @@ The `codingamer-puzzle-topic` service endpoint. See [`cg api`](index.md) for how
 
 ## `cg api codingamer-puzzle-topic`
 
-```text
-usage: cg api codingamer-puzzle-topic [-h] COMMAND ...
-
 CodingamerPuzzleTopic service commands.
 
-positional arguments:
-  COMMAND
-    find-topics-by-codingamer-id
-                        Find the puzzle topics a codingamer has made progress on.
-    select-topics-by-codingamer-id-and-puzzle-id
-                        Find the topic tree for a single puzzle, personalized with the
-                        codingamer's per-topic learned status.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api codingamer-puzzle-topic [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-topics-by-codingamer-id`** — Find the puzzle topics a codingamer has made progress on.
+- **`select-topics-by-codingamer-id-and-puzzle-id`** — Find the topic tree for a single puzzle, personalized with the codingamer's per-topic learned status.
 
 ## `cg api codingamer-puzzle-topic find-topics-by-codingamer-id`
 
-```text
-usage: cg api codingamer-puzzle-topic find-topics-by-codingamer-id [-h] [--codingamer-id ID]
-
 Find the puzzle topics a codingamer has made progress on.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose puzzle topic progress to list. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api codingamer-puzzle-topic find-topics-by-codingamer-id [-h] [--codingamer-id ID]
 ```
 
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose puzzle topic progress to list. Defaults to the logged-in codingamer's ID.
+
 ## `cg api codingamer-puzzle-topic select-topics-by-codingamer-id-and-puzzle-id`
+
+Find the topic tree for a single puzzle, personalized with the codingamer's per-topic learned status.
 
 ```text
 usage: cg api codingamer-puzzle-topic select-topics-by-codingamer-id-and-puzzle-id
        [-h] [--codingamer-id ID] PUZZLE-ID
-
-Find the topic tree for a single puzzle, personalized with the codingamer's per-topic learned
-status.
-
-positional arguments:
-  PUZZLE-ID             Numeric ID of the puzzle.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose topic mastery to check. Defaults to the logged-in
-                        codingamer's ID.
 ```
+
+**Arguments**
+
+- **`PUZZLE-ID`** — Numeric ID of the puzzle.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose topic mastery to check. Defaults to the logged-in codingamer's ID.
 
 ---
 

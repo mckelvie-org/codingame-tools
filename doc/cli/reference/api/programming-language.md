@@ -4,6 +4,8 @@
 
 The `programming-language` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api programming-language`](#cg-api-programming-language) | ProgrammingLanguage service commands. |
@@ -11,29 +13,22 @@ The `programming-language` service endpoint. See [`cg api`](index.md) for how th
 
 ## `cg api programming-language`
 
-```text
-usage: cg api programming-language [-h] COMMAND ...
-
 ProgrammingLanguage service commands.
 
-positional arguments:
-  COMMAND
-    find-all-ids  Find the IDs of all programming languages supported for contribution reference
-                  solutions.
-
-options:
-  -h, --help      show this help message and exit
+```text
+usage: cg api programming-language [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-all-ids`** — Find the IDs of all programming languages supported for contribution reference solutions.
 
 ## `cg api programming-language find-all-ids`
 
-```text
-usage: cg api programming-language find-all-ids [-h]
-
 Find the IDs of all programming languages supported for contribution reference solutions.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg api programming-language find-all-ids [-h]
 ```
 
 ---

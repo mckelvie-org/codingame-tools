@@ -129,6 +129,113 @@ def page_for(node: CommandNode) -> str:
     return TOP_LEVEL_PAGE
 
 
+def _metavar_for(action: argparse.Action) -> str:
+    """What a value for `action` is called, with `nargs` reflected in the brackets.
+
+       argparse builds this internally but exposes no way to ask for it, so it is rebuilt here
+       rather than scraped back out of `format_help()`'s wrapped, column-aligned text."""
+    if action.metavar:
+        name = action.metavar if isinstance(action.metavar, str) else " ".join(action.metavar)
+    elif action.choices:
+        name = "{" + ",".join(str(c) for c in action.choices) + "}"
+    else:
+        name = action.dest.upper()
+    nargs = action.nargs
+    if nargs == 0:
+        return ""
+    if nargs == "?":
+        return f"[{name}]"
+    if nargs == "*":
+        return f"[{name} ...]"
+    if nargs == "+":
+        return f"{name} [{name} ...]"
+    if isinstance(nargs, int):
+        return " ".join([name] * nargs)
+    return name
+
+
+def _invocation(action: argparse.Action) -> str:
+    """How the user types `action`: `PATH`, or `-l, --languages LANGUAGE [LANGUAGE ...]`."""
+    metavar = _metavar_for(action)
+    if not action.option_strings:            # a positional
+        return metavar or action.dest
+    # Short forms first (`-l, --languages`), regardless of declaration order: a reader scanning for
+    # a flag wants the terse spelling adjacent to the name it explains.
+    spellings = ", ".join(sorted(action.option_strings, key=lambda o: (not o.startswith("--"), o))[::-1])
+    return f"{spellings} {metavar}".rstrip()
+
+
+def _suffixes(action: argparse.Action) -> str:
+    """Trailing notes that argparse's own help never states: defaults, and whether a value is
+       optional. Choices are already visible in the metavar."""
+    notes: list[str] = []
+    default = action.default
+    if (default not in (None, False, argparse.SUPPRESS)
+            and not isinstance(action, argparse._SubParsersAction)):  # noqa: SLF001
+        notes.append(f"default: `{default}`")
+    if action.option_strings and action.required:
+        notes.append("required")
+    return f" *({'; '.join(notes)})*" if notes else ""
+
+
+def _render_actions(title: str, actions: list[argparse.Action]) -> list[str]:
+    """One bullet per argument. A list rather than a table because the longest help string here is
+       424 characters and multi-sentence--unreadable in a cell, fine in a bullet that reflows."""
+    if not actions:
+        return []
+    lines = [f"**{title}**", ""]
+    for action in actions:
+        help_text = " ".join((action.help or "").split())
+        lines.append(f"- **`{_invocation(action)}`**{_suffixes(action)}"
+                     + (f" — {help_text}" if help_text else ""))
+    lines.append("")
+    return lines
+
+
+def _render_command(node: CommandNode) -> list[str]:
+    """One command: description, usage, then its arguments, options and subcommands."""
+    parser = node.parser
+    lines = [f"## `{node.invocation}`", ""]
+
+    description = " ".join((parser.description or "").split())
+    if description:
+        lines += [description, ""]
+
+    # The usage line stays fenced: it is the one part that is genuinely preformatted, and argparse
+    # already wraps it to HELP_WIDTH deterministically.
+    lines += ["```text", parser.format_usage().rstrip(), "```", ""]
+
+    positionals: list[argparse.Action] = []
+    optionals: list[argparse.Action] = []
+    subcommands: list[argparse.Action] = []
+    for action in parser._actions:  # noqa: SLF001
+        if isinstance(action, argparse._SubParsersAction):  # noqa: SLF001
+            subcommands.append(action)
+        elif isinstance(action, argparse._HelpAction):  # noqa: SLF001
+            # Every command has it and it does the obvious thing. Listed first under every single
+            # Options heading it is pure noise, so the page says it once instead.
+            continue
+        elif action.option_strings:
+            optionals.append(action)
+        else:
+            positionals.append(action)
+
+    lines += _render_actions("Arguments", positionals)
+    lines += _render_actions("Options", optionals)
+
+    for action in subcommands:
+        summaries = {c.dest: " ".join((c.help or "").split()) for c in action._get_subactions()}  # noqa: SLF001
+        if not summaries:
+            continue
+        # Names only, no links: a subcommand may live on a different generated page, and the
+        # page's own index table above already links everything that is on this one.
+        lines += ["**Subcommands**", ""]
+        lines += [f"- **`{name}`**" + (f" — {summary}" if summary else "")
+                  for name, summary in summaries.items()]
+        lines.append("")
+    return lines
+
+
 def render_page(title: str, intro: str, nodes: list[CommandNode], depth: int) -> str:
     """One reference page: a heading, an intro, then every command as its own `--help` block."""
     up = "../" * depth
@@ -140,6 +247,7 @@ def render_page(title: str, intro: str, nodes: list[CommandNode], depth: int) ->
         intro,
         "",
     ]
+    lines += ["Every command also accepts `-h` / `--help`.", ""]
     if len(nodes) > 1:
         lines += ["| Command | Summary |", "| --- | --- |"]
         for node in nodes:
@@ -147,9 +255,7 @@ def render_page(title: str, intro: str, nodes: list[CommandNode], depth: int) ->
             lines.append(f"| [`{node.invocation}`](#{node.anchor}) | {summary} |")
         lines.append("")
     for node in nodes:
-        # No prose above the block: `format_help()` already opens with the description, and
-        # repeating it doubles the page length for nothing.
-        lines += [f"## `{node.invocation}`", "", "```text", node.help_text(), "```", ""]
+        lines += _render_command(node)
     lines += [
         "---",
         "",

@@ -4,6 +4,8 @@
 
 The `notification` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api notification`](#cg-api-notification) | Notification service commands. |
@@ -11,33 +13,27 @@ The `notification` service endpoint. See [`cg api`](index.md) for how these rela
 
 ## `cg api notification`
 
-```text
-usage: cg api notification [-h] COMMAND ...
-
 Notification service commands.
 
-positional arguments:
-  COMMAND
-    find-unread-notifications
-                        Find unread notifications for a codingamer.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api notification [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`find-unread-notifications`** — Find unread notifications for a codingamer.
 
 ## `cg api notification find-unread-notifications`
 
-```text
-usage: cg api notification find-unread-notifications [-h] [--codingamer-id ID]
-
 Find unread notifications for a codingamer.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer ID to find unread notifications for. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api notification find-unread-notifications [-h] [--codingamer-id ID]
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer ID to find unread notifications for. Defaults to the logged-in codingamer's ID.
 
 ---
 

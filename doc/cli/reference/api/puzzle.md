@@ -4,6 +4,8 @@
 
 The `puzzle` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api puzzle`](#cg-api-puzzle) | Puzzle service commands. |
@@ -17,153 +19,120 @@ The `puzzle` service endpoint. See [`cg api`](index.md) for how these relate to 
 
 ## `cg api puzzle`
 
-```text
-usage: cg api puzzle [-h] COMMAND ...
-
 Puzzle service commands.
 
-positional arguments:
-  COMMAND
-    count-solved-puzzles-by-programming-language
-                        Count a codingamer's solved puzzles, broken down by programming language.
-    find-puzzle-of-the-week
-                        Find the current puzzle of the week.
-    find-all-minimal-progress
-                        Find a codingamer's minimal progress summary for every puzzle they have
-                        some relationship to.
-    find-progress-by-ids
-                        Find a codingamer's progress summary for a specific set of puzzles, by
-                        puzzle ID.
-    find-best-following-progress
-                        Find the best progress on a given puzzle among the codingamers a
-                        codingamer follows.
-    find-progress-by-pretty-id
-                        Find a codingamer's progress summary for a single puzzle, by its pretty
-                        ID.
-    generate-session-from-puzzle-pretty-id
-                        Get (or create) the codingamer's test session handle for a puzzle, by its
-                        pretty ID. Confirmed to return the same handle across repeated calls (a
-                        per-user singleton test session)--use `cg api test-session start-test-
-                        session` on the result to get the full session/question/answer details.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api puzzle [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`count-solved-puzzles-by-programming-language`** — Count a codingamer's solved puzzles, broken down by programming language.
+- **`find-puzzle-of-the-week`** — Find the current puzzle of the week.
+- **`find-all-minimal-progress`** — Find a codingamer's minimal progress summary for every puzzle they have some relationship to.
+- **`find-progress-by-ids`** — Find a codingamer's progress summary for a specific set of puzzles, by puzzle ID.
+- **`find-best-following-progress`** — Find the best progress on a given puzzle among the codingamers a codingamer follows.
+- **`find-progress-by-pretty-id`** — Find a codingamer's progress summary for a single puzzle, by its pretty ID.
+- **`generate-session-from-puzzle-pretty-id`** — Get (or create) the codingamer's test session handle for a puzzle, by its pretty ID. Confirmed to return the same handle across repeated calls (a per-user singleton test session)--use `cg api test-session start-test-session` on the result to get the full session/question/answer details.
 
 ## `cg api puzzle count-solved-puzzles-by-programming-language`
 
-```text
-usage: cg api puzzle count-solved-puzzles-by-programming-language [-h] [--codingamer-id ID]
-
 Count a codingamer's solved puzzles, broken down by programming language.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose solved-puzzle counts to list. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api puzzle count-solved-puzzles-by-programming-language [-h] [--codingamer-id ID]
 ```
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose solved-puzzle counts to list. Defaults to the logged-in codingamer's ID.
 
 ## `cg api puzzle find-puzzle-of-the-week`
 
-```text
-usage: cg api puzzle find-puzzle-of-the-week [-h]
-
 Find the current puzzle of the week.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg api puzzle find-puzzle-of-the-week [-h]
 ```
 
 ## `cg api puzzle find-all-minimal-progress`
 
-```text
-usage: cg api puzzle find-all-minimal-progress [-h] [--codingamer-id ID]
-
 Find a codingamer's minimal progress summary for every puzzle they have some relationship to.
 
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose puzzle progress to list. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api puzzle find-all-minimal-progress [-h] [--codingamer-id ID]
 ```
 
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose puzzle progress to list. Defaults to the logged-in codingamer's ID.
+
 ## `cg api puzzle find-progress-by-ids`
+
+Find a codingamer's progress summary for a specific set of puzzles, by puzzle ID.
 
 ```text
 usage: cg api puzzle find-progress-by-ids [-h] [--codingamer-id ID] [--arg3 N]
                                           PUZZLE-ID [PUZZLE-ID ...]
-
-Find a codingamer's progress summary for a specific set of puzzles, by puzzle ID.
-
-positional arguments:
-  PUZZLE-ID             One or more numeric puzzle IDs to look up.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose progress to look up. Defaults to the logged-in
-                        codingamer's ID.
-  --arg3 N              Third (purpose unclear) argument to the underlying API call. Defaults to
-                        2.
 ```
+
+**Arguments**
+
+- **`PUZZLE-ID [PUZZLE-ID ...]`** — One or more numeric puzzle IDs to look up.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose progress to look up. Defaults to the logged-in codingamer's ID.
+- **`--arg3 N`** *(default: `2`)* — Third (purpose unclear) argument to the underlying API call. Defaults to 2.
 
 ## `cg api puzzle find-best-following-progress`
 
-```text
-usage: cg api puzzle find-best-following-progress [-h] [--codingamer-id ID] PUZZLE-ID
-
 Find the best progress on a given puzzle among the codingamers a codingamer follows.
 
-positional arguments:
-  PUZZLE-ID             Numeric ID of the puzzle to check.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose followees to check. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api puzzle find-best-following-progress [-h] [--codingamer-id ID] PUZZLE-ID
 ```
+
+**Arguments**
+
+- **`PUZZLE-ID`** — Numeric ID of the puzzle to check.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose followees to check. Defaults to the logged-in codingamer's ID.
 
 ## `cg api puzzle find-progress-by-pretty-id`
 
-```text
-usage: cg api puzzle find-progress-by-pretty-id [-h] [--codingamer-id ID] PRETTY-ID
-
 Find a codingamer's progress summary for a single puzzle, by its pretty ID.
 
-positional arguments:
-  PRETTY-ID             The puzzle's pretty ID: displayed title, lowercased with spaces replaced
-                        by hyphens, e.g. 'literary-alfabet-soupe'.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer whose progress to look up. Defaults to the logged-in
-                        codingamer's ID.
+```text
+usage: cg api puzzle find-progress-by-pretty-id [-h] [--codingamer-id ID] PRETTY-ID
 ```
 
+**Arguments**
+
+- **`PRETTY-ID`** — The puzzle's pretty ID: displayed title, lowercased with spaces replaced by hyphens, e.g. 'literary-alfabet-soupe'.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer whose progress to look up. Defaults to the logged-in codingamer's ID.
+
 ## `cg api puzzle generate-session-from-puzzle-pretty-id`
+
+Get (or create) the codingamer's test session handle for a puzzle, by its pretty ID. Confirmed to return the same handle across repeated calls (a per-user singleton test session)--use `cg api test-session start-test-session` on the result to get the full session/question/answer details.
 
 ```text
 usage: cg api puzzle generate-session-from-puzzle-pretty-id [-h] [--codingamer-id ID]
                                                             PUZZLE-PRETTY-ID
-
-Get (or create) the codingamer's test session handle for a puzzle, by its pretty ID. Confirmed to
-return the same handle across repeated calls (a per-user singleton test session)--use `cg api
-test-session start-test-session` on the result to get the full session/question/answer details.
-
-positional arguments:
-  PUZZLE-PRETTY-ID      The puzzle's pretty ID: displayed title, lowercased with spaces replaced
-                        by hyphens, e.g. 'literary-alfabet-soupe'.
-
-options:
-  -h, --help            show this help message and exit
-  --codingamer-id, -g ID
-                        Codingamer to get/create the session for. Defaults to the logged-in
-                        codingamer's ID.
 ```
+
+**Arguments**
+
+- **`PUZZLE-PRETTY-ID`** — The puzzle's pretty ID: displayed title, lowercased with spaces replaced by hyphens, e.g. 'literary-alfabet-soupe'.
+
+**Options**
+
+- **`-g, --codingamer-id ID`** — Codingamer to get/create the session for. Defaults to the logged-in codingamer's ID.
 
 ---
 

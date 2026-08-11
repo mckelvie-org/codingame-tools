@@ -4,25 +4,23 @@
 
 The `file-upload` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 ## `cg api file-upload`
+
+Upload a file from stdin (the fileupload servlet).
 
 ```text
 usage: cg api file-upload [-h] [--filename FILENAME] [--content-type CONTENT_TYPE]
                           [--prev-id PREV_ID] [--prev-content-hash PREV_CONTENT_HASH]
-
-Upload a file from stdin (the fileupload servlet).
-
-options:
-  -h, --help            show this help message and exit
-  --filename FILENAME   Optional filename provided to the server for the uploaded file; e.g.,
-                        'cover.png'.
-  --content-type CONTENT_TYPE
-                        Optional content type for the uploaded file; e.g., 'application/octet-
-                        stream'.
-  --prev-id PREV_ID     Optional previous file ID for the uploaded file; e.g., 12345.
-  --prev-content-hash PREV_CONTENT_HASH
-                        Optional previous content hash for the uploaded file.
 ```
+
+**Options**
+
+- **`--filename FILENAME`** *(default: `data.bin`)* — Optional filename provided to the server for the uploaded file; e.g., 'cover.png'.
+- **`--content-type CONTENT_TYPE`** *(default: `application/octet-stream`)* — Optional content type for the uploaded file; e.g., 'application/octet-stream'.
+- **`--prev-id PREV_ID`** — Optional previous file ID for the uploaded file; e.g., 12345.
+- **`--prev-content-hash PREV_CONTENT_HASH`** — Optional previous content hash for the uploaded file.
 
 ---
 

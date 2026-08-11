@@ -4,6 +4,8 @@
 
 Every `cg docker` subcommand.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg docker`](#cg-docker) | Manage the Docker containers and images cg builds for languages that run in a container. |
@@ -15,138 +17,76 @@ Every `cg docker` subcommand.
 
 ## `cg docker`
 
+Manage the Docker containers and images cg builds for languages that run in a container. One image carries every language cg can containerize (see `cg docker toolchain list`); C++ is currently the one with a container-backed build, run and debug path. Nothing here holds anything you authored--see `cg docker clean`.
+
 ```text
 usage: cg docker [-h] COMMAND ...
-
-Manage the Docker containers and images cg builds for languages that run in a container. One image
-carries every language cg can containerize (see `cg docker toolchain list`); C++ is currently the
-one with a container-backed build, run and debug path. Nothing here holds anything you authored--
-see `cg docker clean`.
-
-positional arguments:
-  COMMAND
-    clean      Remove every container and image cg created, across all working directories. Always
-               safe and never prompts: a container holds only build artifacts and an image is
-               rebuilt from Dockerfiles on disk, so nothing you authored lives in either--the next
-               build recreates whatever is needed. Useful to reclaim disk space, or to force a
-               clean rebuild after editing a toolchain Dockerfile.
-    toolchain  Inspect and build the multi-language toolchain image that containerized languages
-               run in. One image serves every language, composed from dependency-ordered fragments
-               --so building it for two languages that share a toolchain (C and C++, or JavaScript
-               and TypeScript) installs that toolchain once.
-
-options:
-  -h, --help   show this help message and exit
 ```
+
+**Subcommands**
+
+- **`clean`** — Remove every container and image cg created, across all working directories. Always safe and never prompts: a container holds only build artifacts and an image is rebuilt from Dockerfiles on disk, so nothing you authored lives in either--the next build recreates whatever is needed. Useful to reclaim disk space, or to force a clean rebuild after editing a toolchain Dockerfile.
+- **`toolchain`** — Inspect and build the multi-language toolchain image that containerized languages run in. One image serves every language, composed from dependency-ordered fragments--so building it for two languages that share a toolchain (C and C++, or JavaScript and TypeScript) installs that toolchain once.
 
 ## `cg docker clean`
 
+Remove every container and image cg created, across all working directories. Always safe and never prompts: a container holds only build artifacts and an image is rebuilt from Dockerfiles on disk, so nothing you authored lives in either--the next build recreates whatever is needed. Useful to reclaim disk space, or to force a clean rebuild after editing a toolchain Dockerfile.
+
 ```text
 usage: cg docker clean [-h]
-
-Remove every container and image cg created, across all working directories. Always safe and never
-prompts: a container holds only build artifacts and an image is rebuilt from Dockerfiles on disk,
-so nothing you authored lives in either--the next build recreates whatever is needed. Useful to
-reclaim disk space, or to force a clean rebuild after editing a toolchain Dockerfile.
-
-options:
-  -h, --help  show this help message and exit
 ```
 
 ## `cg docker toolchain`
 
+Inspect and build the multi-language toolchain image that containerized languages run in. One image serves every language, composed from dependency-ordered fragments--so building it for two languages that share a toolchain (C and C++, or JavaScript and TypeScript) installs that toolchain once.
+
 ```text
 usage: cg docker toolchain [-h] COMMAND ...
-
-Inspect and build the multi-language toolchain image that containerized languages run in. One
-image serves every language, composed from dependency-ordered fragments--so building it for two
-languages that share a toolchain (C and C++, or JavaScript and TypeScript) installs that toolchain
-once.
-
-positional arguments:
-  COMMAND
-    list      List the toolchain fragments cg knows about: the languages that can go into an
-              image, and the shared subsystems they install onto. A language usually installs
-              nothing itself and just depends on a subsystem, which is what lets C and C++, or
-              Java and Scala, coexist without either owning the global environment.
-    show      Print the Dockerfile cg would compose for a set of languages, without building
-              anything. Fragments appear in dependency order, deterministically, so a subset's
-              output is a prefix of a superset's--which is what lets their images share layers.
-    build     Build the toolchain image ahead of time, instead of letting the first run build it.
-              With no options this produces exactly the image `cg puzzle play` would build, under
-              the same content-addressed tag, so a later run finds it already there.
-
-options:
-  -h, --help  show this help message and exit
 ```
+
+**Subcommands**
+
+- **`list`** — List the toolchain fragments cg knows about: the languages that can go into an image, and the shared subsystems they install onto. A language usually installs nothing itself and just depends on a subsystem, which is what lets C and C++, or Java and Scala, coexist without either owning the global environment.
+- **`show`** — Print the Dockerfile cg would compose for a set of languages, without building anything. Fragments appear in dependency order, deterministically, so a subset's output is a prefix of a superset's--which is what lets their images share layers.
+- **`build`** — Build the toolchain image ahead of time, instead of letting the first run build it. With no options this produces exactly the image `cg puzzle play` would build, under the same content-addressed tag, so a later run finds it already there.
 
 ## `cg docker toolchain list`
 
+List the toolchain fragments cg knows about: the languages that can go into an image, and the shared subsystems they install onto. A language usually installs nothing itself and just depends on a subsystem, which is what lets C and C++, or Java and Scala, coexist without either owning the global environment.
+
 ```text
 usage: cg docker toolchain list [-h]
-
-List the toolchain fragments cg knows about: the languages that can go into an image, and the
-shared subsystems they install onto. A language usually installs nothing itself and just depends
-on a subsystem, which is what lets C and C++, or Java and Scala, coexist without either owning the
-global environment.
-
-options:
-  -h, --help  show this help message and exit
 ```
 
 ## `cg docker toolchain show`
 
+Print the Dockerfile cg would compose for a set of languages, without building anything. Fragments appear in dependency order, deterministically, so a subset's output is a prefix of a superset's--which is what lets their images share layers.
+
 ```text
 usage: cg docker toolchain show [-h] [--languages LANGUAGE [LANGUAGE ...]] [--composed]
-
-Print the Dockerfile cg would compose for a set of languages, without building anything. Fragments
-appear in dependency order, deterministically, so a subset's output is a prefix of a superset's--
-which is what lets their images share layers.
-
-options:
-  -h, --help            show this help message and exit
-  --languages, -l LANGUAGE [LANGUAGE ...]
-                        CodinGame language names to include, e.g. "C++" Python3 (comma-separated
-                        also accepted). Defaults to the configured toolchainLanguages, or to every
-                        language cg can containerize. The full set is ~1.9GB--far less than the
-                        sum of its parts, because the large toolchains share one Debian base--so
-                        trimming it saves less than you would expect.
-  --composed            Print your custom.dockerfile appended too, i.e. exactly what would be
-                        piped to `docker build`. The reported image tag already covers it either
-                        way.
 ```
 
+**Options**
+
+- **`-l, --languages LANGUAGE [LANGUAGE ...]`** — CodinGame language names to include, e.g. "C++" Python3 (comma-separated also accepted). Defaults to the configured toolchainLanguages, or to every language cg can containerize. The full set is ~1.9GB--far less than the sum of its parts, because the large toolchains share one Debian base--so trimming it saves less than you would expect.
+- **`--composed`** — Print your custom.dockerfile appended too, i.e. exactly what would be piped to `docker build`. The reported image tag already covers it either way.
+
 ## `cg docker toolchain build`
+
+Build the toolchain image ahead of time, instead of letting the first run build it. With no options this produces exactly the image `cg puzzle play` would build, under the same content-addressed tag, so a later run finds it already there.
 
 ```text
 usage: cg docker toolchain build [-h] [--languages LANGUAGE [LANGUAGE ...]] [--tag TAG]
                                  [--platform PLATFORM] [--push] [--build-timeout SECONDS]
-
-Build the toolchain image ahead of time, instead of letting the first run build it. With no
-options this produces exactly the image `cg puzzle play` would build, under the same content-
-addressed tag, so a later run finds it already there.
-
-options:
-  -h, --help            show this help message and exit
-  --languages, -l LANGUAGE [LANGUAGE ...]
-                        CodinGame language names to include, e.g. "C++" Python3 (comma-separated
-                        also accepted). Defaults to the configured toolchainLanguages, or to every
-                        language cg can containerize. The full set is ~1.9GB--far less than the
-                        sum of its parts, because the large toolchains share one Debian base--so
-                        trimming it saves less than you would expect.
-  --tag, -t TAG         Additional tag for the built image. Required with --push, which needs a
-                        registry-qualified name. Without it the image gets only its content-
-                        addressed tag, which is what the run path looks for.
-  --platform PLATFORM   Target platform, e.g. linux/amd64 or linux/arm64. Repeatable. Needs
-                        `docker buildx`. More than one requires --push: a multi-platform image is
-                        a manifest list, which the local daemon cannot store. Default: this
-                        machine's architecture.
-  --push                Push to a registry rather than loading into the local Docker daemon. The
-                        only way to produce a multi-architecture image.
-  --build-timeout SECONDS
-                        Wall-clock timeout. Generous by default: a cold all-languages build
-                        downloads a JDK, a .NET SDK and a Node tarball. Default 3600.0.
 ```
+
+**Options**
+
+- **`-l, --languages LANGUAGE [LANGUAGE ...]`** — CodinGame language names to include, e.g. "C++" Python3 (comma-separated also accepted). Defaults to the configured toolchainLanguages, or to every language cg can containerize. The full set is ~1.9GB--far less than the sum of its parts, because the large toolchains share one Debian base--so trimming it saves less than you would expect.
+- **`-t, --tag TAG`** — Additional tag for the built image. Required with --push, which needs a registry-qualified name. Without it the image gets only its content-addressed tag, which is what the run path looks for.
+- **`--platform PLATFORM`** — Target platform, e.g. linux/amd64 or linux/arm64. Repeatable. Needs `docker buildx`. More than one requires --push: a multi-platform image is a manifest list, which the local daemon cannot store. Default: this machine's architecture.
+- **`--push`** — Push to a registry rather than loading into the local Docker daemon. The only way to produce a multi-architecture image.
+- **`--build-timeout SECONDS`** *(default: `3600.0`)* — Wall-clock timeout. Generous by default: a cold all-languages build downloads a JDK, a .NET SDK and a Node tarball. Default 3600.0.
 
 ---
 

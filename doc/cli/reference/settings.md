@@ -4,6 +4,8 @@
 
 Every `cg settings` subcommand.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg settings`](#cg-settings) | Settings commands (app-managed persistent state in settings.json, as opposed to the user-edited config.yaml |
@@ -19,150 +21,112 @@ Every `cg settings` subcommand.
 
 ## `cg settings`
 
+Settings commands (app-managed persistent state in settings.json, as opposed to the user-edited config.yaml--see `cg config`).
+
 ```text
 usage: cg settings [-h] COMMAND ...
-
-Settings commands (app-managed persistent state in settings.json, as opposed to the user-edited
-config.yaml--see `cg config`).
-
-positional arguments:
-  COMMAND
-    dump      Dump the resolved settings as JSON.
-    set       Set a settings.json value.
-    delete    Delete a settings.json value.
-
-options:
-  -h, --help  show this help message and exit
 ```
+
+**Subcommands**
+
+- **`dump`** — Dump the resolved settings as JSON.
+- **`set`** — Set a settings.json value.
+- **`delete`** — Delete a settings.json value.
 
 ## `cg settings dump`
 
-```text
-usage: cg settings dump [-h]
-
 Dump the resolved settings as JSON.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg settings dump [-h]
 ```
 
 ## `cg settings set`
 
-```text
-usage: cg settings set [-h] COMMAND ...
-
 Set a settings.json value.
 
-positional arguments:
-  COMMAND
-    default-profile   Set the default codingame-tools credential profile name.
-    contribution-dir  Set the default contribution working directory.
-    puzzle-dir        Set the default puzzle working directory.
-
-options:
-  -h, --help          show this help message and exit
+```text
+usage: cg settings set [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`default-profile`** — Set the default codingame-tools credential profile name.
+- **`contribution-dir`** — Set the default contribution working directory.
+- **`puzzle-dir`** — Set the default puzzle working directory.
 
 ## `cg settings set default-profile`
 
-```text
-usage: cg settings set default-profile [-h] PROFILE-NAME
-
 Set the default codingame-tools credential profile name.
 
-positional arguments:
-  PROFILE-NAME  The credential profile name to record as the default--used whenever --profile
-                isn't given (see `cg login`, `cg api ...`, etc.), and shown resolved by `cg config
-                dump`/`cg settings dump`.
-
-options:
-  -h, --help    show this help message and exit
+```text
+usage: cg settings set default-profile [-h] PROFILE-NAME
 ```
+
+**Arguments**
+
+- **`PROFILE-NAME`** — The credential profile name to record as the default--used whenever --profile isn't given (see `cg login`, `cg api ...`, etc.), and shown resolved by `cg config dump`/`cg settings dump`.
 
 ## `cg settings set contribution-dir`
 
-```text
-usage: cg settings set contribution-dir [-h] DIR
-
 Set the default contribution working directory.
 
-positional arguments:
-  DIR         Directory to use as the default contribution working directory--used whenever
-              --contribution-dir isn't given and CG_CONTRIBUTION_DIR isn't set (see `cg
-              contribution import`/`cg contribution push`). If given as a relative path, it's
-              resolved against the current directory right now and stored relative to
-              settings.json's own directory--so the effective directory doesn't move around
-              depending on where `cg` is later run from.
-
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg settings set contribution-dir [-h] DIR
 ```
+
+**Arguments**
+
+- **`DIR`** — Directory to use as the default contribution working directory--used whenever --contribution-dir isn't given and CG_CONTRIBUTION_DIR isn't set (see `cg contribution import`/`cg contribution push`). If given as a relative path, it's resolved against the current directory right now and stored relative to settings.json's own directory--so the effective directory doesn't move around depending on where `cg` is later run from.
 
 ## `cg settings set puzzle-dir`
 
-```text
-usage: cg settings set puzzle-dir [-h] DIR
-
 Set the default puzzle working directory.
 
-positional arguments:
-  DIR         Directory to use as the default puzzle working directory--used whenever --puzzle-dir
-              isn't given and CG_PUZZLE_DIR isn't set (see `cg puzzle import`/`cg puzzle submit`).
-              Same relative-path handling as `cg settings set contribution-dir`--see its help for
-              details.
-
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg settings set puzzle-dir [-h] DIR
 ```
+
+**Arguments**
+
+- **`DIR`** — Directory to use as the default puzzle working directory--used whenever --puzzle-dir isn't given and CG_PUZZLE_DIR isn't set (see `cg puzzle import`/`cg puzzle submit`). Same relative-path handling as `cg settings set contribution-dir`--see its help for details.
 
 ## `cg settings delete`
 
-```text
-usage: cg settings delete [-h] COMMAND ...
-
 Delete a settings.json value.
 
-positional arguments:
-  COMMAND
-    default-profile   Delete (unset) the default codingame-tools credential profile name override.
-    contribution-dir  Delete (unset) the default contribution working directory override.
-    puzzle-dir        Delete (unset) the default puzzle working directory override.
-
-options:
-  -h, --help          show this help message and exit
+```text
+usage: cg settings delete [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`default-profile`** — Delete (unset) the default codingame-tools credential profile name override.
+- **`contribution-dir`** — Delete (unset) the default contribution working directory override.
+- **`puzzle-dir`** — Delete (unset) the default puzzle working directory override.
 
 ## `cg settings delete default-profile`
 
-```text
-usage: cg settings delete default-profile [-h]
-
 Delete (unset) the default codingame-tools credential profile name override.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg settings delete default-profile [-h]
 ```
 
 ## `cg settings delete contribution-dir`
 
-```text
-usage: cg settings delete contribution-dir [-h]
-
 Delete (unset) the default contribution working directory override.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg settings delete contribution-dir [-h]
 ```
 
 ## `cg settings delete puzzle-dir`
 
-```text
-usage: cg settings delete puzzle-dir [-h]
-
 Delete (unset) the default puzzle working directory override.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg settings delete puzzle-dir [-h]
 ```
 
 ---

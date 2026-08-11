@@ -4,6 +4,8 @@
 
 The `clash-of-code-description` service endpoint. See [`cg api`](index.md) for how these relate to the higher-level commands.
 
+Every command also accepts `-h` / `--help`.
+
 | Command | Summary |
 | --- | --- |
 | [`cg api clash-of-code-description`](#cg-api-clash-of-code-description) | ClashOfCodeDescription service commands. |
@@ -11,29 +13,22 @@ The `clash-of-code-description` service endpoint. See [`cg api`](index.md) for h
 
 ## `cg api clash-of-code-description`
 
-```text
-usage: cg api clash-of-code-description [-h] COMMAND ...
-
 ClashOfCodeDescription service commands.
 
-positional arguments:
-  COMMAND
-    get-clash-description
-                        Get localized help/explainer content for Clash of Code.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api clash-of-code-description [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`get-clash-description`** — Get localized help/explainer content for Clash of Code.
 
 ## `cg api clash-of-code-description get-clash-description`
 
-```text
-usage: cg api clash-of-code-description get-clash-description [-h]
-
 Get localized help/explainer content for Clash of Code.
 
-options:
-  -h, --help  show this help message and exit
+```text
+usage: cg api clash-of-code-description get-clash-description [-h]
 ```
 
 ---

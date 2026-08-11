@@ -4,45 +4,40 @@
 
 Thin wrappers over CodinGame's own service endpoints, one subcommand per API method. These speak the protocol directly and do no bookkeeping; the puzzle and contribution managers are built on top of them.
 
-## `cg api`
+Every command also accepts `-h` / `--help`.
 
-```text
-usage: cg api [-h] COMMAND ...
+## `cg api`
 
 Low-level API commands.
 
-positional arguments:
-  COMMAND
-    file-servlet        Download a file by server object ID (the fileservlet servlet).
-    file-upload         Upload a file from stdin (the fileupload servlet).
-    notification        Notification service commands.
-    contribution        Contribution service commands.
-    clash-of-code       ClashOfCode service commands.
-    clash-of-code-description
-                        ClashOfCodeDescription service commands.
-    featured-event      FeaturedEvent service commands.
-    codingamer-puzzle-topic
-                        CodingamerPuzzleTopic service commands.
-    puzzle              Puzzle service commands.
-    last-activities     LastActivities service commands.
-    quest               Quest service commands.
-    intercom            Intercom service commands.
-    survey              Survey service commands.
-    achievement         Achievement service commands.
-    user                User service commands.
-    test-session        TestSession service commands.
-    report              Report service commands.
-    test-session-question-submission
-                        TestSessionQuestionSubmission service commands.
-    codingamer          CodinGamer service commands.
-    search              Search service commands.
-    programming-language
-                        ProgrammingLanguage service commands.
-    vote                Vote service commands.
-
-options:
-  -h, --help            show this help message and exit
+```text
+usage: cg api [-h] COMMAND ...
 ```
+
+**Subcommands**
+
+- **`file-servlet`** — Download a file by server object ID (the fileservlet servlet).
+- **`file-upload`** — Upload a file from stdin (the fileupload servlet).
+- **`notification`** — Notification service commands.
+- **`contribution`** — Contribution service commands.
+- **`clash-of-code`** — ClashOfCode service commands.
+- **`clash-of-code-description`** — ClashOfCodeDescription service commands.
+- **`featured-event`** — FeaturedEvent service commands.
+- **`codingamer-puzzle-topic`** — CodingamerPuzzleTopic service commands.
+- **`puzzle`** — Puzzle service commands.
+- **`last-activities`** — LastActivities service commands.
+- **`quest`** — Quest service commands.
+- **`intercom`** — Intercom service commands.
+- **`survey`** — Survey service commands.
+- **`achievement`** — Achievement service commands.
+- **`user`** — User service commands.
+- **`test-session`** — TestSession service commands.
+- **`report`** — Report service commands.
+- **`test-session-question-submission`** — TestSessionQuestionSubmission service commands.
+- **`codingamer`** — CodinGamer service commands.
+- **`search`** — Search service commands.
+- **`programming-language`** — ProgrammingLanguage service commands.
+- **`vote`** — Vote service commands.
 
 ---
 
