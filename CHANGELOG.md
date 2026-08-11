@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## {{UNRELEASED}}
+## 2.0.0 (2026-08-11)
 
 - **BREAKING: the solution is one real file, `data/solution.<ext>`, renamed when the language
   changes.** The `solution.<ext>` symlink at the working directory root is gone, and so is the fixed

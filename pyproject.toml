@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "codingame-tools"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 description = "Python package codingame-tools"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = []
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
@@ -49,10 +49,10 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/mckelvie-org/codingame-tools"
-Source = "https://github.com/mckelvie-org/codingame-tools/tree/v2.0.0-rc.1"
+Source = "https://github.com/mckelvie-org/codingame-tools/tree/v2.0.0"
 "Bug Tracker" = "https://github.com/mckelvie-org/codingame-tools/issues"
-Documentation = "https://github.com/mckelvie-org/codingame-tools/blob/v2.0.0-rc.1/doc/index.md"
-Changelog = "https://github.com/mckelvie-org/codingame-tools/blob/v2.0.0-rc.1/CHANGELOG.md"
+Documentation = "https://github.com/mckelvie-org/codingame-tools/blob/v2.0.0/doc/index.md"
+Changelog = "https://github.com/mckelvie-org/codingame-tools/blob/v2.0.0/CHANGELOG.md"
 
 [project.scripts]
 cg = "codingame_tools.cli.main:main"
