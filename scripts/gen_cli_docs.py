@@ -28,8 +28,14 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
+import posixpath
 import sys
+from collections.abc import Callable
 from pathlib import Path
+
+LinkFor = Callable[[tuple[str, ...]], "str | None"]
+"""Resolves a command path to a link from the page currently being rendered, or None if that command
+   has no rendered heading to point at."""
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -129,6 +135,19 @@ def page_for(node: CommandNode) -> str:
     return TOP_LEVEL_PAGE
 
 
+
+def _link_to(from_page: str, to_page: str, anchor: str) -> str:
+    """A link from one generated page to a command's heading on another (or the same) page.
+
+       Pages sit at varying depths under `doc/cli/reference/` (`docker.md`, but `api/vote.md`), so
+       the path is computed rather than assumed--otherwise every link out of an `api/` page would be
+       off by one directory."""
+    if from_page == to_page:
+        return f"#{anchor}"
+    from_dir = posixpath.dirname(from_page) or "."
+    return f"{posixpath.relpath(to_page + '.md', from_dir)}#{anchor}"
+
+
 def _metavar_for(action: argparse.Action) -> str:
     """What a value for `action` is called, with `nargs` reflected in the brackets.
 
@@ -192,7 +211,7 @@ def _render_actions(title: str, actions: list[argparse.Action]) -> list[str]:
     return lines
 
 
-def _render_command(node: CommandNode) -> list[str]:
+def _render_command(node: CommandNode, link_for: LinkFor) -> list[str]:
     """One command: description, usage, then its arguments, options and subcommands."""
     parser = node.parser
     lines = [f"## `{node.invocation}`", ""]
@@ -227,16 +246,20 @@ def _render_command(node: CommandNode) -> list[str]:
         summaries = {c.dest: " ".join((c.help or "").split()) for c in action._get_subactions()}  # noqa: SLF001
         if not summaries:
             continue
-        # Names only, no links: a subcommand may live on a different generated page, and the
-        # page's own index table above already links everything that is on this one.
         lines += ["**Subcommands**", ""]
-        lines += [f"- **`{name}`**" + (f" — {summary}" if summary else "")
-                  for name, summary in summaries.items()]
+        for name, summary in summaries.items():
+            # Linked wherever the target was actually rendered--which may be a different page, since
+            # `cg api`'s endpoints each get one of their own. Plain text if it wasn't rendered at
+            # all, so a link can never dangle.
+            href = link_for((*node.path, name))
+            label = f"[**`{name}`**]({href})" if href else f"**`{name}`**"
+            lines.append("- " + label + (f" — {summary}" if summary else ""))
         lines.append("")
     return lines
 
 
-def render_page(title: str, intro: str, nodes: list[CommandNode], depth: int) -> str:
+def render_page(title: str, intro: str, nodes: list[CommandNode], depth: int,
+                link_for: LinkFor = lambda _path: None) -> str:
     """One reference page: a heading, an intro, then every command as its own `--help` block."""
     up = "../" * depth
     lines = [
@@ -255,7 +278,7 @@ def render_page(title: str, intro: str, nodes: list[CommandNode], depth: int) ->
             lines.append(f"| [`{node.invocation}`](#{node.anchor}) | {summary} |")
         lines.append("")
     for node in nodes:
-        lines += _render_command(node)
+        lines += _render_command(node, link_for)
     lines += [
         "---",
         "",
@@ -322,6 +345,9 @@ def generate(output_root: Path) -> list[Path]:
     for node in nodes:
         pages.setdefault(page_for(node), []).append(node)
 
+    # Where every command ended up, so a subcommand list can link across pages.
+    located = {node.path: (page_for(node), node.anchor) for node in nodes}
+
     reference_dir = output_root / REFERENCE_SUBDIR
     written: list[Path] = []
     for name, page_nodes in pages.items():
@@ -345,7 +371,12 @@ def generate(output_root: Path) -> list[Path]:
         else:
             title = GROUP_TITLES.get(name, f"cg {name}")
             intro = f"Every `{title}` subcommand."
-        path.write_text(render_page(title, intro, page_nodes, depth), encoding="utf-8")
+        def link_for(path_: tuple[str, ...], _page: str = name) -> str | None:
+            target = located.get(path_)
+            return None if target is None else _link_to(_page, target[0], target[1])
+
+        path.write_text(
+                render_page(title, intro, page_nodes, depth, link_for), encoding="utf-8")
         written.append(path)
 
     index_path = reference_dir / "index.md"

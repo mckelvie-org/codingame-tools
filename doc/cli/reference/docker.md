@@ -25,8 +25,8 @@ usage: cg docker [-h] COMMAND ...
 
 **Subcommands**
 
-- **`clean`** — Remove every container and image cg created, across all working directories. Always safe and never prompts: a container holds only build artifacts and an image is rebuilt from Dockerfiles on disk, so nothing you authored lives in either--the next build recreates whatever is needed. Useful to reclaim disk space, or to force a clean rebuild after editing a toolchain Dockerfile.
-- **`toolchain`** — Inspect and build the multi-language toolchain image that containerized languages run in. One image serves every language, composed from dependency-ordered fragments--so building it for two languages that share a toolchain (C and C++, or JavaScript and TypeScript) installs that toolchain once.
+- [**`clean`**](#cg-docker-clean) — Remove every container and image cg created, across all working directories. Always safe and never prompts: a container holds only build artifacts and an image is rebuilt from Dockerfiles on disk, so nothing you authored lives in either--the next build recreates whatever is needed. Useful to reclaim disk space, or to force a clean rebuild after editing a toolchain Dockerfile.
+- [**`toolchain`**](#cg-docker-toolchain) — Inspect and build the multi-language toolchain image that containerized languages run in. One image serves every language, composed from dependency-ordered fragments--so building it for two languages that share a toolchain (C and C++, or JavaScript and TypeScript) installs that toolchain once.
 
 ## `cg docker clean`
 
@@ -46,9 +46,9 @@ usage: cg docker toolchain [-h] COMMAND ...
 
 **Subcommands**
 
-- **`list`** — List the toolchain fragments cg knows about: the languages that can go into an image, and the shared subsystems they install onto. A language usually installs nothing itself and just depends on a subsystem, which is what lets C and C++, or Java and Scala, coexist without either owning the global environment.
-- **`show`** — Print the Dockerfile cg would compose for a set of languages, without building anything. Fragments appear in dependency order, deterministically, so a subset's output is a prefix of a superset's--which is what lets their images share layers.
-- **`build`** — Build the toolchain image ahead of time, instead of letting the first run build it. With no options this produces exactly the image `cg puzzle play` would build, under the same content-addressed tag, so a later run finds it already there.
+- [**`list`**](#cg-docker-toolchain-list) — List the toolchain fragments cg knows about: the languages that can go into an image, and the shared subsystems they install onto. A language usually installs nothing itself and just depends on a subsystem, which is what lets C and C++, or Java and Scala, coexist without either owning the global environment.
+- [**`show`**](#cg-docker-toolchain-show) — Print the Dockerfile cg would compose for a set of languages, without building anything. Fragments appear in dependency order, deterministically, so a subset's output is a prefix of a superset's--which is what lets their images share layers.
+- [**`build`**](#cg-docker-toolchain-build) — Build the toolchain image ahead of time, instead of letting the first run build it. With no options this produces exactly the image `cg puzzle play` would build, under the same content-addressed tag, so a later run finds it already there.
 
 ## `cg docker toolchain list`
 

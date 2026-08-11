@@ -21,7 +21,7 @@ usage: cg api last-activities [-h] COMMAND ...
 
 **Subcommands**
 
-- **`get-last-activities`** — Get a codingamer's most recent activity feed entries.
+- [**`get-last-activities`**](#cg-api-last-activities-get-last-activities) — Get a codingamer's most recent activity feed entries.
 
 ## `cg api last-activities get-last-activities`
 

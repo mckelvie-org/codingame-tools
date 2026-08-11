@@ -27,13 +27,13 @@ usage: cg api puzzle [-h] COMMAND ...
 
 **Subcommands**
 
-- **`count-solved-puzzles-by-programming-language`** — Count a codingamer's solved puzzles, broken down by programming language.
-- **`find-puzzle-of-the-week`** — Find the current puzzle of the week.
-- **`find-all-minimal-progress`** — Find a codingamer's minimal progress summary for every puzzle they have some relationship to.
-- **`find-progress-by-ids`** — Find a codingamer's progress summary for a specific set of puzzles, by puzzle ID.
-- **`find-best-following-progress`** — Find the best progress on a given puzzle among the codingamers a codingamer follows.
-- **`find-progress-by-pretty-id`** — Find a codingamer's progress summary for a single puzzle, by its pretty ID.
-- **`generate-session-from-puzzle-pretty-id`** — Get (or create) the codingamer's test session handle for a puzzle, by its pretty ID. Confirmed to return the same handle across repeated calls (a per-user singleton test session)--use `cg api test-session start-test-session` on the result to get the full session/question/answer details.
+- [**`count-solved-puzzles-by-programming-language`**](#cg-api-puzzle-count-solved-puzzles-by-programming-language) — Count a codingamer's solved puzzles, broken down by programming language.
+- [**`find-puzzle-of-the-week`**](#cg-api-puzzle-find-puzzle-of-the-week) — Find the current puzzle of the week.
+- [**`find-all-minimal-progress`**](#cg-api-puzzle-find-all-minimal-progress) — Find a codingamer's minimal progress summary for every puzzle they have some relationship to.
+- [**`find-progress-by-ids`**](#cg-api-puzzle-find-progress-by-ids) — Find a codingamer's progress summary for a specific set of puzzles, by puzzle ID.
+- [**`find-best-following-progress`**](#cg-api-puzzle-find-best-following-progress) — Find the best progress on a given puzzle among the codingamers a codingamer follows.
+- [**`find-progress-by-pretty-id`**](#cg-api-puzzle-find-progress-by-pretty-id) — Find a codingamer's progress summary for a single puzzle, by its pretty ID.
+- [**`generate-session-from-puzzle-pretty-id`**](#cg-api-puzzle-generate-session-from-puzzle-pretty-id) — Get (or create) the codingamer's test session handle for a puzzle, by its pretty ID. Confirmed to return the same handle across repeated calls (a per-user singleton test session)--use `cg api test-session start-test-session` on the result to get the full session/question/answer details.
 
 ## `cg api puzzle count-solved-puzzles-by-programming-language`
 

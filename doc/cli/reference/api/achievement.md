@@ -21,7 +21,7 @@ usage: cg api achievement [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-by-codingamer-id`** — Find the achievements a codingamer has unlocked.
+- [**`find-by-codingamer-id`**](#cg-api-achievement-find-by-codingamer-id) — Find the achievements a codingamer has unlocked.
 
 ## `cg api achievement find-by-codingamer-id`
 

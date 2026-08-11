@@ -22,8 +22,8 @@ usage: cg api clash-of-code [-h] COMMAND ...
 
 **Subcommands**
 
-- **`get-clash-rank-by-codingamer-id`** — Get a codingamer's global Clash of Code ranking.
-- **`find-clash-by-handle`** — Find a Clash of Code session by its handle.
+- [**`get-clash-rank-by-codingamer-id`**](#cg-api-clash-of-code-get-clash-rank-by-codingamer-id) — Get a codingamer's global Clash of Code ranking.
+- [**`find-clash-by-handle`**](#cg-api-clash-of-code-find-clash-by-handle) — Find a Clash of Code session by its handle.
 
 ## `cg api clash-of-code get-clash-rank-by-codingamer-id`
 

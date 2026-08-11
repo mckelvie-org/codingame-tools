@@ -22,8 +22,8 @@ usage: cg api quest [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-quest-map`** — Find a codingamer's quest map.
-- **`count-lootable-quests`** — Count a codingamer's completed-but-unclaimed (lootable) quests.
+- [**`find-quest-map`**](#cg-api-quest-find-quest-map) — Find a codingamer's quest map.
+- [**`count-lootable-quests`**](#cg-api-quest-count-lootable-quests) — Count a codingamer's completed-but-unclaimed (lootable) quests.
 
 ## `cg api quest find-quest-map`
 

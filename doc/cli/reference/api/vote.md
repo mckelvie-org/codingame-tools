@@ -21,7 +21,7 @@ usage: cg api vote [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-votable-values-by-id`** — Find a votable's current up/down-vote tally (e.g. a contribution's CgContribution.votable_id)--CodinGame's generic community vote, distinct from the moderator approve/reject gate (no known API for that yet).
+- [**`find-votable-values-by-id`**](#cg-api-vote-find-votable-values-by-id) — Find a votable's current up/down-vote tally (e.g. a contribution's CgContribution.votable_id)--CodinGame's generic community vote, distinct from the moderator approve/reject gate (no known API for that yet).
 
 ## `cg api vote find-votable-values-by-id`
 

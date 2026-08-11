@@ -21,7 +21,7 @@ usage: cg raw-api [-h] COMMAND ...
 
 **Subcommands**
 
-- **`service-request`** — Invoke a raw API request on a service endpoint. stdin must be a json-encoded list of args.
+- [**`service-request`**](#cg-raw-api-service-request) — Invoke a raw API request on a service endpoint. stdin must be a json-encoded list of args.
 
 ## `cg raw-api service-request`
 

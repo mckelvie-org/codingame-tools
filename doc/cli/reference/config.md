@@ -23,9 +23,9 @@ usage: cg config [-h] COMMAND ...
 
 **Subcommands**
 
-- **`init`** — Create a new config.yaml--project-local (under the current directory, or --at DIR) by default, or the shared per-user fallback location with --global. Does not consult the top-level --config/-c flag or CG_CONFIG--that's a discovery override for reading an existing config, not a placement option for creating a new one.
-- **`where`** — Show which config.yaml (if any) would be used, and where its persistent data directory resolves to.
-- **`dump`** — Dump the resolved configuration as JSON.
+- [**`init`**](#cg-config-init) — Create a new config.yaml--project-local (under the current directory, or --at DIR) by default, or the shared per-user fallback location with --global. Does not consult the top-level --config/-c flag or CG_CONFIG--that's a discovery override for reading an existing config, not a placement option for creating a new one.
+- [**`where`**](#cg-config-where) — Show which config.yaml (if any) would be used, and where its persistent data directory resolves to.
+- [**`dump`**](#cg-config-dump) — Dump the resolved configuration as JSON.
 
 ## `cg config init`
 

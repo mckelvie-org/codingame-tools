@@ -27,13 +27,13 @@ usage: cg api codingamer [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-codingame-points-stats-by-handle`** — Find a codingamer's points/ranking stats by their opaque public handle.
-- **`find-codingamer-public-informations`** — Find a codingamer's public profile information by their numeric ID.
-- **`find-followers`** — Find the followers of a codingamer.
-- **`find-following`** — Find the codingamers that a codingamer is following.
-- **`find-codingamer-follow-card`** — Find a codingamer's follow-card summary (profile plus follow-relationship flags).
-- **`find-follower-ids`** — Find the numeric IDs of a codingamer's followers.
-- **`find-following-ids`** — Find the numeric IDs of the codingamers that a codingamer is following.
+- [**`find-codingame-points-stats-by-handle`**](#cg-api-codingamer-find-codingame-points-stats-by-handle) — Find a codingamer's points/ranking stats by their opaque public handle.
+- [**`find-codingamer-public-informations`**](#cg-api-codingamer-find-codingamer-public-informations) — Find a codingamer's public profile information by their numeric ID.
+- [**`find-followers`**](#cg-api-codingamer-find-followers) — Find the followers of a codingamer.
+- [**`find-following`**](#cg-api-codingamer-find-following) — Find the codingamers that a codingamer is following.
+- [**`find-codingamer-follow-card`**](#cg-api-codingamer-find-codingamer-follow-card) — Find a codingamer's follow-card summary (profile plus follow-relationship flags).
+- [**`find-follower-ids`**](#cg-api-codingamer-find-follower-ids) — Find the numeric IDs of a codingamer's followers.
+- [**`find-following-ids`**](#cg-api-codingamer-find-following-ids) — Find the numeric IDs of the codingamers that a codingamer is following.
 
 ## `cg api codingamer find-codingame-points-stats-by-handle`
 

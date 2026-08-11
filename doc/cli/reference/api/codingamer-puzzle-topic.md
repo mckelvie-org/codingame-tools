@@ -22,8 +22,8 @@ usage: cg api codingamer-puzzle-topic [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-topics-by-codingamer-id`** — Find the puzzle topics a codingamer has made progress on.
-- **`select-topics-by-codingamer-id-and-puzzle-id`** — Find the topic tree for a single puzzle, personalized with the codingamer's per-topic learned status.
+- [**`find-topics-by-codingamer-id`**](#cg-api-codingamer-puzzle-topic-find-topics-by-codingamer-id) — Find the puzzle topics a codingamer has made progress on.
+- [**`select-topics-by-codingamer-id-and-puzzle-id`**](#cg-api-codingamer-puzzle-topic-select-topics-by-codingamer-id-and-puzzle-id) — Find the topic tree for a single puzzle, personalized with the codingamer's per-topic learned status.
 
 ## `cg api codingamer-puzzle-topic find-topics-by-codingamer-id`
 

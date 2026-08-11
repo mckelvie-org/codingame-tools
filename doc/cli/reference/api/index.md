@@ -16,28 +16,28 @@ usage: cg api [-h] COMMAND ...
 
 **Subcommands**
 
-- **`file-servlet`** — Download a file by server object ID (the fileservlet servlet).
-- **`file-upload`** — Upload a file from stdin (the fileupload servlet).
-- **`notification`** — Notification service commands.
-- **`contribution`** — Contribution service commands.
-- **`clash-of-code`** — ClashOfCode service commands.
-- **`clash-of-code-description`** — ClashOfCodeDescription service commands.
-- **`featured-event`** — FeaturedEvent service commands.
-- **`codingamer-puzzle-topic`** — CodingamerPuzzleTopic service commands.
-- **`puzzle`** — Puzzle service commands.
-- **`last-activities`** — LastActivities service commands.
-- **`quest`** — Quest service commands.
-- **`intercom`** — Intercom service commands.
-- **`survey`** — Survey service commands.
-- **`achievement`** — Achievement service commands.
-- **`user`** — User service commands.
-- **`test-session`** — TestSession service commands.
-- **`report`** — Report service commands.
-- **`test-session-question-submission`** — TestSessionQuestionSubmission service commands.
-- **`codingamer`** — CodinGamer service commands.
-- **`search`** — Search service commands.
-- **`programming-language`** — ProgrammingLanguage service commands.
-- **`vote`** — Vote service commands.
+- [**`file-servlet`**](file-servlet.md#cg-api-file-servlet) — Download a file by server object ID (the fileservlet servlet).
+- [**`file-upload`**](file-upload.md#cg-api-file-upload) — Upload a file from stdin (the fileupload servlet).
+- [**`notification`**](notification.md#cg-api-notification) — Notification service commands.
+- [**`contribution`**](contribution.md#cg-api-contribution) — Contribution service commands.
+- [**`clash-of-code`**](clash-of-code.md#cg-api-clash-of-code) — ClashOfCode service commands.
+- [**`clash-of-code-description`**](clash-of-code-description.md#cg-api-clash-of-code-description) — ClashOfCodeDescription service commands.
+- [**`featured-event`**](featured-event.md#cg-api-featured-event) — FeaturedEvent service commands.
+- [**`codingamer-puzzle-topic`**](codingamer-puzzle-topic.md#cg-api-codingamer-puzzle-topic) — CodingamerPuzzleTopic service commands.
+- [**`puzzle`**](puzzle.md#cg-api-puzzle) — Puzzle service commands.
+- [**`last-activities`**](last-activities.md#cg-api-last-activities) — LastActivities service commands.
+- [**`quest`**](quest.md#cg-api-quest) — Quest service commands.
+- [**`intercom`**](intercom.md#cg-api-intercom) — Intercom service commands.
+- [**`survey`**](survey.md#cg-api-survey) — Survey service commands.
+- [**`achievement`**](achievement.md#cg-api-achievement) — Achievement service commands.
+- [**`user`**](user.md#cg-api-user) — User service commands.
+- [**`test-session`**](test-session.md#cg-api-test-session) — TestSession service commands.
+- [**`report`**](report.md#cg-api-report) — Report service commands.
+- [**`test-session-question-submission`**](test-session-question-submission.md#cg-api-test-session-question-submission) — TestSessionQuestionSubmission service commands.
+- [**`codingamer`**](codingamer.md#cg-api-codingamer) — CodinGamer service commands.
+- [**`search`**](search.md#cg-api-search) — Search service commands.
+- [**`programming-language`**](programming-language.md#cg-api-programming-language) — ProgrammingLanguage service commands.
+- [**`vote`**](vote.md#cg-api-vote) — Vote service commands.
 
 ---
 

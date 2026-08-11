@@ -25,11 +25,11 @@ usage: cg api test-session [-h] COMMAND ...
 
 **Subcommands**
 
-- **`start-test-session`** — Start (or resume) an interactive IDE test session for a puzzle.
-- **`play`** — Run a codingamer's code against a single test case within a test session. Code is read from stdin.
-- **`generate-lsp-token`** — Generate a Language Server Protocol (LSP) auth token for a test session.
-- **`get-previous-code-by-language-id`** — Fetch the codingamer's most recently saved code for one language in a test session. CodinGame keeps your latest source per language, not just one; this reaches the ones the session isn't currently on. Prints JSON null if you've never attempted the puzzle in that language. This is a pure read--it does NOT make that language the session's current one (only running a test or submitting does that).
-- **`submit`** — Submit a final solution to a puzzle for credit. Code is read from stdin.
+- [**`start-test-session`**](#cg-api-test-session-start-test-session) — Start (or resume) an interactive IDE test session for a puzzle.
+- [**`play`**](#cg-api-test-session-play) — Run a codingamer's code against a single test case within a test session. Code is read from stdin.
+- [**`generate-lsp-token`**](#cg-api-test-session-generate-lsp-token) — Generate a Language Server Protocol (LSP) auth token for a test session.
+- [**`get-previous-code-by-language-id`**](#cg-api-test-session-get-previous-code-by-language-id) — Fetch the codingamer's most recently saved code for one language in a test session. CodinGame keeps your latest source per language, not just one; this reaches the ones the session isn't currently on. Prints JSON null if you've never attempted the puzzle in that language. This is a pure read--it does NOT make that language the session's current one (only running a test or submitting does that).
+- [**`submit`**](#cg-api-test-session-submit) — Submit a final solution to a puzzle for credit. Code is read from stdin.
 
 ## `cg api test-session start-test-session`
 

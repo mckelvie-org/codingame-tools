@@ -21,7 +21,7 @@ usage: cg api programming-language [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-all-ids`** — Find the IDs of all programming languages supported for contribution reference solutions.
+- [**`find-all-ids`**](#cg-api-programming-language-find-all-ids) — Find the IDs of all programming languages supported for contribution reference solutions.
 
 ## `cg api programming-language find-all-ids`
 

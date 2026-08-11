@@ -21,7 +21,7 @@ usage: cg api notification [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-unread-notifications`** — Find unread notifications for a codingamer.
+- [**`find-unread-notifications`**](#cg-api-notification-find-unread-notifications) — Find unread notifications for a codingamer.
 
 ## `cg api notification find-unread-notifications`
 

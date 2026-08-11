@@ -29,9 +29,9 @@ usage: cg settings [-h] COMMAND ...
 
 **Subcommands**
 
-- **`dump`** — Dump the resolved settings as JSON.
-- **`set`** — Set a settings.json value.
-- **`delete`** — Delete a settings.json value.
+- [**`dump`**](#cg-settings-dump) — Dump the resolved settings as JSON.
+- [**`set`**](#cg-settings-set) — Set a settings.json value.
+- [**`delete`**](#cg-settings-delete) — Delete a settings.json value.
 
 ## `cg settings dump`
 
@@ -51,9 +51,9 @@ usage: cg settings set [-h] COMMAND ...
 
 **Subcommands**
 
-- **`default-profile`** — Set the default codingame-tools credential profile name.
-- **`contribution-dir`** — Set the default contribution working directory.
-- **`puzzle-dir`** — Set the default puzzle working directory.
+- [**`default-profile`**](#cg-settings-set-default-profile) — Set the default codingame-tools credential profile name.
+- [**`contribution-dir`**](#cg-settings-set-contribution-dir) — Set the default contribution working directory.
+- [**`puzzle-dir`**](#cg-settings-set-puzzle-dir) — Set the default puzzle working directory.
 
 ## `cg settings set default-profile`
 
@@ -101,9 +101,9 @@ usage: cg settings delete [-h] COMMAND ...
 
 **Subcommands**
 
-- **`default-profile`** — Delete (unset) the default codingame-tools credential profile name override.
-- **`contribution-dir`** — Delete (unset) the default contribution working directory override.
-- **`puzzle-dir`** — Delete (unset) the default puzzle working directory override.
+- [**`default-profile`**](#cg-settings-delete-default-profile) — Delete (unset) the default codingame-tools credential profile name override.
+- [**`contribution-dir`**](#cg-settings-delete-contribution-dir) — Delete (unset) the default contribution working directory override.
+- [**`puzzle-dir`**](#cg-settings-delete-puzzle-dir) — Delete (unset) the default puzzle working directory override.
 
 ## `cg settings delete default-profile`
 

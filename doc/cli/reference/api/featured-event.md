@@ -25,11 +25,11 @@ usage: cg api featured-event [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-upcoming-and-ongoing-featured-events`** — Find upcoming and ongoing site-wide featured events.
-- **`is-codingamer-auto-registered`** — Check whether a codingamer is auto-registered for featured events.
-- **`find-new-featured-event-count`** — Count featured events published since a given point in time.
-- **`find-clash-slots`** — Find the individual scheduled Clash of Code slots belonging to a featured event.
-- **`find-by-handle`** — Find a featured event by its opaque handle.
+- [**`find-upcoming-and-ongoing-featured-events`**](#cg-api-featured-event-find-upcoming-and-ongoing-featured-events) — Find upcoming and ongoing site-wide featured events.
+- [**`is-codingamer-auto-registered`**](#cg-api-featured-event-is-codingamer-auto-registered) — Check whether a codingamer is auto-registered for featured events.
+- [**`find-new-featured-event-count`**](#cg-api-featured-event-find-new-featured-event-count) — Count featured events published since a given point in time.
+- [**`find-clash-slots`**](#cg-api-featured-event-find-clash-slots) — Find the individual scheduled Clash of Code slots belonging to a featured event.
+- [**`find-by-handle`**](#cg-api-featured-event-find-by-handle) — Find a featured event by its opaque handle.
 
 ## `cg api featured-event find-upcoming-and-ongoing-featured-events`
 

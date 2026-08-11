@@ -21,7 +21,7 @@ usage: cg api intercom [-h] COMMAND ...
 
 **Subcommands**
 
-- **`generate-token`** — Generate an Intercom identity-verification JWT for the logged-in codingamer.
+- [**`generate-token`**](#cg-api-intercom-generate-token) — Generate an Intercom identity-verification JWT for the logged-in codingamer.
 
 ## `cg api intercom generate-token`
 

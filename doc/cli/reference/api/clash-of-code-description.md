@@ -21,7 +21,7 @@ usage: cg api clash-of-code-description [-h] COMMAND ...
 
 **Subcommands**
 
-- **`get-clash-description`** — Get localized help/explainer content for Clash of Code.
+- [**`get-clash-description`**](#cg-api-clash-of-code-description-get-clash-description) — Get localized help/explainer content for Clash of Code.
 
 ## `cg api clash-of-code-description get-clash-description`
 

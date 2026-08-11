@@ -21,7 +21,7 @@ usage: cg api report [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-report-by-submission`** — Find the results report for a single puzzle submission.
+- [**`find-report-by-submission`**](#cg-api-report-find-report-by-submission) — Find the results report for a single puzzle submission.
 
 ## `cg api report find-report-by-submission`
 

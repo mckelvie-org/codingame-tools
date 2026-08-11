@@ -46,23 +46,23 @@ usage: cg [-h] [--trace-http] [--profile PROFILE] [--json] [--config PATH]
 
 **Subcommands**
 
-- **`content-hash`** — Compute a content hash from stdin content.
-- **`login`** — Log in and save the credentials. By default, opens a browser window for the user to log in interactively.
-- **`logout`** — Log out of a given profile's session.
-- **`whoami`** — Show the current logged-in user and other session info for the given profile.
-- **`status`** — Summarize the current session: login status, profile details, and points/rank stats for the logged-in codingamer. Always hits the network--there's no cached/local mode, unlike `cg contribution status`/`cg puzzle status` (that's the whole point of this command). "Gamer stats" are informational, not a breakdown of one another--see CgCodingamePointsRankingDto's docstring for why. With --json (top-level option), renders as JSON instead of text.
-- **`raw-api`** — Raw (unstructured JSON) API commands.
-- **`api`** — Low-level API commands.
-- **`api-helper`** — Higher-level helper commands, layered on top of the plain API wrappers (retries, polling, data normalization).
-- **`play`** — Run the solution for whatever file you name against its working directory's test cases, whether that's a puzzle or a contribution. Entirely local--no network access at all. Exists so one editor task can serve every working directory in a workspace: `cg play --file ${file}` needs to know neither which kind of working directory it's in nor where that directory is. Exits non-zero if any test fails.
-- **`vscode`** — Editor integration for VS Code. All-or-nothing opt-in: nothing here is written unless you ask for it, and what is written is confined to entries cg names as its own.
-- **`debug`** — Debug-session commands that work in any working directory, puzzle or contribution. The kind-agnostic counterparts of `cg puzzle debug` / `cg contribution debug`, taking a file instead of a directory and a test selection instead of a test argument--which is what lets one static VS Code launch configuration per language serve a whole workspace.
-- **`contributions`** — List server-side contributions, one line per contribution (handle, id, status, puzzle type, title). By default lists all pending (community-review-queue) contributions from every author (`Contribution/getAllPendingContributions`); --personal lists only the logged-in codingamer's own contributions, any status (`Contribution/getPersonalContributions`). With --json (top-level option), prints the raw list instead--shape depends on which endpoint was used (CgPendingContribution vs CgPersonalContribution--no unified schema between the two yet).
-- **`contribution`** — Contribution working directory commands--manage a local, possibly-uncommitted working view of a single contribution, backed by a real git repo (see codingame_tools.contribution_manager.manager for the main/server/version-data branch design). See `cg api contribution`/`cg api-helper contribution` for the raw, stateless API this is built on.
-- **`puzzle`** — Puzzle working directory commands--solve an existing CodinGame puzzle locally. Much simpler than `cg contribution`: exactly one file (data/solution.src) is ever editable, so there's no git repo involved--see codingame_tools.puzzle_manager.manager's module docstring. Currently only classic PUZZLE_INOUT puzzles are supported.
-- **`docker`** — Manage the Docker containers and images cg builds for languages that run in a container. One image carries every language cg can containerize (see `cg docker toolchain list`); C++ is currently the one with a container-backed build, run and debug path. Nothing here holds anything you authored--see `cg docker clean`.
-- **`config`** — Configuration commands.
-- **`settings`** — Settings commands (app-managed persistent state in settings.json, as opposed to the user-edited config.yaml--see `cg config`).
+- [**`content-hash`**](#cg-content-hash) — Compute a content hash from stdin content.
+- [**`login`**](#cg-login) — Log in and save the credentials. By default, opens a browser window for the user to log in interactively.
+- [**`logout`**](#cg-logout) — Log out of a given profile's session.
+- [**`whoami`**](#cg-whoami) — Show the current logged-in user and other session info for the given profile.
+- [**`status`**](#cg-status) — Summarize the current session: login status, profile details, and points/rank stats for the logged-in codingamer. Always hits the network--there's no cached/local mode, unlike `cg contribution status`/`cg puzzle status` (that's the whole point of this command). "Gamer stats" are informational, not a breakdown of one another--see CgCodingamePointsRankingDto's docstring for why. With --json (top-level option), renders as JSON instead of text.
+- [**`raw-api`**](raw-api.md#cg-raw-api) — Raw (unstructured JSON) API commands.
+- [**`api`**](api/index.md#cg-api) — Low-level API commands.
+- [**`api-helper`**](api-helper.md#cg-api-helper) — Higher-level helper commands, layered on top of the plain API wrappers (retries, polling, data normalization).
+- [**`play`**](#cg-play) — Run the solution for whatever file you name against its working directory's test cases, whether that's a puzzle or a contribution. Entirely local--no network access at all. Exists so one editor task can serve every working directory in a workspace: `cg play --file ${file}` needs to know neither which kind of working directory it's in nor where that directory is. Exits non-zero if any test fails.
+- [**`vscode`**](#cg-vscode) — Editor integration for VS Code. All-or-nothing opt-in: nothing here is written unless you ask for it, and what is written is confined to entries cg names as its own.
+- [**`debug`**](#cg-debug) — Debug-session commands that work in any working directory, puzzle or contribution. The kind-agnostic counterparts of `cg puzzle debug` / `cg contribution debug`, taking a file instead of a directory and a test selection instead of a test argument--which is what lets one static VS Code launch configuration per language serve a whole workspace.
+- [**`contributions`**](#cg-contributions) — List server-side contributions, one line per contribution (handle, id, status, puzzle type, title). By default lists all pending (community-review-queue) contributions from every author (`Contribution/getAllPendingContributions`); --personal lists only the logged-in codingamer's own contributions, any status (`Contribution/getPersonalContributions`). With --json (top-level option), prints the raw list instead--shape depends on which endpoint was used (CgPendingContribution vs CgPersonalContribution--no unified schema between the two yet).
+- [**`contribution`**](contribution.md#cg-contribution) — Contribution working directory commands--manage a local, possibly-uncommitted working view of a single contribution, backed by a real git repo (see codingame_tools.contribution_manager.manager for the main/server/version-data branch design). See `cg api contribution`/`cg api-helper contribution` for the raw, stateless API this is built on.
+- [**`puzzle`**](puzzle.md#cg-puzzle) — Puzzle working directory commands--solve an existing CodinGame puzzle locally. Much simpler than `cg contribution`: exactly one file (data/solution.src) is ever editable, so there's no git repo involved--see codingame_tools.puzzle_manager.manager's module docstring. Currently only classic PUZZLE_INOUT puzzles are supported.
+- [**`docker`**](docker.md#cg-docker) — Manage the Docker containers and images cg builds for languages that run in a container. One image carries every language cg can containerize (see `cg docker toolchain list`); C++ is currently the one with a container-backed build, run and debug path. Nothing here holds anything you authored--see `cg docker clean`.
+- [**`config`**](config.md#cg-config) — Configuration commands.
+- [**`settings`**](settings.md#cg-settings) — Settings commands (app-managed persistent state in settings.json, as opposed to the user-edited config.yaml--see `cg config`).
 
 ## `cg content-hash`
 
@@ -146,7 +146,7 @@ usage: cg vscode [-h] COMMAND ...
 
 **Subcommands**
 
-- **`install`** — Install cg's VS Code run/debug configuration. What it writes is the same for every working directory of a given language, so this is run once per language rather than once per working directory--and never again after an import, repair, or language change. With --file, sets up just that file's working directory; with no arguments, every working directory cg can find (the one you are standing in, plus the active puzzle and contribution). Writes into the workspace root's .vscode/ (VS Code only reads launch.json from the workspace root, never from a subdirectory), merging with what is already there: it replaces only the entries it generated, leaves yours alone, and does not touch a file whose content would not change.
+- [**`install`**](#cg-vscode-install) — Install cg's VS Code run/debug configuration. What it writes is the same for every working directory of a given language, so this is run once per language rather than once per working directory--and never again after an import, repair, or language change. With --file, sets up just that file's working directory; with no arguments, every working directory cg can find (the one you are standing in, plus the active puzzle and contribution). Writes into the workspace root's .vscode/ (VS Code only reads launch.json from the workspace root, never from a subdirectory), merging with what is already there: it replaces only the entries it generated, leaves yours alone, and does not touch a file whose content would not change.
 
 ## `cg vscode install`
 
@@ -175,8 +175,8 @@ usage: cg debug [-h] COMMAND ...
 
 **Subcommands**
 
-- **`start`** — Build the debug profile and start a stopped debug target fed by the working directory's selected test case, ready for a debugger to attach. Prints the connection details. Which test is selected comes from `.meta/` (see `cg puzzle select-test` / `cg contribution select-test`), defaulting to the first test case--so this command needs no test argument, and a launch configuration wiring it to a preLaunchTask never has to be regenerated.
-- **`stop`** — Stop a debug target started by `cg debug start`. Always succeeds, including when nothing is running--it's wired to a postDebugTask, which fires even for a session that never really began.
+- [**`start`**](#cg-debug-start) — Build the debug profile and start a stopped debug target fed by the working directory's selected test case, ready for a debugger to attach. Prints the connection details. Which test is selected comes from `.meta/` (see `cg puzzle select-test` / `cg contribution select-test`), defaulting to the first test case--so this command needs no test argument, and a launch configuration wiring it to a preLaunchTask never has to be regenerated.
+- [**`stop`**](#cg-debug-stop) — Stop a debug target started by `cg debug start`. Always succeeds, including when nothing is running--it's wired to a postDebugTask, which fires even for a session that never really began.
 
 ## `cg debug start`
 

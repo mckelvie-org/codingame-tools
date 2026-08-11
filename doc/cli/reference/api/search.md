@@ -21,7 +21,7 @@ usage: cg api search [-h] COMMAND ...
 
 **Subcommands**
 
-- **`search`** — Search for codingamers, puzzles, and other objects by name.
+- [**`search`**](#cg-api-search-search) — Search for codingamers, puzzles, and other objects by name.
 
 ## `cg api search search`
 

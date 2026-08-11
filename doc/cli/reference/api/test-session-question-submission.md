@@ -21,7 +21,7 @@ usage: cg api test-session-question-submission [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-all-submissions`** — Find all past submissions for a puzzle, most recent first.
+- [**`find-all-submissions`**](#cg-api-test-session-question-submission-find-all-submissions) — Find all past submissions for a puzzle, most recent first.
 
 ## `cg api test-session-question-submission find-all-submissions`
 

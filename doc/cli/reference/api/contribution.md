@@ -28,14 +28,14 @@ usage: cg api contribution [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-contribution`** — Find a contribution by its opaque contribution ID.
-- **`find-new-contribution-count`** — Count new contributions published since a given point in time.
-- **`find-contribution-moderators`** — List the moderators who have cast a given vote ('validate'/'deny') on a PENDING contribution's approve/reject moderation gate--the privileged gate that actually decides whether it gets published or rejected (3 votes either way, confirmed live). Distinct from the ungated community vote (`cg api vote find-votable-values-by-id`)--do not conflate the two.
-- **`get-all-pending-contributions`** — Get pending (community-review-queue) contributions.
-- **`get-personal-contributions`** — List every contribution (any status--draft/PENDING/APPROVED/REFUSED/etc.) authored by a codingamer. Unlike `get-all-pending-contributions`, this genuinely filters to just that codingamer's own contributions.
-- **`update-contribution`** — Submit a new version of a contribution's content. A JSON-serialized CgContributionData object is read from stdin.
-- **`create-contribution`** — Create a brand new contribution. A JSON-serialized CgContributionData object is read from stdin.
-- **`delete-contribution`** — Delete a contribution.
+- [**`find-contribution`**](#cg-api-contribution-find-contribution) — Find a contribution by its opaque contribution ID.
+- [**`find-new-contribution-count`**](#cg-api-contribution-find-new-contribution-count) — Count new contributions published since a given point in time.
+- [**`find-contribution-moderators`**](#cg-api-contribution-find-contribution-moderators) — List the moderators who have cast a given vote ('validate'/'deny') on a PENDING contribution's approve/reject moderation gate--the privileged gate that actually decides whether it gets published or rejected (3 votes either way, confirmed live). Distinct from the ungated community vote (`cg api vote find-votable-values-by-id`)--do not conflate the two.
+- [**`get-all-pending-contributions`**](#cg-api-contribution-get-all-pending-contributions) — Get pending (community-review-queue) contributions.
+- [**`get-personal-contributions`**](#cg-api-contribution-get-personal-contributions) — List every contribution (any status--draft/PENDING/APPROVED/REFUSED/etc.) authored by a codingamer. Unlike `get-all-pending-contributions`, this genuinely filters to just that codingamer's own contributions.
+- [**`update-contribution`**](#cg-api-contribution-update-contribution) — Submit a new version of a contribution's content. A JSON-serialized CgContributionData object is read from stdin.
+- [**`create-contribution`**](#cg-api-contribution-create-contribution) — Create a brand new contribution. A JSON-serialized CgContributionData object is read from stdin.
+- [**`delete-contribution`**](#cg-api-contribution-delete-contribution) — Delete a contribution.
 
 ## `cg api contribution find-contribution`
 

@@ -23,7 +23,7 @@ usage: cg api-helper [-h] COMMAND ...
 
 **Subcommands**
 
-- **`contribution`** — Contribution service helper commands.
+- [**`contribution`**](#cg-api-helper-contribution) — Contribution service helper commands.
 
 ## `cg api-helper contribution`
 
@@ -35,8 +35,8 @@ usage: cg api-helper contribution [-h] COMMAND ...
 
 **Subcommands**
 
-- **`update-contribution`** — Submit a new version of a contribution's content, with 524 retry/polling. A JSON-serialized CgContributionData object is read from stdin.
-- **`create-contribution`** — Create a brand new contribution (deliberately with no 524 retry--see CgContributionServiceHelper.create_contribution). A JSON-serialized CgContributionData object is read from stdin.
+- [**`update-contribution`**](#cg-api-helper-contribution-update-contribution) — Submit a new version of a contribution's content, with 524 retry/polling. A JSON-serialized CgContributionData object is read from stdin.
+- [**`create-contribution`**](#cg-api-helper-contribution-create-contribution) — Create a brand new contribution (deliberately with no 524 retry--see CgContributionServiceHelper.create_contribution). A JSON-serialized CgContributionData object is read from stdin.
 
 ## `cg api-helper contribution update-contribution`
 

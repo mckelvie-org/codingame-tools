@@ -21,7 +21,7 @@ usage: cg api user [-h] COMMAND ...
 
 **Subcommands**
 
-- **`update-user-properties`** — Update a subset of a codingamer's account properties.
+- [**`update-user-properties`**](#cg-api-user-update-user-properties) — Update a subset of a codingamer's account properties.
 
 ## `cg api user update-user-properties`
 

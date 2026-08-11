@@ -21,7 +21,7 @@ usage: cg api survey [-h] COMMAND ...
 
 **Subcommands**
 
-- **`find-survey`** — Find a survey to potentially show a codingamer (UNVERIFIED--response shape unconfirmed).
+- [**`find-survey`**](#cg-api-survey-find-survey) — Find a survey to potentially show a codingamer (UNVERIFIED--response shape unconfirmed).
 
 ## `cg api survey find-survey`
 
