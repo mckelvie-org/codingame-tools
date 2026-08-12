@@ -269,11 +269,20 @@ class CgContributionStatusChange(JSONWizardX):
     """Who/what triggered the transition, e.g. "SYSTEM" (an automatic transition) or "ACTION"
        (triggered by the contributor's own action, e.g. editing the contribution)."""
 
-    reason: str
-    """Why the transition happened, e.g. "INACTIVITY" (automatically refused after a period of
-       no activity) or "EDIT" (moved back to pending after the contributor edited it)."""
-
+    # `extra_data` is deliberately the first field with a default: dataclass_wizard 1.0.0 mis-binds
+    # any defaulted field positioned immediately before it (silently, no error) to the CatchAll's
+    # own value. Keeping it first among the defaulted fields makes that impossible.
     extra_data: CatchAll = field(default_factory=dict)
+
+    reason: str | None = None
+    """Why the transition happened, e.g. "INACTIVITY" (automatically refused after a period of
+       no activity) or "EDIT" (moved back to pending after the contributor edited it).
+
+       **Absent for some transitions**, so optional. Observed live (2026-08-12): a contribution
+       moving to "ACCEPTED" carries `{"author": "ACTION"}` and nothing else, while "REFUSED" and
+       "PENDING" both carry a reason. Requiring it meant every call touching a contribution's
+       status history broke the moment that contribution was accepted--including
+       `updateContribution`, so an accepted contribution could not be edited at all."""
 
 
 @dataclass
