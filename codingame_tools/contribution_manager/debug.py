@@ -1,4 +1,9 @@
-"""python -m codingame_tools.contribution_manager.debug TARGET_FILE ORDINAL SIDE [--contribution-dir DIR] [--update-expected]
+"""Command-line entry point.
+
+```
+python -m codingame_tools.contribution_manager.debug TARGET_FILE ORDINAL SIDE [--contribution-dir DIR] [--update-expected]
+```
+
 
 VS Code debugger launcher for a contribution working directory's solution--a thin,
 contribution_manager-aware wrapper around `codingame_tools.test_runner.debug_stdin.

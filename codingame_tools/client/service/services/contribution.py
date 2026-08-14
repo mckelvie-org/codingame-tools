@@ -105,10 +105,11 @@ class CgContributionServiceHelper(CgServiceHelper["CgContributionService"]):
            until `last_version.version` increments past `prev_version`, instead of propagating
            the 524.
 
+        `contribution_id`, `puzzle_type`, `contribution_data`, `draft`, `ready_for_moderation`,
+           `prev_version` and `codingamer_id` are passed straight through--see
+           `CgContributionService.update_contribution`.
+
         Args:
-            contribution_id, puzzle_type, contribution_data, draft, ready_for_moderation,
-            prev_version, codingamer_id:
-                See `CgContributionService.update_contribution`.
             max_wait_seconds:
                 How long to keep polling after a 524 before giving up, in seconds. 0 (the
                 default) means wait indefinitely. Ignored entirely if no 524 occurs.
@@ -176,9 +177,8 @@ class CgContributionServiceHelper(CgServiceHelper["CgContributionService"]):
            a duplicate, or go check `cg api contribution get-all-pending-contributions`/the
            CodinGame site first) to the caller.
 
-        Args:
-            puzzle_type, contribution_data, draft, ready_for_moderation, codingamer_id:
-                See `CgContributionService.create_contribution`.
+        `puzzle_type`, `contribution_data`, `draft`, `ready_for_moderation` and `codingamer_id` are
+           passed straight through--see `CgContributionService.create_contribution`.
 
         Returns:
             The new contribution's opaque public handle (`CgContributionId`).

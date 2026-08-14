@@ -71,7 +71,7 @@ installs -- but they are governed differently, on purpose.
 
 | | `doc/cli/reference/` | `codingame_tools/contribution_manager/assets/cover-placeholder.png` |
 |---|---|---|
-| Regenerate with | `bin/gen-docs` | `bin/gen-default-cover-image` |
+| Regenerate with | `bin/gen-cli-reference` | `bin/gen-default-cover-image` |
 | Derived from | the `cg` argparse tree, i.e. all of `cli/main.py` | `scripts/gen_cover_placeholder.py` alone |
 | Treated as | a **build artifact** | **source** |
 | May drift on `main`? | yes, but bounded -- see below | no |
@@ -84,10 +84,23 @@ a cached copy that is allowed to lag between releases -- nothing in CI enforces 
 of every `cut-rc`. So drift is bounded by one release cycle rather than unbounded, and because
 `cut-rc` builds its release worktree from `HEAD` afterwards, the tagged commit inherits exactly the
 same files: `main` and the tag agree by construction, not coincidence. Refresh yours whenever you
-like -- `bin/gen-docs`, then `git status` shows the diff.
+like -- `bin/gen-cli-reference`, then `git status` shows the diff.
 
-(`bin/gen-docs` and `bin/gen-default-cover-image` are thin wrappers over the `pdm run` scripts of the same names,
-so that `ls bin/` lists everything you can do to this project in one place. Either spelling works.)
+(`bin/gen-cli-reference` and `bin/gen-default-cover-image` are thin wrappers over the `pdm run` scripts of
+the same names, so that `ls bin/` lists everything you can do to this project in one place. Either
+spelling works.)
+
+**`bin/docs` previews the site**: it serves it locally and opens it in a dedicated Chromium
+window with no address bar, shutting the server down when you close the window. That coupling
+is the point -- a bare `mkdocs serve` outlives the tab you were reading and squats on a port
+until you remember it. It reuses the Playwright `cg login` already depends on, in a throwaway
+profile that cannot see saved credentials, and picks a free port rather than fighting over 8000.
+
+**`bin/gen-docs` runs both documentation generators**: the CLI reference above, then the
+documentation site (`mkdocs build --strict`). The site's API reference is generated at build time
+and never committed -- its value is the cross-links, which only resolve once mkdocstrings and
+autorefs have run, so a checked-in copy would be both stale and dead. `bin/gen-docs --serve` runs a
+live-reloading local server instead, which is what you want while writing docs.
 
 Regeneration also *prunes*: a page whose command was renamed or removed is deleted, not left behind.
 

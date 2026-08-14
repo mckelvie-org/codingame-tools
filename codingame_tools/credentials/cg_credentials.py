@@ -529,7 +529,7 @@ def get_credentials_with_override(
        Args:
            profile_name: Optional profile name to use for fetching credentials. If None, the default profile is used.
            store: Optional CgCredentialsProfileStore to use for fetching credentials.
-              If None, the default persistent store singleton for the given app name is used.
+               If None, the default persistent store singleton for the given app name is used.
            credentials: Optional CgCredentials object to use as an override. Ignored if None or if either of the cookie values are None.
            remember_me_token: Optional override for the `rememberMe` cookie value.
            cg_session_token: Optional override for the `cgSession` cookie value.

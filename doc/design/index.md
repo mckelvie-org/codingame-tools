@@ -10,6 +10,9 @@ each one looks wrong at first glance, and each was arrived at by getting it wron
   library versions, and the `-O0` finding their docs don't mention.
 - **[Composable toolchain images](toolchain-images.md)** — why one image carries every language,
   and how fragments compose so a subset shares layers with a superset.
+- **[The documentation toolchain](docs-toolchain.md)** — why the site is built with ProperDocs
+  rather than MkDocs, why MkDocs 2.0 is not a destination, and the page-count test that decides
+  when Zensical becomes one.
 
 ## What belongs here
 

@@ -1,4 +1,9 @@
-"""python -m codingame_tools.puzzle_manager.debug TARGET_FILE TEST_INDEX [--puzzle-dir DIR]
+"""Command-line entry point.
+
+```
+python -m codingame_tools.puzzle_manager.debug TARGET_FILE TEST_INDEX [--puzzle-dir DIR]
+```
+
 
 VS Code debugger launcher for a puzzle working directory's solution--a thin, puzzle_manager-aware
 wrapper around `codingame_tools.test_runner.debug_stdin.run_debug_stdin`. TARGET_FILE (VS Code's

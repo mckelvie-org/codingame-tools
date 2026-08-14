@@ -26,7 +26,7 @@ set -euo pipefail
 GENERATED_PATH="doc/cli/reference"
 
 echo "Regenerating ${GENERATED_PATH}..." >&2
-pdm run gen-docs >&2
+pdm run gen-cli-reference >&2
 
 # Only commit when something actually changed. The generator is deterministic -- same source in,
 # byte-identical files out, independent of machine or working directory -- so an empty diff is the
@@ -42,7 +42,7 @@ git add -A -- "$GENERATED_PATH"
 git commit -m "chore: regenerate CLI reference
 
 Automated by bin/cut-rc-prep before cutting a release candidate. The CLI
-reference is generated from the argparse tree by \`pdm run gen-docs\`."
+reference is generated from the argparse tree by \`pdm run gen-cli-reference\`."
 
 # Plain push, no retry loop: cut-rc is interactive and a human is right here. If origin/main moved
 # under us, failing with git's own message is more useful than looping -- pull, rerun, done.

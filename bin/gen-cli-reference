@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Usage: gen-cli-reference [OUTPUT_ROOT]
+#
+# Regenerate the CLI command reference under doc/cli/reference/ from the `cg` argparse tree.
+# With OUTPUT_ROOT, writes there instead of into this repository (used by tests).
+#
+# The reference is a build artifact, not source: it's committed so it's readable on GitHub without a
+# build step, but main's copy is allowed to lag and nothing in CI enforces otherwise. bin/cut-rc-prep
+# regenerates and pushes it at each release candidate. See CONTRIBUTING.md, "Generated files".
+#
+# Named for what it generates, not for "the docs": since the documentation site arrived there are
+# two generators, and this is the narrow one. `bin/gen-docs` runs both.
+#
+# Thin wrapper around `pdm run gen-cli-reference`, which is the same thing. It exists so that
+# `ls bin/` shows the actions available in this project without having to remember which are pdm
+# scripts.
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR/.."
+
+exec pdm run gen-cli-reference "$@"

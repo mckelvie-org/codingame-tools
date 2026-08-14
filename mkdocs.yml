@@ -1,0 +1,107 @@
+site_name: codingame-tools
+site_description: A Python client, CLI and toolkit for CodinGame puzzles and contributions.
+site_url: https://mckelvie-org.github.io/codingame-tools/
+repo_url: https://github.com/mckelvie-org/codingame-tools
+edit_uri: edit/main/doc/
+
+# The hand-written guides already live here and are browsed directly on GitHub, so they stay put
+# rather than being copied into a `docs/` of their own. mkdocs renders them; it doesn't consume them.
+docs_dir: doc
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/weather-night, name: Switch to dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/weather-sunny, name: Switch to light mode}
+
+plugins:
+  - search
+  # The API reference is generated at build time (see scripts/gen_api_pages.py) rather than
+  # committed, unlike the CLI reference: it exists to be cross-linked, and the links only resolve
+  # once mkdocstrings and autorefs have run.
+  - gen-files:
+      scripts: [scripts/gen_api_pages.py]
+  - literate-nav:
+      nav_file: SUMMARY.md
+  # autorefs resolves `[Thing][]` and mkdocstrings' own cross-references across pages, which is the
+  # whole reason the API reference is generated rather than committed: 643 backticked references
+  # inside these docstrings become real links instead of dead text.
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: google
+            docstring_section_style: list
+            # Attribute docstrings -- a bare string literal after the annotation -- are 729 of this
+            # package's field descriptions and do not exist on the runtime object. griffe reads them
+            # statically, which is why this is worth doing at all.
+            show_if_no_docstring: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            separate_signature: true
+            signature_crossrefs: true
+            merge_init_into_class: true
+            filters: ["!^_"]
+
+nav:
+  - Home: index.md
+  - CLI:
+      - cli/index.md
+      - Solving puzzles: cli/puzzles.md
+      - Authoring contributions: cli/contributions.md
+      - Debugging: cli/debugging.md
+      - Command reference: cli/reference/
+  - Concepts:
+      - concepts/index.md
+      - Authentication: concepts/authentication.md
+      - Profiles: concepts/profiles.md
+      - Working directories: concepts/working-directories.md
+      - Languages: concepts/languages.md
+  - Python API:
+      - client/index.md
+      - Services: client/services.md
+      - Files: client/files.md
+      - Managers: tools/index.md
+      - Puzzle manager: tools/puzzle-manager.md
+      - Contribution manager: tools/contribution-manager.md
+  - API reference: api/
+  - Design notes:
+      - design/index.md
+      - Final newlines: design/final-newlines.md
+      - What CodinGame runs: design/codingame-runtime.md
+      - Toolchain images: design/toolchain-images.md
+      - Documentation toolchain: design/docs-toolchain.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+# Adds the version to `site_name` at build time -- see the module docstring for why the title, and
+# not just the version selector below, carries it.
+hooks:
+  - scripts/docs_hooks.py
+
+extra:
+  version:
+    provider: mike

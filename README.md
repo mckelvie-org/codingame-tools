@@ -114,6 +114,13 @@ asyncio.run(main())
 
 ## Documentation
 
+**[The documentation site](https://mckelvie-org.github.io/codingame-tools/latest/)** is the fullest
+version: the same guides, plus a searchable [API reference](https://mckelvie-org.github.io/codingame-tools/latest/api/)
+generated from the source. It carries its own version selector — `dev` for the tip of `main`, and
+every released `X.Y`.
+
+The guides are also plain Markdown in the repository, readable straight from GitHub:
+
 - **[Documentation for this version](doc/index.md)** — concepts, workflow guides, the client
   library, and a [command reference](doc/cli/reference/index.md) generated from the CLI itself.
 - **[Documentation for the latest release](https://github.com/mckelvie-org/codingame-tools/blob/prod-latest/doc/index.md)**
@@ -124,7 +131,13 @@ asyncio.run(main())
 The first link is relative in the repository and is rewritten to an absolute, tag-pinned URL when a
 release is cut, so it resolves both on GitHub and on PyPI, and always points at the docs as they
 were for *that* version. The other two are absolute and deliberately unpinned, so they keep tracking
-`prod-latest` and `main` no matter which version's page you found them on.
+`prod-latest` and `main` no matter which version's page you found them on. The site link is pinned
+the same way — a release's PyPI page links at that release's `X.Y` docs, not at whatever `latest`
+has become since.
+
+The API reference is only on the site. It is generated at build time rather than committed, because
+its value is the cross-links: several hundred references inside these docstrings become real links
+only once the site resolves them.
 
 ## Caveats
 

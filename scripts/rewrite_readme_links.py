@@ -118,11 +118,32 @@ def rewrite_links(text: str, repo: str, ref: str, root: Path) -> str:
     return "".join(out)
 
 
+
+_DOCS_LATEST_RE = re.compile(r"(https://[^/\s)]+/[^/\s)]+/)latest/")
+"""A link into the published documentation site's `latest` alias.
+
+   The site is versioned (see `.github/workflows/docs.yml`): `latest` follows the newest release,
+   which is right for the README you browse on GitHub but wrong for the copy PyPI freezes with a
+   release. A 2.0.0 project page linking at `latest` sends readers to whatever shipped since."""
+
+
+def pin_docs_version(text: str, ref: str) -> str:
+    """Repoint documentation-site links from `latest` to the series this release belongs to.
+
+       `v2.0.1` -> `2.0`, matching the alias `mike` publishes. Left alone for a ref that isn't a
+       release tag (an rc, a branch), since there is no published series to pin to."""
+    match = re.fullmatch(r"v?(\d+)\.(\d+)\.\d+", ref)
+    if match is None:
+        return text
+    series = f"{match.group(1)}.{match.group(2)}"
+    return _DOCS_LATEST_RE.sub(rf"\g<1>{series}/", text)
+
+
 def rewrite_readme_file(readme_path: Path, repo: str, ref: str, root: Path | None = None) -> int:
     """Rewrite `readme_path` in place. Returns how many links changed."""
     root = root if root is not None else readme_path.parent
     original = readme_path.read_text(encoding="utf-8")
-    updated = rewrite_links(original, repo, ref, root)
+    updated = pin_docs_version(rewrite_links(original, repo, ref, root), ref)
     if updated != original:
         readme_path.write_text(updated, encoding="utf-8")
     # Rewriting is line-wise, so the line count is invariant; strict= asserts that rather than

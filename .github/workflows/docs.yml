@@ -1,0 +1,71 @@
+name: Docs
+run-name: "Docs · ${{ github.ref_name }}"
+
+# Deploys the versioned documentation site to GitHub Pages, using the same tag discipline the
+# publish workflows already follow:
+#
+#   push to main                    -> /dev/            the in-development docs
+#   tag v*-rc.*                     -> (nothing)        an rc is not a published version
+#   tag vX.Y.Z (no -rc)             -> /X.Y/ + /latest/ the current release
+#
+# Aliased on X.Y rather than X.Y.Z on purpose: a directory per patch release would make the version
+# selector unusable within a couple of months, and patch releases do not change the API surface by
+# definition.
+#
+# `mike` keeps every version in its own directory on the gh-pages branch, plus the versions.json
+# that Material's version selector reads. Building here rather than committing generated pages is
+# the whole point -- the API reference only exists once mkdocstrings and autorefs have resolved the
+# cross-references (see scripts/gen_api_pages.py).
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+      - '!v*-rc.*'
+  workflow_dispatch:
+
+permissions:
+  # mike pushes the built site to the gh-pages branch.
+  contents: write
+
+concurrency:
+  # Two deploys racing would interleave commits on gh-pages and can corrupt versions.json.
+  group: docs-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # mike needs real history: it commits onto gh-pages, which a shallow clone cannot do.
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4.5
+        with:
+          python-version: "3.12"
+          cache: true
+
+      - name: Install dependencies
+        run: pdm install -G docs
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy development docs
+        if: github.ref == 'refs/heads/main'
+        run: pdm run mike deploy --push dev
+
+      - name: Deploy release docs
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # v2.0.1 -> 2.0 : the alias tracks the minor series, and `latest` follows it.
+          TAG="${GITHUB_REF_NAME#v}"
+          SERIES="${TAG%.*}"
+          pdm run mike deploy --push --update-aliases "$SERIES" latest
+          pdm run mike set-default --push latest

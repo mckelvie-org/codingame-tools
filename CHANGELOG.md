@@ -2,6 +2,50 @@
 
 ## {{UNRELEASED}}
 
+- **A documentation site, with a generated API reference.** Published to GitHub Pages and versioned:
+  `dev` tracks `main`, and every release gets its own `X.Y` with `latest` following the newest. The
+  guides stay in `doc/` as plain Markdown and remain readable on GitHub exactly as before -- the site
+  renders those same files rather than replacing them.
+
+  The **API reference is new, and site-only**: the protocol dataclasses, the client services, and the
+  puzzle and contribution manager APIs, generated from the source at build time. It is not committed,
+  and that is the point. These docstrings carry 643 backticked cross-references and 729 attribute
+  docstrings -- a bare string after a field annotation, which does not exist on the runtime object at
+  all. Committed Markdown would render both as dead text; mkdocstrings and autorefs turn them into
+  real links. Exactly one reference failed to resolve on the first build.
+
+  A strict build runs in CI, so an unresolved cross-reference fails the build rather than rotting
+  quietly -- which matters once a renamed symbol can silently break links nothing checks.
+
+- **`bin/docs -q` skips the rebuild** and serves the existing `site/` immediately -- 1.1s to a
+  readable page against 9.8s, because a normal start re-runs mkdocstrings over the whole package
+  before answering anything. It serves under the same base path as a real build, so every internal
+  link resolves identically. Without `-q` the behaviour is unchanged, including live reload, which
+  is what you want while writing docs rather than reading them.
+
+- **The site title carries its version** -- `codingame-tools 2.0.1.dev1` locally, and the deployed
+  alias (`codingame-tools 2.0`, `codingame-tools dev`) on a `mike` deploy. The version selector only
+  helps while you are looking at it; the title travels with the browser tab, the bookmark and the
+  search hit, which is where "which version is this?" actually gets asked.
+
+- **The site is built with ProperDocs, not MkDocs.** MkDocs 2.0 removes the plugin system with no
+  migration path, and this site is made of plugins -- mkdocstrings alone generates the 125-page API
+  reference -- so 2.0 is not an upgrade for it. ProperDocs is the maintained continuation of MkDocs
+  1.x and builds the existing `mkdocs.yml` unchanged; the plugins had already moved, requiring it
+  and capping `mkdocs<=1.6.1` themselves, and `mike` detects it automatically, so the deploy workflow
+  needed no change.
+
+  Zensical, the other successor, was measured rather than assumed: at 0.0.54 it builds this site to
+  53 pages instead of 178, silently dropping the entire generated API reference while `--strict`
+  reports "No issues found". [`doc/design/docs-toolchain.md`](doc/design/docs-toolchain.md) records
+  the reasoning and the re-test recipe for when that changes.
+
+- **Fixed: malformed docstrings that the documentation build surfaced.** Two `Args:` blocks in
+  `CgContributionServiceHelper` listed several parameter names on one line sharing a description,
+  which Google style has no syntax for, so the whole block failed to parse. One continuation line in
+  `cg_credentials` was indented seven spaces where eight were needed. And the `debug` entry points'
+  usage lines put `[--update-expected]` in prose, where Markdown reads it as a reference link.
+
 - _Add release notes here._
 
 ## 2.0.0 (2026-08-11)

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Usage: docs [-q] [--host HOST] [--port PORT]
+#
+# Preview the documentation site: builds it, serves it locally, and opens it in a dedicated browser
+# window with no address bar. Closing the window stops the server -- which is the point, since
+# `properdocs serve` on its own outlives the tab you were reading it in and squats on a port until you
+# remember it.
+#
+# With -q/--quick, serves the existing build in site/ instead of rebuilding first, and opens at once.
+# The build is the slow part -- mkdocstrings re-reads the whole package before answering a single
+# request -- so use -q when you are looking something up, and the default when you are writing docs
+# and want your edits to show (that mode also live-reloads).
+#
+# Uses the same Playwright Chromium as `cg login`, installing it on first use exactly as that
+# does -- one shared browser. No CodinGame account or login is involved. The browser *profile*
+# is a throwaway temporary directory, so a docs preview cannot see saved credentials. A free
+# port is chosen automatically unless you ask for one.
+#
+# For a one-shot build instead, use `bin/gen-docs`; that one also regenerates the CLI reference and
+# builds with --strict, so it fails on anything CI would fail on.
+#
+# Thin wrapper around `pdm run docs`, which is the same thing. It exists so that `ls bin/` shows the
+# actions available in this project without having to remember which are pdm scripts.
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR/.."
+
+exec pdm run docs "$@"

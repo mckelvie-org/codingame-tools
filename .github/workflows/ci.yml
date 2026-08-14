@@ -35,3 +35,25 @@ jobs:
 
       - name: Test
         run: pdm run test
+
+  docs:
+    # Separate job, single Python: the docs build exercises the same source as `test`, so running it
+    # across the whole matrix would repeat identical work five times. --strict fails on unresolved
+    # cross-references, which is the check worth having -- the API reference is generated, so a
+    # renamed symbol breaks links silently otherwise.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4.5
+        with:
+          python-version: "3.12"
+          cache: true
+
+      - name: Install dependencies
+        run: pdm install -G docs
+
+      - name: Build docs (strict)
+        run: pdm run docs-build

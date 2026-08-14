@@ -1,18 +1,44 @@
 #!/usr/bin/env bash
-# Usage: gen-docs [OUTPUT_ROOT]
+# Usage: gen-docs [--serve]
 #
-# Regenerate the CLI command reference under doc/cli/reference/ from the `cg` argparse tree.
-# With OUTPUT_ROOT, writes there instead of into this repository (used by tests).
+# Regenerate everything this project generates for its documentation:
 #
-# The reference is a build artifact, not source: it's committed so it's readable on GitHub without a
-# build step, but main's copy is allowed to lag and nothing in CI enforces otherwise. bin/cut-rc-prep
-# regenerates and pushes it at each release candidate. See CONTRIBUTING.md, "Generated files".
+#   1. the CLI command reference under doc/cli/reference/  (committed -- see bin/gen-cli-reference)
+#   2. the documentation site under site/                  (never committed; CI deploys it)
 #
-# Thin wrapper around `pdm run gen-docs`, which is the same thing. It exists so that `ls bin/` shows
-# the actions available in this project without having to remember which are pdm scripts.
+# The two are generated differently on purpose. The CLI reference is committed markdown, because
+# README links people straight at it on GitHub and there is no build step for a reader to run. The
+# site's API reference is not: it exists to be cross-linked, and several hundred references inside
+# the docstrings only become links once mkdocstrings and autorefs have resolved them. So it is built
+# from the source being released rather than from a checked-in copy that could go stale.
+#
+# Step 2 runs with --strict, so an unresolved cross-reference fails here exactly as it does in CI,
+# rather than being discovered after a deploy.
+#
+# With --serve, step 2 becomes a live-reloading local server instead of a one-shot build; use it
+# when writing docs. Step 1 still runs first, so the served site includes a current CLI reference.
 set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd "$SCRIPT_DIR/.."
 
-exec pdm run gen-docs "$@"
+SERVE=false
+for arg in "$@"; do
+    case "$arg" in
+        --serve) SERVE=true ;;
+        *) echo "gen-docs: unrecognized argument: $arg" >&2; exit 2 ;;
+    esac
+done
+
+echo "==> CLI command reference (doc/cli/reference/)" >&2
+pdm run gen-cli-reference >&2
+
+if [ "$SERVE" = true ]; then
+    echo "==> Serving the documentation site (Ctrl-C to stop)" >&2
+    exec pdm run docs-serve
+fi
+
+echo "==> Documentation site (site/)" >&2
+pdm run docs-build >&2
+
+echo "==> Done. Browse site/index.html, or re-run with --serve for a live server." >&2

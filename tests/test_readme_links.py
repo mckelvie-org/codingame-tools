@@ -23,7 +23,10 @@ SCRIPTS = REPO_ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from rewrite_readme_links import rewrite_links  # noqa: E402  (needs the path fix above)
+from rewrite_readme_links import (  # noqa: E402  (needs the path fix above)
+    pin_docs_version,
+    rewrite_links,
+)
 
 REPO = "mckelvie-org/codingame-tools"
 REF = "v1.2.3"
@@ -186,3 +189,36 @@ def test_the_real_readme_links_resolve_before_rewriting() -> None:
         and not (REPO_ROOT / target.partition("#")[0]).exists()
     ]
     assert not missing, f"README links to files that don't exist: {missing}"
+
+
+# --- documentation-site version pinning ----------------------------------------------------------
+
+
+def test_docs_site_links_are_pinned_to_the_release_series() -> None:
+    """The site's `latest` alias follows the newest release, which is right for the README you browse
+       on GitHub and wrong for the copy PyPI freezes with a release: a 2.0.0 project page linking at
+       `latest` would send readers to whatever shipped afterwards."""
+    text = "[docs](https://mckelvie-org.github.io/codingame-tools/latest/api/)"
+
+    assert pin_docs_version(text, "v2.0.1") == \
+        "[docs](https://mckelvie-org.github.io/codingame-tools/2.0/api/)"
+
+
+def test_a_non_release_ref_leaves_latest_alone() -> None:
+    """An rc publishes no `X.Y` alias (see .github/workflows/docs.yml), so there is nothing to pin
+       to--and a branch name is not a version at all."""
+    text = "[docs](https://mckelvie-org.github.io/codingame-tools/latest/)"
+
+    for ref in ("v2.0.0-rc.1", "main", "prod-latest"):
+        assert pin_docs_version(text, ref) == text, ref
+
+
+def test_pinning_leaves_unrelated_urls_untouched() -> None:
+    """`latest` appears in plenty of URLs that are not the docs site."""
+    text = ("[a](https://github.com/o/r/releases/latest) "
+            "[b](https://mckelvie-org.github.io/codingame-tools/latest/)")
+
+    out = pin_docs_version(text, "v3.1.4")
+
+    assert "github.com/o/r/releases/latest" in out
+    assert "codingame-tools/3.1/" in out

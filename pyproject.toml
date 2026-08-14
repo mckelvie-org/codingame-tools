@@ -59,9 +59,6 @@ cg = "codingame_tools.cli.main:main"
 
 [dependency-groups]
 dev = [
-    # Only for scripts/gen_cover_placeholder.py, which regenerates a *committed* asset. Never
-    # imported at runtime -- see that script's docstring for why the image is baked rather than
-    # rendered on demand.
     "pillow>=10.1.0",
     "mypy>=1.11.0",
     "pytest>=8.3.0",
@@ -70,6 +67,30 @@ dev = [
     "vcrpy>=8.3.0",
     "pytest-asyncio>=1.4.0",
     "types-PyYAML>=6.0.12",
+]
+docs = [
+    # The site is built with ProperDocs, the maintained continuation of MkDocs 1.x -- not with
+    # MkDocs itself. MkDocs 2.0 removes the plugin system outright with no migration path, and every
+    # entry below is a plugin; mkdocstrings alone generates the 125-page API reference. So 2.0 is
+    # not an upgrade for this project, it is a different tool that shares a name on PyPI.
+    #
+    # This follows the ecosystem rather than betting against it: mkdocs-gen-files and
+    # mkdocs-literate-nav already require properdocs and cap `mkdocs<=1.6.1` themselves, and `mike`
+    # auto-detects ProperDocs as its builder while still reading mkdocs.yml. `mkdocs` stays listed
+    # only because those plugins still import it; the `<2` cap stops a future relock from crossing
+    # the major version underneath us.
+    #
+    # Zensical -- from Material's author -- is the other successor and the likelier long-term home,
+    # since Material for MkDocs is where the theme is going. It is not ready for this project yet:
+    # see the re-test recipe in doc/design/docs-toolchain.md.
+    "properdocs>=1.6.7",
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.7.7,<10",
+    "mkdocstrings[python]>=1.0.6",
+    "mkdocs-autorefs>=1.4.4",
+    "mike>=2.2.0",
+    "mkdocs-gen-files>=0.6.1",
+    "mkdocs-literate-nav>=0.6.3",
 ]
 
 [tool.pytest.ini_options]
@@ -120,7 +141,19 @@ includes = ["codingame_tools"]
 
 [tool.pdm.scripts]
 test = "pytest"
-gen-docs = "python scripts/gen_cli_docs.py"
+gen-cli-reference = "python scripts/gen_cli_docs.py"
+# --strict turns an unresolved cross-reference into a build failure. With 643 of them in
+# docstrings, that is the difference between a reference you can trust and one that quietly
+# rots -- so CI runs this, not the lenient build.
+# `properdocs`, not `mkdocs` -- see the docs dependency group for why. The config file keeps its
+# `mkdocs.yml` name (ProperDocs reads it, and so does Zensical, which keeps the re-test in
+# doc/design/docs-toolchain.md a one-liner), but it is passed explicitly: ProperDocs treats the name
+# as a legacy fallback it intends to remove, and says so on every build unless told outright.
+docs-build = "properdocs build --strict -f mkdocs.yml"
+docs-serve = "properdocs serve -f mkdocs.yml"
+# Serves the site and opens it in a dedicated browser window, shutting the server down when
+# that window closes -- see scripts/serve_docs.py for why the lifetime is tied together.
+docs = "python scripts/serve_docs.py"
 gen-default-cover-image = "python scripts/gen_cover_placeholder.py"
 test-live-unauthenticated = "pytest -m live_unauthenticated"
 test-live = "pytest -m live"
