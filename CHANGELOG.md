@@ -17,6 +17,18 @@
   A strict build runs in CI, so an unresolved cross-reference fails the build rather than rotting
   quietly -- which matters once a renamed symbol can silently break links nothing checks.
 
+- **New: `cg doc`** opens the documentation in a dedicated browser window -- the same wrapped
+  Chromium `cg login` uses, with a throwaway profile that cannot see the saved session.
+
+  It opens the docs for the version you are *running*, not the newest ones: the published site keeps
+  every release side by side, so `2.0.1` opens `/2.0/` while a pre-release build (`2.1.0.dev1`,
+  `2.1.0rc1`) opens `/dev/`, because its own series has not shipped yet and would 404.
+
+  In a source checkout it serves that tree's own documentation instead, uncommitted edits included,
+  and stops the server when the window closes. `--online` overrides that, `--version` shows another
+  release's docs, `--no-rebuild` trades live-reload for opening about ten times faster, and `--url`
+  prints the address rather than opening anything, for use over SSH or in a container.
+
 - **`bin/docs -q` skips the rebuild** and serves the existing `site/` immediately -- 1.1s to a
   readable page against 9.8s, because a normal start re-runs mkdocstrings over the whole package
   before answering anything. It serves under the same base path as a real build, so every internal

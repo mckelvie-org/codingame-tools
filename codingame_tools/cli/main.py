@@ -59,6 +59,13 @@ from ..credentials.cg_credentials import (
     set_credentials,
     validate_profile_name,
 )
+from ..docs import (
+    LocalDocsError,
+    find_source_checkout,
+    open_window_and_wait,
+    published_docs_url,
+    start_local_docs,
+)
 from ..language import (
     BASE_IMAGE,
     DEFAULT_BUILD_TIMEOUT_SECONDS,
@@ -813,6 +820,85 @@ class CgCli(CliBase):
 
             print()
             line("Achievements unlocked:", stats.achievement_count)
+        return handler
+
+    @cli_command("Open the documentation for this version of cg in a dedicated browser window. "
+                 "The published site keeps every release side by side, so this opens the directory "
+                 "matching the cg you are actually running rather than whatever is newest. Inside a "
+                 "source checkout it serves that tree's own docs instead--including uncommitted "
+                 "edits--and stops the server when the window closes. With --url, prints the "
+                 "address and exits, which is what to use over SSH or anywhere a window cannot "
+                 "open.")
+    async def cmd_doc(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            want_url_only: bool = self.args.url
+            windowed: bool = self.args.windowed
+            online: bool = self.args.online
+            rebuild: bool = not self.args.no_rebuild
+            version: str | None = self.args.doc_version
+
+            checkout = None if (online or version is not None) else find_source_checkout()
+            if checkout is None:
+                url = published_docs_url(version)
+                self.logger.debug(f"Using published documentation at {url}")
+                if want_url_only:
+                    print(url)
+                    return
+                await open_window_and_wait(url, app_window=not windowed,
+                                           on_ready=f"Showing {url} -- close the window when done.")
+                return
+
+            # A checkout's own docs beat the published site for the same reason `pip install -e`
+            # exists: they describe the code in front of you, not the code that was last released.
+            self.logger.debug(f"Serving documentation from the source checkout at {checkout}")
+            try:
+                server = start_local_docs(checkout, rebuild=rebuild)
+            except LocalDocsError as e:
+                raise CliError(f"cannot serve local documentation: {e}") from e
+            try:
+                if want_url_only:
+                    # Nothing would keep the server alive after printing, so this is a real choice
+                    # between lying and refusing. Point at the published site, which does persist.
+                    server.stop()
+                    print(published_docs_url(version))
+                    return
+                await server.wait_until_ready()
+                await open_window_and_wait(
+                        server.url, app_window=not windowed,
+                        on_ready=f"Showing {server.url} (from {checkout}) -- "
+                                 "close the window to stop the server.")
+            finally:
+                server.stop()
+
+        p = cmd.get_parser()
+        p.add_argument(
+                "--url", default=False, action="store_true",
+                help="Print the documentation URL and exit instead of opening a window. Use this "
+                     "over SSH, in a container, or anywhere a browser cannot open. In a source "
+                     "checkout this prints the published URL, since a local server would stop the "
+                     "moment this command returned.",
+            )
+        p.add_argument(
+                "--online", default=False, action="store_true",
+                help="Use the published site even inside a source checkout.",
+            )
+        p.add_argument(
+                "--version", dest="doc_version", default=None, metavar="VERSION",
+                help="Show the documentation for a specific cg version (e.g. 2.0.1) instead of the "
+                     "installed one. Implies --online, since only the published site has other "
+                     "versions.",
+            )
+        p.add_argument(
+                "--no-rebuild", default=False, action="store_true",
+                help="In a source checkout, serve the existing site/ build instead of rebuilding "
+                     "first. Much faster to open, but shows the docs as of the last build and does "
+                     "not live-reload. Ignored when using the published site.",
+            )
+        p.add_argument(
+                "--windowed", default=False, action="store_true",
+                help="Open an ordinary browser window with an address bar, instead of a chrome-less "
+                     "app window. Use this if the app window misbehaves.",
+            )
         return handler
 
     @cli_command("Raw (unstructured JSON) API commands.")

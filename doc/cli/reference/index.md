@@ -35,6 +35,6 @@ Every `cg` command, generated from the parser so it cannot drift from the tool. 
 | [`cg puzzle`](puzzle.md) | 20 |
 | [`cg raw-api`](raw-api.md) | 2 |
 | [`cg settings`](settings.md) | 10 |
-| [Top-level commands](top-level.md) | 13 |
+| [Top-level commands](top-level.md) | 14 |
 
 ---

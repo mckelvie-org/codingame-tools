@@ -14,6 +14,7 @@ Every command also accepts `-h` / `--help`.
 | [`cg logout`](#cg-logout) | Log out of a given profile's session. |
 | [`cg whoami`](#cg-whoami) | Show the current logged-in user and other session info for the given profile. |
 | [`cg status`](#cg-status) | Summarize the current session: login status, profile details, and points/rank stats for the logged-in codingamer. |
+| [`cg doc`](#cg-doc) | Open the documentation for this version of cg in a dedicated browser window. |
 | [`cg play`](#cg-play) | Run the solution for whatever file you name against its working directory's test cases, whether that's a puzzle or a contribution. |
 | [`cg vscode`](#cg-vscode) | Editor integration for VS Code. All-or-nothing opt-in: nothing here is written unless you ask for it, and what is written is confined to entries cg names as... |
 | [`cg vscode install`](#cg-vscode-install) | Install cg's VS Code run/debug configuration. |
@@ -51,6 +52,7 @@ usage: cg [-h] [--trace-http] [--profile PROFILE] [--json] [--config PATH]
 - [**`logout`**](#cg-logout) — Log out of a given profile's session.
 - [**`whoami`**](#cg-whoami) — Show the current logged-in user and other session info for the given profile.
 - [**`status`**](#cg-status) — Summarize the current session: login status, profile details, and points/rank stats for the logged-in codingamer. Always hits the network--there's no cached/local mode, unlike `cg contribution status`/`cg puzzle status` (that's the whole point of this command). "Gamer stats" are informational, not a breakdown of one another--see CgCodingamePointsRankingDto's docstring for why. With --json (top-level option), renders as JSON instead of text.
+- [**`doc`**](#cg-doc) — Open the documentation for this version of cg in a dedicated browser window. The published site keeps every release side by side, so this opens the directory matching the cg you are actually running rather than whatever is newest. Inside a source checkout it serves that tree's own docs instead--including uncommitted edits--and stops the server when the window closes. With --url, prints the address and exits, which is what to use over SSH or anywhere a window cannot open.
 - [**`raw-api`**](raw-api.md#cg-raw-api) — Raw (unstructured JSON) API commands.
 - [**`api`**](api/index.md#cg-api) — Low-level API commands.
 - [**`api-helper`**](api-helper.md#cg-api-helper) — Higher-level helper commands, layered on top of the plain API wrappers (retries, polling, data normalization).
@@ -118,6 +120,22 @@ Summarize the current session: login status, profile details, and points/rank st
 ```text
 usage: cg status [-h]
 ```
+
+## `cg doc`
+
+Open the documentation for this version of cg in a dedicated browser window. The published site keeps every release side by side, so this opens the directory matching the cg you are actually running rather than whatever is newest. Inside a source checkout it serves that tree's own docs instead--including uncommitted edits--and stops the server when the window closes. With --url, prints the address and exits, which is what to use over SSH or anywhere a window cannot open.
+
+```text
+usage: cg doc [-h] [--url] [--online] [--version VERSION] [--no-rebuild] [--windowed]
+```
+
+**Options**
+
+- **`--url`** — Print the documentation URL and exit instead of opening a window. Use this over SSH, in a container, or anywhere a browser cannot open. In a source checkout this prints the published URL, since a local server would stop the moment this command returned.
+- **`--online`** — Use the published site even inside a source checkout.
+- **`--version VERSION`** — Show the documentation for a specific cg version (e.g. 2.0.1) instead of the installed one. Implies --online, since only the published site has other versions.
+- **`--no-rebuild`** — In a source checkout, serve the existing site/ build instead of rebuilding first. Much faster to open, but shows the docs as of the last build and does not live-reload. Ignored when using the published site.
+- **`--windowed`** — Open an ordinary browser window with an address bar, instead of a chrome-less app window. Use this if the app window misbehaves.
 
 ## `cg play`
 

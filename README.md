@@ -119,6 +119,10 @@ version: the same guides, plus a searchable [API reference](https://mckelvie-org
 generated from the source. It carries its own version selector — `dev` for the tip of `main`, and
 every released `X.Y`.
 
+`cg doc` opens it for you, in the version that matches the `cg` you have installed — which is the
+version you actually want, since the site keeps every release side by side. Add `--url` to print the
+address instead, for machines where a browser cannot open.
+
 The guides are also plain Markdown in the repository, readable straight from GitHub:
 
 - **[Documentation for this version](doc/index.md)** — concepts, workflow guides, the client
