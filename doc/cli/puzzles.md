@@ -6,10 +6,10 @@ the network, and submit when you're happy.
 ## The loop
 
 ```bash
-cg puzzle import ./puzzle temperatures    # pull it down; becomes the active puzzle
-$EDITOR "$(cg puzzle where)/data/solution.py"  # solve it
-cg puzzle play                            # run every test case, locally
-cg puzzle submit                          # graded submission
+cg puzzle import ./puzzle temperatures          # pull it down; becomes the active puzzle
+$EDITOR "$(cg puzzle where)/data/solution.py"   # solve it
+cg puzzle play                                  # run every test case, locally
+cg puzzle submit                                # graded submission
 ```
 
 That's the whole thing. The rest of this page is what to do when it isn't that simple.
@@ -22,29 +22,30 @@ cg puzzle import ./puzzle 10075
 cg puzzle import ./puzzle "Temperatures"
 ```
 
-The target directory comes **first and is required**, matching `cg contribution import` and
-`cg contribution create`. `PUZZLE` is then resolved in order of preference: numeric puzzle ID,
-exact pretty ID, exact title, case-insensitive title. If you've attempted the puzzle before, your
-existing saved answer is imported in whatever language you last used; otherwise you get a
-placeholder in `--language` (default Python3).
+The target directory comes first and is required. `PUZZLE` is resolved in this order: numeric puzzle
+ID, exact pretty ID, exact title, case-insensitive title.
 
-Importing also makes that directory the **active** puzzle, so everything afterwards finds it
-without `--puzzle-dir` — see [active working directories](../concepts/profiles.md#active-working-directories).
+If you've attempted the puzzle before, your saved answer is imported in whatever language you last
+used; otherwise you get a placeholder in `--language` (default Python3).
+
+Importing makes that directory the **active** puzzle, so later commands find it without
+`--puzzle-dir` — see [active working directories](../concepts/profiles.md#active-working-directories).
+
+## Finding your way around
 
 ```bash
-cg puzzle where           # prints just the resolved path -- built for $(...)
-cg puzzle description     # the problem statement, rendered, no network needed
+cg puzzle where           # just the resolved path, for $(...)
+cg puzzle description     # the problem statement, rendered; no network
 ```
 
-`where` writes nothing but the path to stdout, so it composes:
+`where` prints nothing but the path, so it composes:
 
 ```bash
 $EDITOR "$(cg puzzle where)/data/solution.py"
 cd "$(cg puzzle where)"
 ```
 
-It exits non-zero if no working directory can be found, rather than printing prose a shell would
-happily substitute into a path.
+It exits non-zero if no working directory can be found.
 
 ## Running tests
 
@@ -55,19 +56,35 @@ cg puzzle play 1 2 5      # a few
 cg puzzle play --show-stdout
 ```
 
-`play` never touches the network. Output is compared exactly as CodinGame compares it, so a pass
+`play` never touches the network, and output is compared exactly as CodinGame compares it, so a pass
 here means a pass there — see [output comparison](../design/final-newlines.md#output-comparison).
 Captured stdout is only printed for failures unless you ask for it.
 
-There's also a server-side equivalent:
+There's also a server-side equivalent, the IDE's "Test" button:
 
 ```bash
-cg puzzle play-server     # the IDE's "Test" button
+cg puzzle play-server
 ```
 
-**This durably saves your code on the server**, as a side effect of running. It's not a submission
-and it isn't graded, but it does overwrite what CodinGame has stored for this puzzle and language.
-Prefer `cg puzzle play` unless you specifically need the server's own runner.
+> **`play-server` overwrites your saved code.** Running it durably saves your current code on the
+> server for this puzzle and language. It isn't a submission and isn't graded, but it does replace
+> what CodinGame has stored. Prefer `cg puzzle play` unless you need the server's own runner.
+
+## Debugging
+
+When a test fails and you want to step through it rather than add print statements:
+
+```bash
+cg vscode install         # generates the VS Code launch entries; once per workspace
+cg puzzle select-test 3   # which test case to feed the debugger
+```
+
+Then press **F5** in VS Code with your solution file focused. Breakpoints land in
+`data/solution.py`, and stdin comes from the selected test case. Compiled languages build, run and
+debug inside Docker, so C++ needs no local toolchain.
+
+Full details, including containerised languages and how to pick a test case:
+**[Debugging](debugging.md)**.
 
 ## Submitting
 
@@ -93,15 +110,24 @@ pass `--force`. See [languages](../concepts/languages.md).
 
 ```bash
 cg puzzle status            # local summary; no network
-cg puzzle status --refresh  # also check against the server, and fetch live progress/score
+cg puzzle status --refresh  # also check the server, and fetch live progress/score
 cg puzzle diff              # unified diff, local vs the server's last-submitted answer
 cg puzzle discard-local     # throw local edits away, take the server's copy
 ```
 
-There is no merge machinery here, deliberately — a puzzle has exactly one editable file, so there's
-nothing three-way to resolve. Look at the diff, then keep one side or the other.
+There's no merge step — a puzzle has one editable file. Look at the diff, then keep one side or the
+other.
 
-## Recovering
+## Managing working directories
+
+```bash
+cg puzzle activate ./other-puzzle   # switch which one commands act on
+cg puzzle activate                  # ...or activate the current directory
+cg puzzle deactivate                # back to the configured default
+cg puzzle delete                    # remove the local directory; prompts unless --force
+```
+
+`delete` is local-only — the puzzle itself isn't yours to remove.
 
 ```bash
 cg puzzle repair
@@ -110,16 +136,6 @@ cg puzzle repair
 Rebuilds `.meta/` — the test-session handle, downloaded test cases, cached statement — from
 `puzzle.json`, without touching `data/`. Use it after a fresh clone (`.meta/` is gitignored) or if
 anything in the cache looks wrong. Deleting `.meta/` and repairing is always safe.
-
-```bash
-cg puzzle activate ./other-puzzle   # switch which one commands act on
-cg puzzle activate                  # ...or activate the current directory
-cg puzzle deactivate                # back to the configured default
-cg puzzle delete
-```
-
-`delete` removes the local directory only, and deactivates it if it was active. There's no server-side counterpart — the puzzle exists
-independently of you and isn't yours to remove. Prompts unless `--force`.
 
 ## Full reference
 

@@ -2,6 +2,44 @@
 
 ## {{UNRELEASED}}
 
+- **CLI documentation rewritten for people using the tool, not building it.** The two workflow
+  guides and the `--help` text for all 52 `cg puzzle` and `cg contribution` commands dropped the
+  design rationale, internal class names (`CgTestSessionTestCase`, `CgSolutionLanguage`), raw API
+  method names, and "see *X*'s module docstring for why" references. What a command *does*, when to
+  reach for it, and what it will irreversibly change all stay.
+
+  Fixed while rewriting — each of these was in user-facing help:
+
+    - `cg puzzle import --help` claimed it did *not* require a directory argument. It does, and has
+      for some time.
+    - `solution.src` appeared throughout, a 1.x filename that no longer exists; solutions carry
+      their language's own extension.
+    - `cg puzzle play --help` said "only Python3 solutions are supported". C++ has worked for a
+      while.
+    - `cg puzzle debug --help` described attaching "via gdbserver". There is no gdbserver.
+    - Two commands pointed at `cg puzzle vscode` / `cg contribution vscode`, which do not exist —
+      it is `cg vscode install`.
+    - `cg contribution create --language` described maintaining a `solution.<ext>` symlink, removed
+      in 2.0.
+    - `cg contribution merge continue --help` promised to "refresh the solution symlink".
+
+  Both guides gained a **Debugging** section linking to the full guide, and the contribution guide's
+  `data/` listing had three wrong filenames (`input-description.cgmd` for `input_description.cgmd`,
+  and likewise for the output description and stub generator) — in the one table a reader would copy
+  from.
+
+- **The docs title names the exact release, not the series.** A release is published under its minor
+  series (`/2.0/`) so that the version selector stays usable and the `gh-pages` branch does not
+  accumulate a full copy of the site per patch. That is deliberate, but it left the title saying
+  `codingame-tools 2.0` for 2.0.0 and 2.0.3 alike -- and since each patch overwrites the last at that
+  URL, a reader had no way at all to tell which one they were looking at.
+
+  Release builds now show the version they were built from (`codingame-tools 2.0.3`) while staying
+  at `/2.0/`. No URL moves and README/PyPI link pinning is unchanged. `dev` keeps its name, where the
+  package version is a snapshot (`2.0.1.dev1`) naming nothing anyone can navigate to. The exact
+  version is used only when it is a real release belonging to the series being deployed: a title that
+  contradicts its own URL would be worse than one that is merely imprecise.
+
 - _Add release notes here._
 
 ## 2.0.3 (2026-08-15)

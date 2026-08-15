@@ -19,9 +19,9 @@ So a single configuration per language -- `args: ["${file}"]` -- serves every wo
 the workspace, for as long as the workspace exists.
 
 TARGET_FILE is passed through untouched to the debugger, never resolved: VS Code's `${file}` is the
-path of whichever tab was focused, which is where breakpoints are bound, and that may be a
-`solution.<ext>` symlink rather than its `data/solution.src` target. See
-`codingame_tools.test_runner.debug_stdin`, which documents the same no-realpath invariant.
+path of whichever tab was focused, which is where breakpoints are bound, and resolving it could name
+a different path than the one the editor has open. See `codingame_tools.test_runner.debug_stdin`,
+which documents the same no-realpath invariant.
 """
 
 from __future__ import annotations
@@ -41,8 +41,8 @@ def main(argv: list[str] | None = None) -> None:
         )
     parser.add_argument(
             "target_file", type=Path, metavar="TARGET_FILE",
-            help="Any file in the working directory--normally VS Code's ${file}, i.e. the solution "
-                 "source or the solution.<ext> symlink pointing at it.",
+            help="Any file in the working directory--normally VS Code's ${file}, i.e. the "
+                 "solution source file.",
         )
     parser.add_argument(
             "--update-expected", action="store_true",

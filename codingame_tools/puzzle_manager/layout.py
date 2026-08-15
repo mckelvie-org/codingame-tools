@@ -9,7 +9,6 @@
 
        puzzle/
            puzzle.json                 # CgPuzzleIdentity--stable, git-tracked
-           solution.<ext>              # convenience symlink -> data/solution.src
            .gitignore                  # contains ".meta/"
            .meta/                      # gitignored--see META_SUBDIR_NAME
                puzzle-server-data.json # CgPuzzleServerData--cache, rebuilt by repair()
@@ -18,7 +17,7 @@
                tests/                  # downloaded test case input/output--see
                                         # codingame_tools.puzzle_manager.test_cases_dir
            data/
-               solution.src            # the one real, editable/submittable file
+               solution.<ext>          # the one real, editable/submittable file
                puzzle-data.json        # CgPuzzleData--user-editable, git-tracked
 """
 
@@ -39,7 +38,7 @@ __all__ = [
 ]
 
 DATA_SUBDIR_NAME = "data"
-"""The puzzle's user-editable content (`solution.src`, `puzzle-data.json`) lives under a `data/`
+"""The puzzle's user-editable content (`solution.<ext>`, `puzzle-data.json`) lives under a `data/`
    subdirectory of the working directory root."""
 
 META_SUBDIR_NAME = ".meta"
@@ -114,6 +113,6 @@ STATEMENT_FILE_NAME = "statement.html"
 STUB_GENERATOR_FILE_NAME = "stub_generator.cgstub"
 """Read-only reference copy of the puzzle's stub-generation script (see
    `CgTestSessionQuestionDetails.stub_generator`), under `.meta/`--informational only; this
-   package doesn't interpret the stub-generator DSL to produce a real starter `solution.src`,
+   package doesn't interpret the stub-generator DSL to produce a real starter solution,
    unlike `codingame_tools.contribution_manager`'s Python-only trivial stub for *authoring* a new
    contribution (see `CgPuzzleManager.import_`'s docstring)."""

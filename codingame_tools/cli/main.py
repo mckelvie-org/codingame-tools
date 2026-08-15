@@ -2245,14 +2245,12 @@ class CgCli(CliBase):
         self._add_workspace_root_arg(p)
         return handler
 
-    @cli_command("List server-side contributions, one line per contribution (handle, id, "
-                 "status, puzzle type, title). By default lists all pending "
-                 "(community-review-queue) contributions from every author (`Contribution/"
-                 "getAllPendingContributions`); --personal lists only the logged-in codingamer's "
-                 "own contributions, any status (`Contribution/getPersonalContributions`). With "
-                 "--json (top-level option), prints the raw list instead--shape depends on which "
-                 "endpoint was used (CgPendingContribution vs CgPersonalContribution--no unified "
-                 "schema between the two yet).")
+    @cli_command("List server-side contributions, one line each: handle, id, status, puzzle type, "
+                 "title. By default lists every author's pending contributions from the community "
+                 "review queue (Contribution/getAllPendingContributions); --personal lists only "
+                 "your own, in any status (Contribution/getPersonalContributions). With --json, "
+                 "prints the raw list instead: CgPendingContribution or CgPersonalContribution "
+                 "depending on which was listed -- there is no unified schema between the two.")
     async def cmd_contributions(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             personal: bool = self.args.personal
@@ -2280,11 +2278,11 @@ class CgCli(CliBase):
                             "status), instead of all pending contributions from every author.")
         return handler
 
-    @cli_command("Contribution working directory commands--manage a local, possibly-uncommitted "
-                 "working view of a single contribution, backed by a real git repo (see "
-                 "codingame_tools.contribution_manager.manager for the main/server/version-data "
-                 "branch design). See `cg api contribution`/`cg api-helper contribution` for the "
-                 "raw, stateless API this is built on.")
+    @cli_command("Author and maintain your own CodinGame contributions in a local working "
+                 "directory. data/ is backed by a real git repository, so syncing with the server "
+                 "is a genuine fetch/merge workflow rather than a one-shot overwrite. See `cg api "
+                 "contribution` and `cg api-helper contribution` for the raw, stateless API "
+                 "underneath.")
     async def cmd_contribution(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         p = cmd.get_parser()
         p.add_argument("--contribution-dir", "-d", type=Path, default=None, metavar="DIR",
@@ -2295,11 +2293,9 @@ class CgCli(CliBase):
                             "target directory as a positional argument instead.")
         return None  # No handler for the parent command; subcommands will be handled by their own handlers.
 
-    @cli_command("Build a fresh contribution working directory from an existing server-side "
-                 "contribution: findContribution, plus downloading the cover image if one is set, "
-                 "then initialize its git repo (main/server/version-data branches--see "
-                 "codingame_tools.contribution_manager.manager). DIRECTORY must not already "
-                 "exist. Ignores --contribution-dir.")
+    @cli_command("Create a contribution working directory from an existing server-side "
+                 "contribution, downloading its cover image if one is set. Makes it the active "
+                 "contribution. DIRECTORY must not already exist. Ignores --contribution-dir.")
     async def cmd_contribution__import(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_id: str = self.args.contribution_id
@@ -2343,16 +2339,11 @@ class CgCli(CliBase):
                        help="Opaque contribution ID string (see `cg api contribution find-contribution`).")
         return handler
 
-    @cli_command("Reconstruct this working directory's git-dir from scratch, without disturbing "
-                 "data/'s already-on-disk content--for recovering from a missing or corrupted "
-                 ".meta/ (e.g. an outer project clone that deliberately didn't bring the git-dir "
-                 "along--see codingame_tools.contribution_manager.manager's module docstring--or "
-                 "a manually deleted/corrupted git-dir). Two modes, chosen automatically from "
-                 "contribution.json's contribution_handle: if set, re-bases off the server (a "
-                 "fresh findContribution, same as `cg contribution import`'s own repair "
-                 "shortcut); if not (this working directory was `cg contribution create`d but "
-                 "never successfully pushed), purely local, no network access at all. See "
-                 "CgContributionManager.repair's docstring for the full story.")
+    @cli_command("Rebuild this working directory's git repository from scratch, without disturbing "
+                 "what is already in data/. Use it after cloning a repo that does not carry .meta/ "
+                 "(it is gitignored), or if the repository is missing or corrupt. If this "
+                 "contribution exists on the server it re-bases off a fresh copy; if it was "
+                 "created locally and never pushed, it works entirely offline.")
     async def cmd_contribution__repair(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2369,20 +2360,12 @@ class CgCli(CliBase):
             self.eprint(f"  title: {working.data.title!r}")
         return handler
 
-    @cli_command("Initialize a brand new, *purely local* contribution working directory--no "
-                 "network access, no server-side contribution created yet (unlike `cg "
-                 "contribution import`, which always starts from one that already exists). Seeds "
-                 "minimal placeholder statement/difficulty/test-case content (the server rejects "
-                 "a title-only submission), with contribution-data.json's draft/"
-                 "readyForModeration defaulted to private-draft (true/false)--edit any of this "
-                 "via the usual sidecar files/contribution-data.json before your first `cg "
-                 "contribution push`, which is what actually establishes the contribution on the "
-                 "server and records its handle. By default that first push is itself two API "
-                 "calls (a throwaway minimal private stub, then your real content via a normal "
-                 "update using whatever draft/readyForModeration are set to at that point)--see "
-                 "`cg contribution push --help`/CgContributionManager.push's docstring for why. "
-                 "Every push after that is a normal update. DIRECTORY must not already exist. "
-                 "Ignores --contribution-dir.")
+    @cli_command("Create a brand new contribution working directory, entirely locally -- no "
+                 "network access, and nothing exists on the server until your first `cg "
+                 "contribution push`. Seeds placeholder content for every file you will edit, "
+                 "consistent enough that `cg contribution play` passes on it immediately, and "
+                 "marks the contribution a private draft. Edit the files under data/, then push. "
+                 "DIRECTORY must not already exist. Ignores --contribution-dir.")
     async def cmd_contribution__create(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             directory: Path = Path(self.args.directory).expanduser().resolve()
@@ -2419,28 +2402,20 @@ class CgCli(CliBase):
         p.add_argument("--puzzle-type", "-t", type=str, default="PUZZLE_INOUT", metavar="PUZZLE-TYPE",
                        help="The type of the contribution. Defaults to 'PUZZLE_INOUT'.")
         p.add_argument("--language", "-l", type=str, default="Python3", metavar="LANGUAGE",
-                       help="Reference solution language (see CgSolutionLanguage, e.g. 'Python3', 'Java', "
-                            "'C++'). Defaults to 'Python3'. Always creates the solution.<ext> convenience "
-                            "symlink if the language maps to a known extension, but only Python3 gets a real "
-                            "starter solution.src (a trivial stub that passes the seeded test case)--for any "
-                            "other language, the symlink is left dangling until you write data/solution.src "
-                            "yourself.")
+                       help="Reference solution language, e.g. 'Python3', 'Java', 'C++'. Defaults to "
+                            "'Python3'. The solution file carries the language's own extension "
+                            "(data/solution.cpp for C++), but only Python3 gets a working starter solution "
+                            "that passes the seeded test case; every other language starts empty, for you "
+                            "to write.")
         return handler
 
-    @cli_command("Push this working directory's content to the server (with 524 retry/polling and "
-                 "test-case data normalization), then update `server`/`version-data` to reflect "
-                 "the result and fast-forward `main` to match. If this working directory has "
-                 "never been pushed before (created via `cg contribution create`), this *first* "
-                 "push is two API calls, not one, by default: createContribution with a minimal, "
-                 "throwaway, private stub (real title, otherwise unimportant, no cover) to "
-                 "establish the contribution and record its handle into contribution.json, then a "
-                 "normal updateContribution with your real content--createContribution has no "
-                 "prevVersion-style idempotency check, so a timeout/524/network error on it can't "
-                 "be safely retried without risking a duplicate, and that risk is worst exactly "
-                 "when the real content is large (e.g. a heavy test suite carried over via `cg "
-                 "contribution delete --keep-local`'s clone-as-template workflow)--see "
-                 "CgContributionManager.push's docstring for the full story. Pass --direct-create "
-                 "to skip this and call createContribution once, directly, with the real content.")
+    @cli_command("Push this working directory's content to the server, then update the local "
+                 "server and version-data branches to match. The first push from a directory made "
+                 "by `cg contribution create` establishes the contribution on the server and "
+                 "records its handle; pass --direct-create to do that in a single call. A push "
+                 "with nothing to push does nothing and says so: CodinGame has no empty update, so "
+                 "republishing identical content costs you a moderation cycle -- pass --force to "
+                 "publish a version anyway.")
     async def cmd_contribution__push(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2472,15 +2447,17 @@ class CgCli(CliBase):
                             "history of real changes.")
         return handler
 
-    @cli_command("Debug-session plumbing for languages whose debugger attaches to a running target "
-                 "(C++, via gdbserver in its container). Normally invoked for you by the VS Code "
-                 "tasks `cg contribution vscode` generates, not typed by hand. Languages whose "
-                 "debugger launches the program itself--Python3--don't use these at all.")
+    @cli_command("Debug-session plumbing for languages whose debugger attaches to a running "
+                 "target, such as C++ in its container. Normally invoked for you by the VS Code "
+                 "configuration `cg vscode install` generates, rather than typed by hand. "
+                 "Languages whose debugger launches the program itself, such as Python3, never use "
+                 "these.")
     async def cmd_contribution__debug(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         return None
 
-    @cli_command("Build the debug profile and start a stopped debug target fed by the given test "
-                 "case's input, ready for a debugger to attach. Prints the connection details.")
+    @cli_command("Build the debug profile and start a stopped debug target fed by the selected "
+                 "test case's input, ready for a debugger to attach. Prints the connection "
+                 "details.")
     async def cmd_contribution__debug__start(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2517,8 +2494,7 @@ class CgCli(CliBase):
         return handler
 
     @cli_command("Stop a debug target started by `cg contribution debug start`. Always succeeds, "
-                 "including when nothing is running--it's wired to a postDebugTask, which fires "
-                 "even for a session that never really began.")
+                 "including when nothing is running.")
     async def cmd_contribution__debug__stop(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2533,11 +2509,11 @@ class CgCli(CliBase):
                 await manager.stop_debug_session(solution_language)
         return handler
 
-    @cli_command("Compile data/solution.src, if its language needs compiling (a no-op for "
-                 "interpreted languages like Python3). Normally you don't need this--`cg "
-                 "contribution play` builds first automatically--but it's useful to compile without "
-                 "running, or to warm a cold container image up front. Near-instant when the source "
-                 "hasn't changed since the last successful build. Compiler diagnostics go to stderr.")
+    @cli_command("Compile the reference solution, if its language needs compiling (a no-op for "
+                 "interpreted languages such as Python3). You rarely need this -- `cg contribution "
+                 "play` builds first automatically -- but it is useful to compile without running, "
+                 "or to warm a cold container image up front. Near-instant when the source has not "
+                 "changed since the last successful build. Compiler diagnostics go to stderr.")
     async def cmd_contribution__build(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2572,13 +2548,13 @@ class CgCli(CliBase):
         return handler
 
     @cli_command("Switch this contribution's reference-solution language, writing a fresh starter "
-                 "stub. DESTRUCTIVE: unlike a puzzle, a contribution stores only ONE solution with "
-                 "no per-language history, so there is nothing to restore and nothing to switch "
-                 "back to--the existing solution is replaced by a stub, and the next `cg "
-                 "contribution push` overwrites the last durable copy. Refuses unless "
-                 "data/solution.src is still exactly the stub cg generated; note that matching "
-                 "what the server currently has does NOT make it safe, since that copy is what the "
-                 "next push destroys. Purely local--no network call.")
+                 "stub. DESTRUCTIVE: a contribution stores only one solution, with no per-language "
+                 "history, so there is nothing to restore and nothing to switch back to -- your "
+                 "existing solution is replaced by a stub, and the next push overwrites the last "
+                 "durable copy. Refuses unless the current solution is still exactly the stub cg "
+                 "generated; matching what the server has does not make it safe, since that copy "
+                 "is what the next push destroys. Save any real work outside the working directory "
+                 "first. Purely local -- no network call.")
     async def cmd_contribution__set_language(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2608,11 +2584,11 @@ class CgCli(CliBase):
                             "first.")
         return handler
 
-    @cli_command("Make DIRECTORY the active contribution working directory, so subsequent `cg contribution` "
-                 "commands use it without needing --contribution-dir. Set automatically by `cg contribution "
-                 "import`/`cg contribution create`, so this is for switching between working directories "
-                 "you already have. Outranks the configured default (`cg settings set contribution-dir`); "
-                 "`cg contribution deactivate` clears it.")
+    @cli_command("Make DIRECTORY the active contribution, so later `cg contribution` commands use "
+                 "it without --contribution-dir. `cg contribution import` and `cg contribution "
+                 "create` set this for you, so use this to switch between working directories you "
+                 "already have. Outranks the configured default (`cg settings set "
+                 "contribution-dir`); `cg contribution deactivate` clears it.")
     async def cmd_contribution__activate(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             directory = Path(self.args.directory).expanduser().resolve()
@@ -2628,9 +2604,9 @@ class CgCli(CliBase):
                             "directory, so `cd` into one and run this with no arguments.")
         return handler
 
-    @cli_command("Clear the active contribution working directory, so `cg contribution` commands fall back to "
-                 "the configured default and the usual directory discovery. Does not touch any "
-                 "files--only the selection.")
+    @cli_command("Clear the active contribution, so `cg contribution` commands fall back to the "
+                 "configured default and the usual directory discovery. Touches no files -- only "
+                 "the selection.")
     async def cmd_contribution__deactivate(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             previous = await self.clear_current_working_dir("contribution")
@@ -2640,11 +2616,10 @@ class CgCli(CliBase):
                 self.eprint(f"Active contribution directory cleared (was {previous})")
         return handler
 
-    @cli_command("Choose which test case `cg contribution debug` (and `cg play --selected`) runs "
-                 "against. Debugging feeds one stdin, so it needs exactly one test. Recorded in "
-                 ".meta/selected-test.json rather than in launch.json, which is what lets one VS "
-                 "Code debug configuration serve every contribution directory instead of being "
-                 "regenerated per directory. With no ORDINAL, shows the current selection.")
+    @cli_command("Choose which test case the debugger runs against. Debugging feeds one stdin, so "
+                 "it needs exactly one test. The choice is recorded per working directory and "
+                 "survives until you change it; without one, debugging uses the first local test. "
+                 "With no ORDINAL, shows the current selection.")
     async def cmd_contribution__select_test(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2680,7 +2655,9 @@ class CgCli(CliBase):
                        help="Forget the explicit selection and fall back to the first local test.")
         return handler
 
-    @cli_command("Show which contribution working directory would be used.")
+    @cli_command("Print the path of the contribution working directory that would be used. Prints "
+                 "nothing but the path, so it composes: cd \"$(cg contribution where)\". Exits "
+                 "non-zero if no working directory can be found.")
     async def cmd_contribution__where(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2696,12 +2673,11 @@ class CgCli(CliBase):
             print(found)
         return handler
 
-    @cli_command("Human-friendly summary of this contribution: submission/review status, sync "
-                 "status against the server, votes/comments/views, the moderator approve/reject "
-                 "gate, and any in-progress validation. By default reports whatever "
-                 ".meta/contribution-status.json last cached (no network access); pass --refresh "
-                 "to fetch fresh first (updates that cache for next time too). With --json "
-                 "(top-level option), renders as JSON instead of text.")
+    @cli_command("Summary of this contribution: submission and review status, sync status against "
+                 "the server, votes, comments and views, the moderator approve/reject gate, and "
+                 "any validation in progress. Reads a local cache by default, with no network "
+                 "access; --refresh fetches fresh and updates that cache. With --json, renders as "
+                 "JSON instead of text.")
     async def cmd_contribution__status(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2830,9 +2806,9 @@ class CgCli(CliBase):
                             "using whatever's cached there already.")
         return handler
 
-    @cli_command("Discard local edits: reset this working directory's content to match server's "
-                 "current tip exactly. Purely local--no network access, unlike `cg contribution "
-                 "merge discard-local`, which re-fetches from the server first.")
+    @cli_command("Discard local edits: reset this working directory's content to match the server "
+                 "state cg already has cached. No network access -- use `cg contribution merge "
+                 "discard-local` to re-fetch from the server first.")
     async def cmd_contribution__discard_local(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2842,15 +2818,13 @@ class CgCli(CliBase):
             self.eprint(f"{resolved_dir}: discarded local edits, now matches server (title: {working.data.title!r}).")
         return handler
 
-    @cli_command("Delete this contribution from the server (unrecoverable) and, by default, "
-                 "remove this entire working directory too. Pass --keep-local to instead detach: "
-                 "drop the server/version-data git branches and reset contribution.json so the "
-                 "*same* local content is ready to become a brand new contribution on the next "
-                 "push--e.g. to use an existing contribution as a template/starting point for a "
-                 "new one. Pass --keep-server to do the opposite: leave the server-side "
-                 "contribution untouched and just remove the local working directory. "
-                 "Destructive--prompts for confirmation unless --force is given; requires "
-                 "--force outright if stdin/stdout aren't a terminal.")
+    @cli_command("Delete this contribution from the server, unrecoverably, and by default remove "
+                 "this entire working directory too. Pass --keep-local to detach instead: the same "
+                 "local content is left ready to become a brand new contribution on the next push, "
+                 "which is how you use an existing contribution as a template. Pass --keep-server "
+                 "to do the opposite, leaving the server untouched and removing only your local "
+                 "files. Destructive: prompts for confirmation unless --force is given, and "
+                 "requires --force outright if stdin/stdout are not a terminal.")
     async def cmd_contribution__delete(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2950,9 +2924,9 @@ class CgCli(CliBase):
                             "aren't a terminal.")
         return handler
 
-    @cli_command("Renumber tests/'s ordinal directories to a clean, sequential, zero-padded sort "
-                 "key, preserving relative order (see the tests/ directory layout in "
-                 "codingame_tools.contribution_manager.test_cases_dir).")
+    @cli_command("Renumber the ordinal directories under tests/ to a clean, sequential, "
+                 "zero-padded sort key, preserving their relative order. Use it after inserting "
+                 "directories such as '05a'.")
     async def cmd_contribution__renormalize_tests(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -2962,16 +2936,14 @@ class CgCli(CliBase):
             self.eprint(f"Renormalized {manager.tests_dir}")
         return handler
 
-    @cli_command("Run the current local solution.src against tests/ test cases entirely locally "
-                 "(no network access at all)--by shelling out to the appropriate interpreter as a "
-                 "subprocess, comparing captured stdout to each test's expected output. Runs both "
-                 "local and validator sides by default; --local/--validator narrow to one. With "
-                 "no ORDINAL arguments, runs every test case; give one or more ordinals (e.g. "
-                 "\"3 5 7\", matching tests/'s directory names, zero-padding optional) to run only "
-                 "those. Exits non-zero if any test case fails. Output matches `cg puzzle "
-                 "play`'s format (with the ordinal/side/title in place of an index/label). "
-                 "Captured stdout is only printed for a failing test (or with --update-expected), "
-                 "unless --show-stdout is given.")
+    @cli_command("Run the reference solution against the test cases under tests/, entirely locally "
+                 "with no network access at all. Worth doing before every push: the server "
+                 "validates your reference solution against every test case and rejects the whole "
+                 "push if any disagree. Runs both the local and validator sides by default; "
+                 "--local/--validator narrow it to one. With no ORDINAL, runs every test case; "
+                 "give one or more ordinals, e.g. \"3 5 7\", matching the directory names under "
+                 "tests/ with zero-padding optional. Exits non-zero if any test case fails. "
+                 "Captured stdout is printed only for failing tests, unless --show-stdout.")
     async def cmd_contribution__play(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3078,11 +3050,11 @@ class CgCli(CliBase):
                             "need no build (e.g. Python3).")
         return handler
 
-    @cli_command("Detect drift between the server and this working directory, resolving it "
-                 "automatically when unambiguous: a no-op if the server hasn't advanced since "
-                 "main last synced (regardless of local edits), a true fast-forward if only the "
-                 "server changed (main's ref just moves, no new commit), or a reported conflict--"
-                 "left entirely alone--if both sides changed (see `cg contribution diff`/`merge`).")
+    @cli_command("Detect drift between the server and this working directory, and resolve it when "
+                 "unambiguous: a no-op if the server has not advanced, a fast-forward if only the "
+                 "server changed, or a reported conflict -- left entirely alone -- if both sides "
+                 "changed. See `cg contribution diff` to inspect one and `cg contribution merge` "
+                 "to resolve it.")
     async def cmd_contribution__rebase(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3159,9 +3131,9 @@ class CgCli(CliBase):
         else:
             self.eprint(f"mergetool exited with code {exit_code}. Merge already complete.")
 
-    @cli_command("Resolve drift between the server and this working directory--parent for the "
-                 "merge state machine (start/continue/abort/interactive) and the instant "
-                 "discard-local/discard-server resolutions. Bare `cg contribution merge` is an "
+    @cli_command("Resolve drift between the server and this working directory. Parent for the "
+                 "merge state machine (start/continue/abort/interactive) and for the instant "
+                 "discard-local and discard-server resolutions. Bare `cg contribution merge` is an "
                  "alias for `merge start`.")
     async def cmd_contribution__merge(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
@@ -3171,12 +3143,11 @@ class CgCli(CliBase):
         return handler
 
     @cli_command("Begin a merge: fetch, then a real `git merge server` against the working tree. "
-                 "If it completes cleanly (including a trivial fast-forward), it's already done--"
-                 "no `merge continue` needed. If it stops with conflicts, git writes its own "
-                 "conflict markers into the affected files (or, for a binary conflict, just keeps "
-                 "the local version)--resolve them, then `merge continue`. Idempotent--does "
-                 "nothing (and doesn't error) if a merge is already in progress, or if the "
-                 "server's version already matches where main last synced (nothing to merge).")
+                 "If it completes cleanly it is already done -- no `merge continue` needed. If it "
+                 "stops with conflicts, git writes conflict markers into the affected files (for a "
+                 "binary conflict it keeps your local version); resolve them, then run `cg "
+                 "contribution merge continue`. Does nothing, and does not error, if a merge is "
+                 "already in progress or there is nothing to merge.")
     async def cmd_contribution__merge__start(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3184,9 +3155,8 @@ class CgCli(CliBase):
             await self._merge_start(resolved_dir)
         return handler
 
-    @cli_command("Finish an in-progress merge: stage everything and commit (refusing first if a "
-                 "still-unresolved path has a leftover conflict marker), then refresh the "
-                 "solution symlink.")
+    @cli_command("Finish an in-progress merge: stage everything and commit. Refuses if any path "
+                 "still contains a leftover conflict marker.")
     async def cmd_contribution__merge__continue(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3198,8 +3168,7 @@ class CgCli(CliBase):
         return handler
 
     @cli_command("Abort an in-progress merge: restore the working directory to its pre-merge "
-                 "state and discard MERGE_HEAD. `server` is left untouched--nothing about the "
-                 "merge was ever recorded anywhere.")
+                 "state. Nothing about the merge is recorded anywhere.")
     async def cmd_contribution__merge__abort(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3209,10 +3178,9 @@ class CgCli(CliBase):
             self.eprint(f"{resolved_dir}: merge aborted; working directory restored to its pre-merge state.")
         return handler
 
-    @cli_command("Show the current merge conflict state (`git diff`, which during an unresolved "
-                 "merge shows a combined diff against both sides for each conflicted path). "
-                 "Equivalent to bare `cg contribution diff` while a merge is in progress. Fails "
-                 "if no merge is in progress.")
+    @cli_command("Show the current merge conflict state: during an unresolved merge, a combined "
+                 "diff against both sides for each conflicted path. Same as bare `cg contribution "
+                 "diff` while a merge is in progress. Fails if no merge is in progress.")
     async def cmd_contribution__merge__diff(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3223,10 +3191,10 @@ class CgCli(CliBase):
             self._print_diff(manager.git_repo.diff_text(), "No differences in the merge state.")
         return handler
 
-    @cli_command("Start a merge if one isn't already in progress, then launch `git mergetool` "
-                 "against the working tree. The merge remains in progress after the tool exits "
-                 "(resolved files are staged, not committed)--run `cg contribution merge "
-                 "continue` (or `abort`) when done.")
+    @cli_command("Start a merge if one is not already in progress, then launch `git mergetool` "
+                 "against the working tree. The merge stays in progress after the tool exits -- "
+                 "resolved files are staged, not committed -- so run `cg contribution merge "
+                 "continue`, or `abort`, when done.")
     async def cmd_contribution__merge__interactive(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3240,10 +3208,10 @@ class CgCli(CliBase):
                             "contribution git config merge.tool <name>`), then git's own default.")
         return handler
 
-    @cli_command("Discard all local edits: fetch, then move main's ref directly onto server's new "
-                 "tip (like `git reset --hard server`--no new commit). Unlike `rebase`, doesn't "
-                 "check whether local actually diverged first--always overwrites. Instant--"
-                 "doesn't use the merge state machine.")
+    @cli_command("Discard all local edits: fetch, then move straight onto the server's new tip, "
+                 "like `git reset --hard`. Unlike `cg contribution rebase`, this never checks "
+                 "whether you actually diverged -- it always overwrites. Instant; does not use the "
+                 "merge state machine.")
     async def cmd_contribution__merge__discard_local(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3253,9 +3221,9 @@ class CgCli(CliBase):
             self.eprint(f"{resolved_dir}: discarded local changes--now matches the server (title: {working.data.title!r}).")
         return handler
 
-    @cli_command("Update server/version-data to match the current server state, without touching "
-                 "main/the working tree at all. Just `fetch` under a different name--kept for CLI "
-                 "naming continuity. Instant--doesn't use the merge state machine.")
+    @cli_command("Update the local server and version-data branches to match the server, leaving "
+                 "your working tree untouched. Same as `cg contribution fetch`. Instant; does not "
+                 "use the merge state machine.")
     async def cmd_contribution__merge__discard_server(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3274,12 +3242,11 @@ class CgCli(CliBase):
         else:
             self.eprint(no_changes_message)
 
-    @cli_command("Show what's changed: working tree vs server's cached state (no network access "
-                 "by default). If a merge is in progress, shows the merge's own conflict state "
-                 "instead (same as `cg contribution merge diff`)--`--remote` is refused then, "
-                 "since fetching mid-merge isn't allowed anyway. Pass --remote to fetch fresh "
-                 "first. Pass --interactive to launch `git mergetool` instead of printing text "
-                 "(same as `cg contribution merge interactive`).")
+    @cli_command("Show what has changed between your working tree and the server state cg has "
+                 "cached -- no network access by default. Pass --remote to fetch fresh first, or "
+                 "--interactive to launch `git mergetool` instead of printing text. If a merge is "
+                 "in progress, shows the merge's own conflict state instead, and --remote is "
+                 "refused, since fetching mid-merge is not allowed.")
     async def cmd_contribution__diff(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3320,12 +3287,11 @@ class CgCli(CliBase):
                        help="Merge tool to use with --interactive--see `git help mergetool`.")
         return handler
 
-    @cli_command("Refresh server/version-data via a fresh findContribution. Leaves them untouched "
-                 "if the version hasn't changed, and avoids re-downloading the cover image if its "
-                 "binary ID hasn't changed either (reused straight from the object database). "
-                 "`rebase` and `merge start` do this automatically; use this to refresh the cache "
-                 "for `diff`/`diff --interactive` without either of those. Refuses while a merge "
-                 "is in progress.")
+    @cli_command("Refresh cg's cached copy of the server state. Leaves it untouched if the version "
+                 "has not changed, and skips re-downloading the cover image if it has not changed "
+                 "either. `cg contribution rebase` and `cg contribution merge start` do this for "
+                 "you; use this to refresh the cache for `cg contribution diff` without either. "
+                 "Refuses while a merge is in progress.")
     async def cmd_contribution__fetch(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3336,14 +3302,12 @@ class CgCli(CliBase):
             self.eprint(f"{resolved_dir}: server refreshed (version {contribution.last_version.version}).")
         return handler
 
-    @cli_command("Run a raw git command directly against this contribution's repo--e.g. `cg "
+    @cli_command("Run a raw git command against this contribution's repository -- e.g. `cg "
                  "contribution git log --oneline --all --decorate`, `cg contribution git show "
-                 "server:solution.src`, `cg contribution git config merge.tool meld`. Resolves "
-                 "--git-dir/--work-tree from contribution.json automatically (plain `git` run by "
-                 "hand here can't find this repo at all--see codingame_tools.contribution_manager"
-                 ".manager's module docstring for why data/ deliberately carries no .git marker "
-                 "of its own). No `--` needed, and nothing you pass is ever misread as one of "
-                 "cg's own options.")
+                 "server:solution.py`, `cg contribution git config merge.tool meld`. Resolves "
+                 "--git-dir and --work-tree for you; plain `git` run by hand here cannot find this "
+                 "repository at all. No `--` needed, and nothing you pass is ever misread as one "
+                 "of cg's own options.")
     async def cmd_contribution__git(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_dir: Path | None = self.args.contribution_dir
@@ -3380,11 +3344,9 @@ class CgCli(CliBase):
         parser.add_argument("git_args", nargs="*")
         return handler
 
-    @cli_command("Puzzle working directory commands--solve an existing CodinGame puzzle locally. "
-                 "Much simpler than `cg contribution`: exactly one file (data/solution.src) is "
-                 "ever editable, so there's no git repo involved--see "
-                 "codingame_tools.puzzle_manager.manager's module docstring. Currently only "
-                 "classic PUZZLE_INOUT puzzles are supported.")
+    @cli_command("Solve an existing CodinGame puzzle in a local working directory: import it, edit "
+                 "one file, run its test cases locally, and submit. Currently supports classic "
+                 "PUZZLE_INOUT puzzles.")
     async def cmd_puzzle(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         p = cmd.get_parser()
         p.add_argument("--puzzle-dir", "-d", type=Path, default=None, metavar="DIR",
@@ -3393,17 +3355,13 @@ class CgCli(CliBase):
                             "current directory or \"./puzzle\" if it contains puzzle.json.")
         return None  # No handler for the parent command; subcommands will be handled by their own handlers.
 
-    @cli_command("Build a fresh puzzle working directory: resolve PUZZLE to a real puzzle (in "
-                 "order of preference: a numeric puzzle ID; an exact pretty ID, e.g. "
-                 "'literary-alfabet-soupe'; an exact-matching title; a case-insensitive-matching "
-                 "title), then resolve this codingamer's test session for it "
-                 "(Puzzle/generateSessionFromPuzzlePrettyId), then fetch its current state "
-                 "(TestSession/startTestSession). Imports the codingamer's existing saved answer "
-                 "if there is one, in whatever language it was written in; otherwise seeds a "
-                 "placeholder solution.src in --language. Unlike `cg contribution import`, uses "
-                 "the normal --puzzle-dir resolution (with a cwd/./puzzle fallback) rather than "
-                 "requiring an explicit new-directory argument--puzzle working directories are "
-                 "expected to be reused across different puzzles over time, one at a time.")
+    @cli_command("Create a puzzle working directory and pull the puzzle into it "
+                 "(Puzzle/generateSessionFromPuzzlePrettyId, then TestSession/startTestSession). "
+                 "PUZZLE is resolved in this order: numeric puzzle ID; exact pretty ID, e.g. "
+                 "'literary-alfabet-soupe'; exact title; case-insensitive title. If you have "
+                 "attempted the puzzle before, your saved answer is imported in whatever language "
+                 "you last used; otherwise you get a placeholder solution in --language. Makes "
+                 "DIRECTORY the active puzzle.")
     async def cmd_puzzle__import(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_ref: str = self.args.puzzle_ref
@@ -3437,11 +3395,10 @@ class CgCli(CliBase):
                             "(or Python3 if you've never attempted it at all).")
         return handler
 
-    @cli_command("Reconstruct .meta/ (gitignored server-derived cache: the test session handle, "
-                 "plus read-only statement.html/stub_generator.cgstub reference copies) from "
-                 "puzzle.json's stable puzzle_id--for recovering after a fresh clone into a "
-                 "different repo (.meta/ is gitignored on purpose) or manual deletion/corruption "
-                 "of .meta/. Never touches data/.")
+    @cli_command("Rebuild .meta/ -- the test-session handle and the cached statement and "
+                 "stub-generator copies -- from puzzle.json, without touching data/. Use it after "
+                 "cloning a repo that does not carry .meta/ (it is gitignored), or if anything in "
+                 "the cache looks wrong. Deleting .meta/ and repairing is always safe.")
     async def cmd_puzzle__repair(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3454,11 +3411,10 @@ class CgCli(CliBase):
             self.eprint(f"  puzzlePrettyId: {server_data.puzzle_pretty_id!r}")
         return handler
 
-    @cli_command("Submit the current local solution.src to the server for credit "
-                 "(TestSession/submit)--a real, permanent graded submission, unlike `cg puzzle "
-                 "play-server`. Note `cg puzzle play-server` also durably updates the server's "
-                 "copy of the code as a side effect of running a test case--this command is the "
-                 "one that actually grades it.")
+    @cli_command("Submit your solution for credit (TestSession/submit): a real, permanent, graded "
+                 "submission, validated against the puzzle's hidden validator test cases. There is "
+                 "no undo. A puzzle with many heavy validators can take a while, since the server "
+                 "runs your code once per validator. Use `cg puzzle play` to test locally first.")
     async def cmd_puzzle__submit(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3484,14 +3440,13 @@ class CgCli(CliBase):
                 self.eprint(f"  [{status}] {validator.name} (difficulty {validator.difficulty})")
         return handler
 
-    @cli_command("Run the current local solution.src against one or more of the puzzle's test "
-                 "cases via the server (TestSession/play--the IDE's \"Test\" button, not a real "
-                 "submission; see `cg puzzle play` for the entirely-local, no-network "
-                 "equivalent). With no TEST-INDEX arguments, runs every downloaded test case "
-                 "(.meta/tests/); give one or more 1-based indices to run just those. Exits 1 if "
-                 "any run errored or didn't match the expected output. Output matches `cg "
-                 "puzzle play`'s format. Captured stdout is only printed for a failing test, "
-                 "unless --show-stdout is given.")
+    @cli_command("Run your solution against the puzzle's test cases on CodinGame's servers "
+                 "(TestSession/play) -- the IDE's \"Test\" button. Not a submission and not graded, "
+                 "but it does durably overwrite the code CodinGame has saved for this puzzle and "
+                 "language. Prefer `cg puzzle play`, which runs locally with no network access and "
+                 "no side effects. With no TEST-INDEX, runs every downloaded test case; give one "
+                 "or more 1-based indices to run only those. Exits non-zero if any test fails. "
+                 "Captured stdout is printed only for failing tests, unless --show-stdout.")
     async def cmd_puzzle__play_server(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3532,23 +3487,20 @@ class CgCli(CliBase):
                 raise CliExit(1)
         p = cmd.get_parser()
         p.add_argument("test_indices", type=int, nargs="*", metavar="TEST-INDEX",
-                       help="1-based test case index/indices to run against (see "
-                            "CgTestSessionTestCase.index). With none given, runs every "
-                            "downloaded test case (.meta/tests/).")
+                       help="1-based test case index/indices to run against. With none "
+                            "given, runs every downloaded test case.")
         p.add_argument("--show-stdout", default=False, action="store_true",
                        help="Print captured stdout even for a passing test. Always printed for "
                             "a failing/errored test regardless.")
         return handler
 
-    @cli_command("Run the current local solution.src against the downloaded .meta/tests/ test "
-                 "cases entirely locally (no network access at all)--by shelling out to the "
-                 "appropriate interpreter as a subprocess, comparing captured stdout to each "
-                 "test's expected output (see `cg puzzle play-server` for the real, server-side "
-                 "equivalent). Currently only Python3 solutions are supported. With no "
-                 "TEST-INDEX arguments, runs every downloaded test case; give one or more "
-                 "1-based indices to run just those. Exits non-zero if any test case fails. "
-                 "Captured stdout is only printed for a failing test (as part of its diff), "
-                 "unless --show-stdout is given.")
+    @cli_command("Run your solution against the puzzle's downloaded test cases entirely locally, "
+                 "with no network access at all. Output is compared exactly as CodinGame compares "
+                 "it, so a pass here means a pass there. Supports Python3 and C++; C++ builds and "
+                 "runs in a container, so no local toolchain is needed. With no TEST-INDEX, runs "
+                 "every test case; give one or more 1-based indices to run only those. Exits "
+                 "non-zero if any test fails. Captured stdout is printed only for failing tests, "
+                 "unless --show-stdout.")
     async def cmd_puzzle__play(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3619,11 +3571,10 @@ class CgCli(CliBase):
                             "need no build (e.g. Python3).")
         return handler
 
-    @cli_command("Display the puzzle's problem statement, rendered from the cached "
-                 ".meta/statement.html (no network access--run `cg puzzle import`/`repair` "
-                 "first if missing). Section headers and the Example's input/output text are "
-                 "color-highlighted when writing to a real terminal. With --json (top-level "
-                 "option), prints the parsed [{kind, text}, ...] blocks instead.")
+    @cli_command("Print the puzzle's problem statement from the local cache -- no network access. "
+                 "Run `cg puzzle import` or `cg puzzle repair` first if it is missing. Section "
+                 "headers and the example input/output are colour-highlighted on a terminal. With "
+                 "--json, prints the parsed [{kind, text}, ...] blocks instead.")
     async def cmd_puzzle__description(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3654,8 +3605,8 @@ class CgCli(CliBase):
                     console.print()
         return handler
 
-    @cli_command("Show a unified diff between the local solution.src and the server's current "
-                 "last-submitted answer for this puzzle.")
+    @cli_command("Show a unified diff between your local solution and the answer the server "
+                 "currently has for this puzzle.")
     async def cmd_puzzle__diff(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3669,12 +3620,10 @@ class CgCli(CliBase):
                 self.eprint(f"{resolved_dir}: no differences from the server's last-submitted answer.")
         return handler
 
-    @cli_command("Human-friendly summary of this puzzle: title, language, and local-edit status. "
-                 "By default entirely local (no network access); pass --refresh to also check "
-                 "for local edits against the server's last-submitted answer and fetch live "
-                 "progress/score (two live calls--there is no local cache for puzzles, unlike "
-                 "`cg contribution status`, so this is always genuinely live, every time). With "
-                 "--json (top-level option), renders as JSON instead of text.")
+    @cli_command("Summary of this puzzle: title, language, and whether you have local edits. "
+                 "Entirely local by default; --refresh also compares against the server's "
+                 "last-submitted answer and fetches your live progress and score. With --json, "
+                 "renders as JSON instead of text.")
     async def cmd_puzzle__status(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3745,9 +3694,8 @@ class CgCli(CliBase):
                             "answer and fetch live progress/score (two live calls).")
         return handler
 
-    @cli_command("Discard local edits: overwrite solution.src with the server's current "
-                 "last-submitted answer for this puzzle. Purely local--no network side effect "
-                 "beyond the read.")
+    @cli_command("Throw local edits away: replace your solution with the answer the server "
+                 "currently has for this puzzle. Reads from the server; changes nothing there.")
     async def cmd_puzzle__discard_local(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3761,10 +3709,11 @@ class CgCli(CliBase):
                 )
         return handler
 
-    @cli_command("Debug-session plumbing for languages whose debugger attaches to a running target "
-                 "(C++, via gdbserver in its container). Normally invoked for you by the VS Code "
-                 "tasks `cg puzzle vscode` generates, not typed by hand. Languages whose debugger "
-                 "launches the program itself--Python3--don't use these at all.")
+    @cli_command("Debug-session plumbing for languages whose debugger attaches to a running "
+                 "target, such as C++ in its container. Normally invoked for you by the VS Code "
+                 "configuration `cg vscode install` generates, rather than typed by hand. "
+                 "Languages whose debugger launches the program itself, such as Python3, never use "
+                 "these.")
     async def cmd_puzzle__debug(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         return None
 
@@ -3799,8 +3748,7 @@ class CgCli(CliBase):
         return handler
 
     @cli_command("Stop a debug target started by `cg puzzle debug start`. Always succeeds, "
-                 "including when nothing is running--it's wired to a postDebugTask, which fires "
-                 "even for a session that never really began.")
+                 "including when nothing is running.")
     async def cmd_puzzle__debug__stop(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -3813,11 +3761,11 @@ class CgCli(CliBase):
             await manager.stop_debug_session()
         return handler
 
-    @cli_command("Compile data/solution.src, if its language needs compiling (a no-op for "
-                 "interpreted languages like Python3). Normally you don't need this--`cg puzzle "
-                 "play` builds first automatically--but it's useful to compile without running, or "
-                 "to warm a cold container image up front. Near-instant when the source hasn't "
-                 "changed since the last successful build. Compiler diagnostics go to stderr.")
+    @cli_command("Compile your solution, if its language needs compiling (a no-op for interpreted "
+                 "languages such as Python3). You rarely need this -- `cg puzzle play` builds "
+                 "first automatically -- but it is useful to compile without running, or to warm a "
+                 "cold container image up front. Near-instant when the source has not changed "
+                 "since the last successful build. Compiler diagnostics go to stderr.")
     async def cmd_puzzle__build(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -4024,12 +3972,12 @@ class CgCli(CliBase):
         return handler
 
     @cli_command("Switch this puzzle to a different language, restoring your own most recent code "
-                 "for it. CodinGame keeps your latest source per language, so anything you'd "
-                 "previously written in the target language comes back; a language you've never "
-                 "used gets a placeholder. Refuses if data/solution.src holds work the server "
-                 "doesn't have (submit it first, or pass --force to discard it). Changes local "
-                 "state only--the server's current language follows once you run a server-side "
-                 "test or submit in the new one.")
+                 "for it. CodinGame keeps your latest source per language, so anything you "
+                 "previously wrote in the target language comes back; a language you have never "
+                 "used gets a placeholder. Refuses if your solution holds work the server does not "
+                 "have -- submit it first, or pass --force to discard it. Changes local state "
+                 "only; the server's language follows once you run a server-side test or submit in "
+                 "the new one.")
     async def cmd_puzzle__set_language(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -4054,15 +4002,14 @@ class CgCli(CliBase):
         p.add_argument("language", type=str, metavar="LANGUAGE",
                        help="CodinGame language ID to switch to, e.g. 'C++', 'Python3'.")
         p.add_argument("--force", "-f", default=False, action="store_true",
-                       help="Switch even if data/solution.src has changes the server doesn't have, "
+                       help="Switch even if your solution has changes the server doesn't have, "
                             "discarding them.")
         return handler
 
-    @cli_command("Make DIRECTORY the active puzzle working directory, so subsequent `cg puzzle` "
-                 "commands use it without needing --puzzle-dir. Set automatically by `cg puzzle "
-                 "import`, so this is for switching between working directories "
-                 "you already have. Outranks the configured default (`cg settings set puzzle-dir`); "
-                 "`cg puzzle deactivate` clears it.")
+    @cli_command("Make DIRECTORY the active puzzle, so later `cg puzzle` commands use it without "
+                 "--puzzle-dir. `cg puzzle import` sets this for you, so use this to switch "
+                 "between working directories you already have. Outranks the configured default "
+                 "(`cg settings set puzzle-dir`); `cg puzzle deactivate` clears it.")
     async def cmd_puzzle__activate(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             directory = Path(self.args.directory).expanduser().resolve()
@@ -4078,9 +4025,9 @@ class CgCli(CliBase):
                             "directory, so `cd` into one and run this with no arguments.")
         return handler
 
-    @cli_command("Clear the active puzzle working directory, so `cg puzzle` commands fall back to "
-                 "the configured default and the usual directory discovery. Does not touch any "
-                 "files--only the selection.")
+    @cli_command("Clear the active puzzle, so `cg puzzle` commands fall back to the configured "
+                 "default and the usual directory discovery. Touches no files -- only the "
+                 "selection.")
     async def cmd_puzzle__deactivate(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             previous = await self.clear_current_working_dir("puzzle")
@@ -4090,11 +4037,10 @@ class CgCli(CliBase):
                 self.eprint(f"Active puzzle directory cleared (was {previous})")
         return handler
 
-    @cli_command("Choose which test case `cg puzzle debug` (and `cg play --selected`) runs against. "
-                 "Debugging feeds one stdin, so it needs exactly one test. Recorded in "
-                 ".meta/selected-test.json rather than in launch.json, which is what lets one VS "
-                 "Code debug configuration serve every puzzle directory instead of being "
-                 "regenerated per directory. With no INDEX, shows the current selection.")
+    @cli_command("Choose which test case the debugger runs against. Debugging feeds one stdin, so "
+                 "it needs exactly one test. The choice is recorded per working directory and "
+                 "survives until you change it; without one, debugging uses the first test case. "
+                 "With no INDEX, shows the current selection.")
     async def cmd_puzzle__select_test(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -4121,7 +4067,9 @@ class CgCli(CliBase):
                        help="Forget the explicit selection and fall back to the first test case.")
         return handler
 
-    @cli_command("Show which puzzle working directory would be used.")
+    @cli_command("Print the path of the puzzle working directory that would be used. Prints "
+                 "nothing but the path, so it composes: $EDITOR \"$(cg puzzle "
+                 "where)/data/solution.py\". Exits non-zero if no working directory can be found.")
     async def cmd_puzzle__where(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
@@ -4137,11 +4085,10 @@ class CgCli(CliBase):
             print(found)
         return handler
 
-    @cli_command("Delete this puzzle working directory. Purely local--there is no server-side "
-                 "counterpart to delete (a puzzle already exists on the server before you can "
-                 "solve it, and isn't yours to remove); this only ever removes your own local "
-                 "files. Destructive--prompts for confirmation unless --force is given; requires "
-                 "--force outright if stdin/stdout aren't a terminal.")
+    @cli_command("Delete this puzzle working directory. Local only -- the puzzle exists on the "
+                 "server independently of you and is not yours to remove. Destructive: prompts for "
+                 "confirmation unless --force is given, and requires --force outright if "
+                 "stdin/stdout are not a terminal.")
     async def cmd_puzzle__delete(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
