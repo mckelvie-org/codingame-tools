@@ -1,9 +1,9 @@
 # codingame-tools
 
-[![CI](https://github.com/mckelvie-org/codingame-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/mckelvie-org/codingame-tools/actions/workflows/ci.yml)
-[![PyPI version](https://img.shields.io/pypi/v/codingame-tools.svg)](https://pypi.org/project/codingame-tools/)
-[![Python versions](https://img.shields.io/pypi/pyversions/codingame-tools.svg)](https://pypi.org/project/codingame-tools/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://img.shields.io/badge/CI-passing-brightgreen.svg)](https://github.com/mckelvie-org/codingame-tools/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/badge/pypi-v2.0.2rc2-blue.svg)](https://test.pypi.org/project/codingame-tools/2.0.2rc2/)
+[![Python versions](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://pypi.org/project/codingame-tools/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.2/LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-blue.svg)](https://mckelvie-org.github.io/codingame-tools/dev/)
 
 Solve [CodinGame](https://www.codingame.com/) puzzles and author CodinGame contributions from your
@@ -151,8 +151,8 @@ Python 3.10 through 3.14.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.2/LICENSE).
 
 ---
 
-For development and release workflow, see [CONTRIBUTING.md](CONTRIBUTING.md).
+For development and release workflow, see [CONTRIBUTING.md](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.2/CONTRIBUTING.md).
