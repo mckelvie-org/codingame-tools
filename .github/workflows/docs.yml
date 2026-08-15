@@ -61,6 +61,22 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: pdm run mike deploy --push dev
 
+      - name: Make sure the site root resolves
+        if: github.ref == 'refs/heads/main'
+        # `mike set-default` writes the root index.html that redirects `/` to a version. Only the
+        # release path below sets it, so between enabling Pages and cutting the first release the
+        # site root 404s even though the docs are sitting right there in `dev/` -- which reads as a
+        # broken deploy rather than as an unreleased project.
+        #
+        # `latest` wins whenever it exists, so this never fights the release path; it only fills in
+        # the gap before there is a release to point at.
+        run: |
+          if pdm run mike list latest >/dev/null 2>&1; then
+            pdm run mike set-default --push latest
+          else
+            pdm run mike set-default --push dev
+          fi
+
       - name: Deploy release docs
         if: startsWith(github.ref, 'refs/tags/v')
         run: |

@@ -4,9 +4,14 @@
 [![PyPI version](https://img.shields.io/pypi/v/codingame-tools.svg)](https://pypi.org/project/codingame-tools/)
 [![Python versions](https://img.shields.io/pypi/pyversions/codingame-tools.svg)](https://pypi.org/project/codingame-tools/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://mckelvie-org.github.io/codingame-tools/latest/)
 
 Solve [CodinGame](https://www.codingame.com/) puzzles and author CodinGame contributions from your
 own editor, under version control — instead of in the browser IDE.
+
+📖 **[Read the documentation](https://mckelvie-org.github.io/codingame-tools/latest/)** — guides, a
+full command reference, and an API reference generated from the source. Or run `cg doc`, which opens
+the docs for the version you actually have installed.
 
 ## Highlights
 

@@ -94,6 +94,21 @@ def _modules_under(subdir: str) -> list[Path]:
 
 nav = mkdocs_gen_files.Nav()
 
+# A landing page for `api/` itself. Without one the section exists only in the nav sidebar, so
+# `.../api/` is a 404 -- which is exactly the URL README and doc/index.md send people to, and the
+# natural thing to type. Written first so it sorts to the top of the generated nav.
+overview = API_ROOT / "index.md"
+with mkdocs_gen_files.open(overview, "w") as fd:
+    fd.write("# API reference\n\n")
+    fd.write("Generated from the source at build time, one page per module. Everything here is "
+             "cross-linked: type names in signatures and backticked references inside docstrings "
+             "resolve to the pages that define them.\n\n")
+    fd.write("For the hand-written guides -- how to use the client, the managers and the CLI -- "
+             "start from [the documentation home](../index.md).\n\n")
+    for area_slug, (_subdir, area_title, area_blurb) in AREAS.items():
+        fd.write(f"- **[{area_title}]({area_slug}/index.md)** — {area_blurb}\n")
+nav[("Overview",)] = overview.relative_to(API_ROOT).as_posix()
+
 for slug, (subdir, title, blurb) in AREAS.items():
     for source in _modules_under(subdir):
         module = _module_path(source)
