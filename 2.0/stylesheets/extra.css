@@ -1,0 +1,11 @@
+/* The API reference's navigation labels are dotted module paths, and Material's sidebar neither
+   wraps nor scrolls horizontally nor can be dragged wider -- so anything past its width is simply
+   lost. The generator keeps those labels short (see scripts/gen_api_pages.py), but "short" depends
+   on the reader's window, and a narrow one truncates regardless.
+
+   Wrapping is the only remedy that needs no guess about width. `anywhere` rather than `break-word`
+   because these labels break at dots, not spaces, so there is no break opportunity to find. */
+.md-nav__link .md-ellipsis {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
