@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "codingame-tools"
-version = "2.0.2-rc.1"
+version = "2.0.2"
 description = "Python package codingame-tools"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = []
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
@@ -49,13 +49,13 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/mckelvie-org/codingame-tools"
-Source = "https://github.com/mckelvie-org/codingame-tools/tree/v2.0.2-rc.1"
+Source = "https://github.com/mckelvie-org/codingame-tools/tree/v2.0.2"
 "Bug Tracker" = "https://github.com/mckelvie-org/codingame-tools/issues"
 # The rendered site, not the Markdown source -- this is the "Documentation" link in PyPI's sidebar.
 # Tracks `dev` on main and is pinned to the release's own X.Y when a release is cut, the same way
 # README's links are (bin/cut-rc, via scripts/rewrite_readme_links.py --pin-docs).
-Documentation = "https://mckelvie-org.github.io/codingame-tools/dev/"
-Changelog = "https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.1/CHANGELOG.md"
+Documentation = "https://mckelvie-org.github.io/codingame-tools/2.0/"
+Changelog = "https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2/CHANGELOG.md"
 
 [project.scripts]
 cg = "codingame_tools.cli.main:main"

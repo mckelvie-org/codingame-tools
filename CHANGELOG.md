@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## {{UNRELEASED}}
+## 2.0.2 (2026-08-14)
 
 - **A documentation site, with a generated API reference.** Published to GitHub Pages and versioned:
   `dev` tracks `main`, and every release gets its own `X.Y` with `latest` following the newest. The

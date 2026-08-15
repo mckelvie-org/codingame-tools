@@ -1,50 +1,50 @@
 # codingame-tools
 
 [![CI](https://img.shields.io/badge/CI-passing-brightgreen.svg)](https://github.com/mckelvie-org/codingame-tools/actions/workflows/ci.yml)
-[![PyPI version](https://img.shields.io/badge/pypi-v2.0.2rc1-blue.svg)](https://test.pypi.org/project/codingame-tools/2.0.2rc1/)
+[![PyPI version](https://img.shields.io/badge/pypi-v2.0.2-blue.svg)](https://pypi.org/project/codingame-tools/2.0.2/)
 [![Python versions](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg)](https://pypi.org/project/codingame-tools/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.1/LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-blue.svg)](https://mckelvie-org.github.io/codingame-tools/dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2/LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-blue.svg)](https://mckelvie-org.github.io/codingame-tools/2.0/)
 
 Solve [CodinGame](https://www.codingame.com/) puzzles and author CodinGame contributions from your
 own editor, under version control — instead of in the browser IDE.
 
-📖 **[Read the documentation](https://mckelvie-org.github.io/codingame-tools/dev/)** — guides, a
+📖 **[Read the documentation](https://mckelvie-org.github.io/codingame-tools/2.0/)** — guides, a
 full command reference, and an API reference generated from the source. Or run `cg doc`, which opens
 the docs for the version you actually have installed.
 
 ## Highlights
 
-- **[Browser login](https://mckelvie-org.github.io/codingame-tools/dev/concepts/authentication/)** — CodinGame has no API tokens, so `cg login`
+- **[Browser login](https://mckelvie-org.github.io/codingame-tools/2.0/concepts/authentication/)** — CodinGame has no API tokens, so `cg login`
   drives a real browser and captures the session. Works with any sign-in method, including
   third-party identity providers. Credentials are stored per
-  [profile](https://mckelvie-org.github.io/codingame-tools/dev/concepts/profiles/); a headless `--manual` path exists for CI.
+  [profile](https://mckelvie-org.github.io/codingame-tools/2.0/concepts/profiles/); a headless `--manual` path exists for CI.
 
-- **[Async client with structured API wrappers](https://mckelvie-org.github.io/codingame-tools/dev/client/)** — `CgClient` exposes 22
+- **[Async client with structured API wrappers](https://mckelvie-org.github.io/codingame-tools/2.0/client/)** — `CgClient` exposes 22
   service endpoints as typed methods, with dataclasses for every request and response, plus a helper
   layer that handles retries and the CDN timeouts that heavy operations provoke.
 
-- **[Puzzle manager](https://mckelvie-org.github.io/codingame-tools/dev/tools/puzzle-manager/)** — a local working directory for solving a
+- **[Puzzle manager](https://mckelvie-org.github.io/codingame-tools/2.0/tools/puzzle-manager/)** — a local working directory for solving a
   puzzle: import it, edit one file, run its test cases, submit. Language switching restores your own
   previous code, since CodinGame stores your latest source per language.
 
-- **[Contribution manager](https://mckelvie-org.github.io/codingame-tools/dev/tools/contribution-manager/)** — a local working directory for a
+- **[Contribution manager](https://mckelvie-org.github.io/codingame-tools/2.0/tools/contribution-manager/)** — a local working directory for a
   puzzle you're *writing*. `data/` is a real git working tree with `main`/`server`/`version-data`
   branches, so syncing with CodinGame is a genuine fetch/rebase/merge workflow — conflicts included
   — rather than a one-shot overwrite.
 
-- **[A CLI exposing all of it](https://mckelvie-org.github.io/codingame-tools/dev/cli/)** — 148 commands, from the two workflow groups down
+- **[A CLI exposing all of it](https://mckelvie-org.github.io/codingame-tools/2.0/cli/)** — 148 commands, from the two workflow groups down
   to one subcommand per raw API method. Nothing is library-only.
 
-- **[Local validation](https://mckelvie-org.github.io/codingame-tools/dev/cli/puzzles/#running-tests)** — run your solution against real test
+- **[Local validation](https://mckelvie-org.github.io/codingame-tools/2.0/cli/puzzles/#running-tests)** — run your solution against real test
   cases with **no network access at all**. Output comparison reproduces CodinGame's own rule
   exactly, measured against the live service, so a local pass predicts a remote one.
 
-- **[VS Code integration, including debugging](https://mckelvie-org.github.io/codingame-tools/dev/cli/debugging/)** — generated run/debug
+- **[VS Code integration, including debugging](https://mckelvie-org.github.io/codingame-tools/2.0/cli/debugging/)** — generated run/debug
   configuration, breakpoints in your solution, and a test-case picker. Compiled languages build,
   run and debug inside Docker, so C++ works with no local toolchain at all.
 
-- **[The protocol, documented](https://mckelvie-org.github.io/codingame-tools/dev/client/services/)** — CodinGame publishes no API spec. Every
+- **[The protocol, documented](https://mckelvie-org.github.io/codingame-tools/2.0/client/services/)** — CodinGame publishes no API spec. Every
   endpoint here was reverse-engineered, wrapped in dataclasses, and documented with what it actually
   does — including the parts that contradict what the name suggests. Where behaviour was confirmed
   by probing the live service, the docstring says so.
@@ -119,9 +119,9 @@ asyncio.run(main())
 
 ## Documentation
 
-**[The documentation site](https://mckelvie-org.github.io/codingame-tools/dev/)** has all of it: the
-guides linked above, a [command reference](https://mckelvie-org.github.io/codingame-tools/dev/cli/reference/)
-generated from the CLI itself, and an [API reference](https://mckelvie-org.github.io/codingame-tools/dev/api/)
+**[The documentation site](https://mckelvie-org.github.io/codingame-tools/2.0/)** has all of it: the
+guides linked above, a [command reference](https://mckelvie-org.github.io/codingame-tools/2.0/cli/reference/)
+generated from the CLI itself, and an [API reference](https://mckelvie-org.github.io/codingame-tools/2.0/api/)
 generated from the source.
 
 **Every link here points at the docs for _this_ copy of the README.** Each version is published as a
@@ -151,8 +151,8 @@ Python 3.10 through 3.14.
 
 ## License
 
-MIT. See [LICENSE](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.1/LICENSE).
+MIT. See [LICENSE](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2/LICENSE).
 
 ---
 
-For development and release workflow, see [CONTRIBUTING.md](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2-rc.1/CONTRIBUTING.md).
+For development and release workflow, see [CONTRIBUTING.md](https://github.com/mckelvie-org/codingame-tools/blob/v2.0.2/CONTRIBUTING.md).
