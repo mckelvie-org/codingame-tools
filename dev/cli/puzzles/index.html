@@ -461,10 +461,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#finding-your-way-around" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding your way around
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
         Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging
       
     </span>
   </a>
@@ -505,10 +527,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recovering" class="md-nav__link">
+  <a href="#managing-working-directories" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recovering
+        Managing working directories
       
     </span>
   </a>
@@ -5679,10 +5701,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#finding-your-way-around" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding your way around
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
         Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging
       
     </span>
   </a>
@@ -5723,10 +5767,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recovering" class="md-nav__link">
+  <a href="#managing-working-directories" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recovering
+        Managing working directories
       
     </span>
   </a>
@@ -5768,10 +5812,10 @@
 <p>Pull a puzzle into a local directory, solve it in your own editor, run its tests without touching
 the network, and submit when you're happy.</p>
 <h2 id="the-loop">The loop<a class="headerlink" href="#the-loop" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span>temperatures<span class="w">    </span><span class="c1"># pull it down; becomes the active puzzle</span>
-<span class="nv">$EDITOR</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="k">)</span><span class="s2">/data/solution.py&quot;</span><span class="w">  </span><span class="c1"># solve it</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w">                            </span><span class="c1"># run every test case, locally</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>submit<span class="w">                          </span><span class="c1"># graded submission</span>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span>temperatures<span class="w">          </span><span class="c1"># pull it down; becomes the active puzzle</span>
+<span class="nv">$EDITOR</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="k">)</span><span class="s2">/data/solution.py&quot;</span><span class="w">   </span><span class="c1"># solve it</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w">                                  </span><span class="c1"># run every test case, locally</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>submit<span class="w">                                </span><span class="c1"># graded submission</span>
 </code></pre></div>
 <p>That's the whole thing. The rest of this page is what to do when it isn't that simple.</p>
 <h2 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">&para;</a></h2>
@@ -5779,37 +5823,48 @@ cg<span class="w"> </span>puzzle<span class="w"> </span>submit<span class="w">  
 cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span><span class="m">10075</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span><span class="s2">&quot;Temperatures&quot;</span>
 </code></pre></div>
-<p>The target directory comes <strong>first and is required</strong>, matching <code>cg contribution import</code> and
-<code>cg contribution create</code>. <code>PUZZLE</code> is then resolved in order of preference: numeric puzzle ID,
-exact pretty ID, exact title, case-insensitive title. If you've attempted the puzzle before, your
-existing saved answer is imported in whatever language you last used; otherwise you get a
-placeholder in <code>--language</code> (default Python3).</p>
-<p>Importing also makes that directory the <strong>active</strong> puzzle, so everything afterwards finds it
-without <code>--puzzle-dir</code> — see <a href="../../concepts/profiles/#active-working-directories">active working directories</a>.</p>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="w">           </span><span class="c1"># prints just the resolved path -- built for $(...)</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>description<span class="w">     </span><span class="c1"># the problem statement, rendered, no network needed</span>
+<p>The target directory comes first and is required. <code>PUZZLE</code> is resolved in this order: numeric puzzle
+ID, exact pretty ID, exact title, case-insensitive title.</p>
+<p>If you've attempted the puzzle before, your saved answer is imported in whatever language you last
+used; otherwise you get a placeholder in <code>--language</code> (default Python3).</p>
+<p>Importing makes that directory the <strong>active</strong> puzzle, so later commands find it without
+<code>--puzzle-dir</code> — see <a href="../../concepts/profiles/#active-working-directories">active working directories</a>.</p>
+<h2 id="finding-your-way-around">Finding your way around<a class="headerlink" href="#finding-your-way-around" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="w">           </span><span class="c1"># just the resolved path, for $(...)</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>description<span class="w">     </span><span class="c1"># the problem statement, rendered; no network</span>
 </code></pre></div>
-<p><code>where</code> writes nothing but the path to stdout, so it composes:</p>
+<p><code>where</code> prints nothing but the path, so it composes:</p>
 <div class="highlight"><pre><span></span><code><span class="nv">$EDITOR</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="k">)</span><span class="s2">/data/solution.py&quot;</span>
 <span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="k">)</span><span class="s2">&quot;</span>
 </code></pre></div>
-<p>It exits non-zero if no working directory can be found, rather than printing prose a shell would
-happily substitute into a path.</p>
+<p>It exits non-zero if no working directory can be found.</p>
 <h2 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w">            </span><span class="c1"># every downloaded test case, entirely locally</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w"> </span><span class="m">3</span><span class="w">          </span><span class="c1"># just test 3</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">5</span><span class="w">      </span><span class="c1"># a few</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w"> </span>--show-stdout
 </code></pre></div>
-<p><code>play</code> never touches the network. Output is compared exactly as CodinGame compares it, so a pass
+<p><code>play</code> never touches the network, and output is compared exactly as CodinGame compares it, so a pass
 here means a pass there — see <a href="../../design/final-newlines/#output-comparison">output comparison</a>.
 Captured stdout is only printed for failures unless you ask for it.</p>
-<p>There's also a server-side equivalent:</p>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>play-server<span class="w">     </span><span class="c1"># the IDE&#39;s &quot;Test&quot; button</span>
+<p>There's also a server-side equivalent, the IDE's "Test" button:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>play-server
 </code></pre></div>
-<p><strong>This durably saves your code on the server</strong>, as a side effect of running. It's not a submission
-and it isn't graded, but it does overwrite what CodinGame has stored for this puzzle and language.
-Prefer <code>cg puzzle play</code> unless you specifically need the server's own runner.</p>
+<blockquote>
+<p><strong><code>play-server</code> overwrites your saved code.</strong> Running it durably saves your current code on the
+server for this puzzle and language. It isn't a submission and isn't graded, but it does replace
+what CodinGame has stored. Prefer <code>cg puzzle play</code> unless you need the server's own runner.</p>
+</blockquote>
+<h2 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">&para;</a></h2>
+<p>When a test fails and you want to step through it rather than add print statements:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>vscode<span class="w"> </span>install<span class="w">         </span><span class="c1"># generates the VS Code launch entries; once per workspace</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span><span class="k">select</span>-test<span class="w"> </span><span class="m">3</span><span class="w">   </span><span class="c1"># which test case to feed the debugger</span>
+</code></pre></div>
+<p>Then press <strong>F5</strong> in VS Code with your solution file focused. Breakpoints land in
+<code>data/solution.py</code>, and stdin comes from the selected test case. Compiled languages build, run and
+debug inside Docker, so C++ needs no local toolchain.</p>
+<p>Full details, including containerised languages and how to pick a test case:
+<strong><a href="../debugging/">Debugging</a></strong>.</p>
 <h2 id="submitting">Submitting<a class="headerlink" href="#submitting" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>submit
 </code></pre></div>
@@ -5824,25 +5879,24 @@ any. It refuses if <code>data/solution.&lt;ext&gt;</code> holds edits the server
 pass <code>--force</code>. See <a href="../../concepts/languages/">languages</a>.</p>
 <h2 id="when-local-and-server-disagree">When local and server disagree<a class="headerlink" href="#when-local-and-server-disagree" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>status<span class="w">            </span><span class="c1"># local summary; no network</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>status<span class="w"> </span>--refresh<span class="w">  </span><span class="c1"># also check against the server, and fetch live progress/score</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>status<span class="w"> </span>--refresh<span class="w">  </span><span class="c1"># also check the server, and fetch live progress/score</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>diff<span class="w">              </span><span class="c1"># unified diff, local vs the server&#39;s last-submitted answer</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>discard-local<span class="w">     </span><span class="c1"># throw local edits away, take the server&#39;s copy</span>
 </code></pre></div>
-<p>There is no merge machinery here, deliberately — a puzzle has exactly one editable file, so there's
-nothing three-way to resolve. Look at the diff, then keep one side or the other.</p>
-<h2 id="recovering">Recovering<a class="headerlink" href="#recovering" title="Permanent link">&para;</a></h2>
+<p>There's no merge step — a puzzle has one editable file. Look at the diff, then keep one side or the
+other.</p>
+<h2 id="managing-working-directories">Managing working directories<a class="headerlink" href="#managing-working-directories" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>activate<span class="w"> </span>./other-puzzle<span class="w">   </span><span class="c1"># switch which one commands act on</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>activate<span class="w">                  </span><span class="c1"># ...or activate the current directory</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>deactivate<span class="w">                </span><span class="c1"># back to the configured default</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>delete<span class="w">                    </span><span class="c1"># remove the local directory; prompts unless --force</span>
+</code></pre></div>
+<p><code>delete</code> is local-only — the puzzle itself isn't yours to remove.</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>repair
 </code></pre></div>
 <p>Rebuilds <code>.meta/</code> — the test-session handle, downloaded test cases, cached statement — from
 <code>puzzle.json</code>, without touching <code>data/</code>. Use it after a fresh clone (<code>.meta/</code> is gitignored) or if
 anything in the cache looks wrong. Deleting <code>.meta/</code> and repairing is always safe.</p>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>activate<span class="w"> </span>./other-puzzle<span class="w">   </span><span class="c1"># switch which one commands act on</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>activate<span class="w">                  </span><span class="c1"># ...or activate the current directory</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>deactivate<span class="w">                </span><span class="c1"># back to the configured default</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>delete
-</code></pre></div>
-<p><code>delete</code> removes the local directory only, and deactivates it if it was active. There's no server-side counterpart — the puzzle exists
-independently of you and isn't yours to remove. Prompts unless <code>--force</code>.</p>
 <h2 id="full-reference">Full reference<a class="headerlink" href="#full-reference" title="Permanent link">&para;</a></h2>
 <p>Every flag of every command: <strong><a href="../reference/puzzle/"><code>cg puzzle</code> reference</a></strong>.</p>
 

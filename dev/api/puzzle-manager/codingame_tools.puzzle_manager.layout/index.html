@@ -5846,7 +5846,6 @@ save duplicating a few string constants.</p>
 <p>Layout:</p>
 <div class="highlight"><pre><span></span><code>puzzle/
     puzzle.json                 # CgPuzzleIdentity--stable, git-tracked
-    solution.&lt;ext&gt;              # convenience symlink -&gt; data/solution.src
     .gitignore                  # contains &quot;.meta/&quot;
     .meta/                      # gitignored--see META_SUBDIR_NAME
         puzzle-server-data.json # CgPuzzleServerData--cache, rebuilt by repair()
@@ -5855,7 +5854,7 @@ save duplicating a few string constants.</p>
         tests/                  # downloaded test case input/output--see
                                  # codingame_tools.puzzle_manager.test_cases_dir
     data/
-        solution.src            # the one real, editable/submittable file
+        solution.&lt;ext&gt;          # the one real, editable/submittable file
         puzzle-data.json        # CgPuzzleData--user-editable, git-tracked
 </code></pre></div>
 
@@ -5894,7 +5893,7 @@ save duplicating a few string constants.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The puzzle's user-editable content (<code>solution.src</code>, <code>puzzle-data.json</code>) lives under a <code>data/</code>
+        <p>The puzzle's user-editable content (<code>solution.&lt;ext&gt;</code>, <code>puzzle-data.json</code>) lives under a <code>data/</code>
 subdirectory of the working directory root.</p>
 
     </div>
@@ -6056,7 +6055,7 @@ round trip).</p>
 
         <p>Read-only reference copy of the puzzle's stub-generation script (see
 <code>CgTestSessionQuestionDetails.stub_generator</code>), under <code>.meta/</code>--informational only; this
-package doesn't interpret the stub-generator DSL to produce a real starter <code>solution.src</code>,
+package doesn't interpret the stub-generator DSL to produce a real starter solution,
 unlike <code>codingame_tools.contribution_manager</code>'s Python-only trivial stub for <em>authoring</em> a new
 contribution (see <code>CgPuzzleManager.import_</code>'s docstring).</p>
 
@@ -6092,7 +6091,8 @@ developer mode enabled).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>codingame_tools/puzzle_manager/layout.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">70</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">69</span>
+<span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
 <span class="normal">73</span>
@@ -6101,8 +6101,7 @@ developer mode enabled).</p>
 <span class="normal">76</span>
 <span class="normal">77</span>
 <span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solution_file_name</span><span class="p">(</span><span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">79</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solution_file_name</span><span class="p">(</span><span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;`solution.&lt;ext&gt;` for a known language extension, else `solution.src`.</span>
 
 <span class="sd">       The file carries the language&#39;s real extension rather than a fixed one because every tool</span>
@@ -6143,7 +6142,8 @@ caller decides whether that's an error or a thing to repair.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>codingame_tools/puzzle_manager/layout.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
+<span class="normal"> 83</span>
 <span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
@@ -6164,8 +6164,7 @@ caller decides whether that's an error or a thing to repair.</p>
 <span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_solution_file</span><span class="p">(</span><span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">104</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_solution_file</span><span class="p">(</span><span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The existing solution file in `data_dir`, whatever extension it currently carries.</span>
 
 <span class="sd">       Callers generally know the language and so know the name, but not always: a working</span>

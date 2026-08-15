@@ -478,6 +478,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#finding-your-way-around" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding your way around
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-you-edit" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -486,6 +497,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="What you edit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -493,6 +521,17 @@
     <span class="md-ellipsis">
       
         Validate before you push
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging
       
     </span>
   </a>
@@ -5679,6 +5718,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#finding-your-way-around" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding your way around
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-you-edit" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5687,6 +5737,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="What you edit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5694,6 +5761,17 @@
     <span class="md-ellipsis">
       
         Validate before you push
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging
       
     </span>
   </a>
@@ -5787,68 +5865,68 @@
 
 
 <h1 id="authoring-contributions">Authoring contributions<a class="headerlink" href="#authoring-contributions" title="Permanent link">&para;</a></h1>
-<p>A contribution is a puzzle you're writing for other people. Unlike a puzzle, it has a dozen editable
-pieces — statement, constraints, descriptions, stub generator, test cases, reference solution — any
-of which can change on the server while you're working. So the working directory is backed by a real
-git repository and there's a real merge workflow.</p>
+<p>A contribution is a puzzle you're writing for other people. It has a dozen editable pieces —
+statement, constraints, descriptions, stub generator, test cases, reference solution — any of which
+can change on the server while you're working, so syncing is a real merge workflow rather than an
+overwrite.</p>
 <h2 id="two-ways-to-start">Two ways to start<a class="headerlink" href="#two-ways-to-start" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>create<span class="w"> </span>./my-puzzle<span class="w"> </span><span class="s2">&quot;My Puzzle&quot;</span><span class="w">   </span><span class="c1"># brand new, purely local</span>
 cg<span class="w"> </span>contribution<span class="w"> </span>import<span class="w"> </span>./my-puzzle<span class="w"> </span>&lt;handle&gt;<span class="w">      </span><span class="c1"># existing server-side contribution</span>
 </code></pre></div>
 <p><code>create</code> makes <strong>no network call</strong> and creates nothing server-side. Nothing exists remotely until
-your first <code>push</code> — so you can start, change your mind, and delete the directory without ever having
+your first <code>push</code>, so you can start, change your mind, and delete the directory without ever having
 published anything.</p>
-<p>It seeds <strong>every</strong> file you'll edit, so they can be listed, opened and diffed rather than conjured
-from memory: statement, input/output descriptions, constraints, stub generator, a Python3 starter
-solution, and a test/validator pair. All of it is placeholder content describing the same trivial
-"read one integer, print it back" puzzle, so the pieces agree with each other until you replace
-them — <code>cg contribution play</code> passes on a freshly created directory.</p>
-<p>That self-consistency matters most for <code>stub_generator.cgstub</code>, the one seeded file that isn't
-inert: CodinGame runs it to generate the starter code every solver of your puzzle begins from. A
-stub generator that disagrees with your test cases hands them a program that reads the wrong thing.
-Keep the two in step — nothing checks it for you. See CodinGame's
-<a href="https://github.com/CodinGame/codingame-game-engine/blob/master/stubGeneratorSyntax.md">stub generator syntax</a>.</p>
-<p><code>data/cover.png</code> is seeded too, with a deliberately garish 1920×1080 "UNDER CONSTRUCTION" image —
-traffic cones, hard hat, hazard stripes. That's the one seeded placeholder that becomes <em>visible</em>,
-since <code>push</code> uploads whatever is in that file. A tasteful title card would sail past you unnoticed
-and end up published; this can't. New contributions are private drafts, so nobody else sees it in
-the meantime.</p>
-<p>The image is shipped as package data rather than rendered on demand — it's identical for every
-contribution, so generating it at runtime would mean every user of this library carrying a 15 MB
-imaging dependency to produce a constant. Regenerate it with <code>bin/gen-default-cover-image</code>.</p>
-<p>Both take the <strong>directory first</strong>, matching <code>cg puzzle import</code>, and both make it the
-<a href="../../concepts/profiles/#active-working-directories">active contribution</a> — so subsequent commands
-find it wherever you run them from.</p>
-<p><code>import</code> needs the contribution's handle. To find your own:</p>
+<p>It seeds every file you'll edit with placeholder content describing the same trivial "read one
+integer, print it back" puzzle. The pieces agree with each other until you replace them, so
+<code>cg contribution play</code> passes on a freshly created directory.</p>
+<blockquote>
+<p><strong><code>data/cover.png</code> is a garish "UNDER CONSTRUCTION" placeholder.</strong> <code>push</code> uploads whatever is in
+that file, so replace it before you publish. New contributions are private drafts until then.</p>
+</blockquote>
+<p>Both commands take the directory first, and both make it the
+<a href="../../concepts/profiles/#active-working-directories">active contribution</a>, so later commands find it
+wherever you run them from.</p>
+<p><code>import</code> needs the contribution's handle. To list your own:</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contributions
 </code></pre></div>
-<p><code>cg contribution where</code> prints just the resolved path, so it composes:</p>
+<h2 id="finding-your-way-around">Finding your way around<a class="headerlink" href="#finding-your-way-around" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>where<span class="w">               </span><span class="c1"># just the resolved path, for $(...)</span>
+cg<span class="w"> </span>contribution<span class="w"> </span>activate<span class="w"> </span>./other<span class="w">    </span><span class="c1"># or with no argument, the current directory</span>
+cg<span class="w"> </span>contribution<span class="w"> </span>deactivate<span class="w">          </span><span class="c1"># back to the configured default</span>
+</code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="nv">$EDITOR</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>contribution<span class="w"> </span>where<span class="k">)</span><span class="s2">/data/statement.cgmd&quot;</span>
 <span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>contribution<span class="w"> </span>where<span class="k">)</span><span class="s2">&quot;</span>
-</code></pre></div>
-<p>To switch between working directories you already have:</p>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>activate<span class="w"> </span>./other<span class="w">    </span><span class="c1"># or with no argument, the current directory</span>
-cg<span class="w"> </span>contribution<span class="w"> </span>deactivate<span class="w">          </span><span class="c1"># back to the configured default</span>
 </code></pre></div>
 <h2 id="what-you-edit">What you edit<a class="headerlink" href="#what-you-edit" title="Permanent link">&para;</a></h2>
 <p>Everything under <code>data/</code>:</p>
 <div class="highlight"><pre><span></span><code>data/
     statement.cgmd            the problem statement
-    input-description.cgmd
-    output-description.cgmd
+    input_description.cgmd
+    output_description.cgmd
     constraints.cgmd
-    stub-generator.cgstub
+    stub_generator.cgstub
     solution.&lt;ext&gt;            the reference solution
     cover.png
-    tests/                    ordinal/named/{local,validator}/{input,output}.txt
+    tests/
     contribution-data.json    title, difficulty, topics, language
 </code></pre></div>
-<p>Test cases are directories, not one blob, so they diff and merge sensibly:</p>
-<div class="highlight"><pre><span></span><code>tests/01/Simple-case/local/input.txt
-tests/01/Simple-case/local/output.txt
-tests/01/Simple-case/validator/input.txt
-tests/01/Simple-case/validator/output.txt
+<blockquote>
+<p><strong>Keep <code>stub_generator.cgstub</code> in step with your test cases.</strong> CodinGame runs it to generate the
+starter code every solver begins from, so a stub generator that disagrees with your tests hands
+them a program that reads the wrong thing. Nothing checks this for you. See CodinGame's
+<a href="https://github.com/CodinGame/codingame-game-engine/blob/master/stubGeneratorSyntax.md">stub generator syntax</a>.</p>
+</blockquote>
+<h3 id="test-cases">Test cases<a class="headerlink" href="#test-cases" title="Permanent link">&para;</a></h3>
+<p>Test cases are directories, one per test:</p>
+<div class="highlight"><pre><span></span><code>tests/01/Test-1/test.json                 {&quot;title&quot;: &quot;Test 1&quot;}
+tests/01/Test-1/local/input.txt
+tests/01/Test-1/local/output.txt
+tests/01/Validator-1/test.json
+tests/01/Validator-1/validator/input.txt
+tests/01/Validator-1/validator/output.txt
 </code></pre></div>
+<p>Each ordinal holds a local test, a validator, or both. A local/validator pair sharing the exact same
+title is co-located under one directory, with <code>local/</code> and <code>validator/</code> side by side.</p>
 <p>Ordinals are a sort key, not an identity — insert <code>tests/05a/</code> and it sorts where you'd expect.
 Tidy them up afterwards with:</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>renormalize-tests
@@ -5857,60 +5935,62 @@ Tidy them up afterwards with:</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>play<span class="w">          </span><span class="c1"># run the reference solution against every local test case</span>
 cg<span class="w"> </span>contribution<span class="w"> </span>play<span class="w"> </span><span class="m">2</span><span class="w">        </span><span class="c1"># just ordinal 2</span>
 </code></pre></div>
-<p>Entirely local, no network. This matters more here than for puzzles: <code>updateContribution</code> validates
-your reference solution against <strong>every</strong> test case server-side and rejects the whole push if any
+<p>Entirely local, no network. This matters more here than for puzzles: pushing validates your
+reference solution against <strong>every</strong> test case server-side and rejects the whole push if any
 disagree. Running locally first turns a slow rejection into a fast one.</p>
+<h2 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">&para;</a></h2>
+<p>When the reference solution fails a test case and you want to step through it:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>vscode<span class="w"> </span>install<span class="w">                    </span><span class="c1"># generates the VS Code launch entries; once per workspace</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="k">select</span>-test<span class="w"> </span><span class="m">03</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="c1"># which test case to feed the debugger</span>
+</code></pre></div>
+<p>Then press <strong>F5</strong> in VS Code with <code>data/solution.&lt;ext&gt;</code> focused. Breakpoints land in your solution
+and stdin comes from the selected test case. Compiled languages build, run and debug inside Docker,
+so C++ needs no local toolchain.</p>
+<p>Full details, including containerised languages and how to pick a test case:
+<strong><a href="../debugging/">Debugging</a></strong>.</p>
 <h2 id="pushing">Pushing<a class="headerlink" href="#pushing" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>status<span class="w">        </span><span class="c1"># local summary, no network</span>
 cg<span class="w"> </span>contribution<span class="w"> </span>status<span class="w"> </span>--refresh
 cg<span class="w"> </span>contribution<span class="w"> </span>push
 </code></pre></div>
-<p><code>push</code> sends your content, then updates the internal <code>server</code>/<code>version-data</code> branches to match. On
-first push for a <code>create</code>d directory it safely creates the server-side contribution.</p>
-<p><strong>A push with nothing to push does nothing</strong>, and says so:</p>
+<p>On the first push from a <code>create</code>d directory, <code>push</code> creates the server-side contribution for you.
+A contribution with heavy test cases can take a while.</p>
+<p>A push with nothing to push does nothing, and says so:</p>
 <div class="highlight"><pre><span></span><code>$ cg contribution push
 …/contribution is already up to date on the server--nothing to push. Use --force to publish a new version anyway.
 </code></pre></div>
-<p>That's deliberate rather than a convenience. CodinGame has no notion of an empty update — it
-increments the version and re-runs moderation whether or not anything differs — so republishing
-identical content costs you a review cycle and buries your real changes among no-op versions. Pass
-<code>--force</code> when you want one anyway. The exit status is 0 either way.</p>
-<p>Two more things worth knowing:</p>
-<ul>
-<li><strong>A contribution stores exactly one solution, with no history.</strong> Each push overwrites the last
-  durable copy. <code>.meta/</code>'s git repo is scaffolding for merges — not a backup.</li>
-<li><strong>A heavy contribution can take long enough to time out at the CDN.</strong> <code>push</code> handles the HTTP 524
-  case by polling until the version increments, rather than failing on a request that probably
-  succeeded.</li>
-</ul>
+<p>CodinGame has no empty update: it bumps the version and re-runs moderation whether or not anything
+differs, so republishing identical content costs you a review cycle. Pass <code>--force</code> if you want one
+anyway. The exit status is 0 either way.</p>
+<blockquote>
+<p><strong>A contribution stores exactly one solution, with no history.</strong> Each push overwrites the last
+durable copy. The git repo under <code>.meta/</code> is scaffolding for merges, not a backup.</p>
+</blockquote>
 <h2 id="when-the-server-moves-under-you">When the server moves under you<a class="headerlink" href="#when-the-server-moves-under-you" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>rebase
 </code></pre></div>
-<p>Detects drift and resolves it when unambiguous: a no-op if the server hasn't advanced, a fast-forward
-if you have no local edits. When it genuinely conflicts, use the merge state machine — which is
-ordinary git, on ordinary files:</p>
+<p>A no-op if the server hasn't advanced, and a fast-forward if you have no local edits. When it
+genuinely conflicts, use the merge commands — ordinary git, on ordinary files:</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>merge<span class="w"> </span>start<span class="w">      </span><span class="c1"># fetch, then a real `git merge server`</span>
 <span class="c1"># ...resolve conflict markers in data/ with your editor...</span>
 cg<span class="w"> </span>contribution<span class="w"> </span>merge<span class="w"> </span><span class="k">continue</span><span class="w">   </span><span class="c1"># stage and commit</span>
 cg<span class="w"> </span>contribution<span class="w"> </span>merge<span class="w"> </span>abort<span class="w">      </span><span class="c1"># or back out entirely</span>
 </code></pre></div>
-<p><code>merge continue</code> refuses if a file still contains conflict markers, which catches the classic
-"resolved" -that-wasn't.</p>
+<p><code>merge continue</code> refuses if a file still contains conflict markers.</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>discard-local<span class="w">    </span><span class="c1"># give up on local edits, match the server exactly</span>
 </code></pre></div>
 <h2 id="changing-language">Changing language<a class="headerlink" href="#changing-language" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>set-language<span class="w"> </span>C++
 </code></pre></div>
-<p><strong>Destructive by design</strong> — a contribution has one solution and no per-language memory, so this
-replaces it with a starter stub and there's nothing to switch back to. It refuses unless the current
-solution is still the generated stub; <code>--force</code> discards real work. Save it somewhere outside the
-working directory first. See <a href="../../concepts/languages/">languages</a>.</p>
+<p><strong>Destructive</strong> — a contribution has one solution and no per-language memory, so this replaces it
+with a starter stub and there's nothing to switch back to. It refuses unless the current solution is
+still the generated stub; <code>--force</code> discards real work. Save it somewhere outside the working
+directory first. See <a href="../../concepts/languages/">languages</a>.</p>
 <h2 id="deleting">Deleting<a class="headerlink" href="#deleting" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>delete
 </code></pre></div>
 <p>Deletes the contribution <strong>from the server</strong>, unrecoverably, and by default removes the working
-directory too, deactivating it if it was active. Unlike <code>cg puzzle delete</code>, this one is not
-local-only.</p>
+directory too. Unlike <code>cg puzzle delete</code>, this one is not local-only.</p>
 <h2 id="recovering">Recovering<a class="headerlink" href="#recovering" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>repair
 </code></pre></div>

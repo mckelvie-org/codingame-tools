@@ -6288,31 +6288,31 @@
 <tbody>
 <tr>
 <td><a href="#cg-contribution"><code>cg contribution</code></a></td>
-<td>Contribution working directory commands--manage a local, possibly-uncommitted working view of a single contribution, backed by a real git repo (see codingame...</td>
+<td>Author and maintain your own CodinGame contributions in a local working directory.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-import"><code>cg contribution import</code></a></td>
-<td>Build a fresh contribution working directory from an existing server-side contribution: findContribution, plus downloading the cover image if one is set, the...</td>
+<td>Create a contribution working directory from an existing server-side contribution, downloading its cover image if one is set.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-repair"><code>cg contribution repair</code></a></td>
-<td>Reconstruct this working directory's git-dir from scratch, without disturbing data/'s already-on-disk content--for recovering from a missing or corrupted .me...</td>
+<td>Rebuild this working directory's git repository from scratch, without disturbing what is already in data/.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-create"><code>cg contribution create</code></a></td>
-<td>Initialize a brand new, <em>purely local</em> contribution working directory--no network access, no server-side contribution created yet (unlike `cg contribution im...</td>
+<td>Create a brand new contribution working directory, entirely locally -- no network access, and nothing exists on the server until your first `cg contribution...</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-push"><code>cg contribution push</code></a></td>
-<td>Push this working directory's content to the server (with 524 retry/polling and test-case data normalization), then update <code>server</code>/<code>version-data</code> to reflect...</td>
+<td>Push this working directory's content to the server, then update the local server and version-data branches to match.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-debug"><code>cg contribution debug</code></a></td>
-<td>Debug-session plumbing for languages whose debugger attaches to a running target (C++, via gdbserver in its container).</td>
+<td>Debug-session plumbing for languages whose debugger attaches to a running target, such as C++ in its container.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-debug-start"><code>cg contribution debug start</code></a></td>
-<td>Build the debug profile and start a stopped debug target fed by the given test case's input, ready for a debugger to attach.</td>
+<td>Build the debug profile and start a stopped debug target fed by the selected test case's input, ready for a debugger to attach.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-debug-stop"><code>cg contribution debug stop</code></a></td>
@@ -6320,7 +6320,7 @@
 </tr>
 <tr>
 <td><a href="#cg-contribution-build"><code>cg contribution build</code></a></td>
-<td>Compile data/solution.src, if its language needs compiling (a no-op for interpreted languages like Python3).</td>
+<td>Compile the reference solution, if its language needs compiling (a no-op for interpreted languages such as Python3).</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-set-language"><code>cg contribution set-language</code></a></td>
@@ -6328,47 +6328,47 @@
 </tr>
 <tr>
 <td><a href="#cg-contribution-activate"><code>cg contribution activate</code></a></td>
-<td>Make DIRECTORY the active contribution working directory, so subsequent <code>cg contribution</code> commands use it without needing --contribution-dir.</td>
+<td>Make DIRECTORY the active contribution, so later <code>cg contribution</code> commands use it without --contribution-dir.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-deactivate"><code>cg contribution deactivate</code></a></td>
-<td>Clear the active contribution working directory, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery.</td>
+<td>Clear the active contribution, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-select-test"><code>cg contribution select-test</code></a></td>
-<td>Choose which test case <code>cg contribution debug</code> (and <code>cg play --selected</code>) runs against.</td>
+<td>Choose which test case the debugger runs against.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-where"><code>cg contribution where</code></a></td>
-<td>Show which contribution working directory would be used.</td>
+<td>Print the path of the contribution working directory that would be used.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-status"><code>cg contribution status</code></a></td>
-<td>Human-friendly summary of this contribution: submission/review status, sync status against the server, votes/comments/views, the moderator approve/reject gat...</td>
+<td>Summary of this contribution: submission and review status, sync status against the server, votes, comments and views, the moderator approve/reject gate, and...</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-discard-local"><code>cg contribution discard-local</code></a></td>
-<td>Discard local edits: reset this working directory's content to match server's current tip exactly.</td>
+<td>Discard local edits: reset this working directory's content to match the server state cg already has cached.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-delete"><code>cg contribution delete</code></a></td>
-<td>Delete this contribution from the server (unrecoverable) and, by default, remove this entire working directory too.</td>
+<td>Delete this contribution from the server, unrecoverably, and by default remove this entire working directory too.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-renormalize-tests"><code>cg contribution renormalize-tests</code></a></td>
-<td>Renumber tests/'s ordinal directories to a clean, sequential, zero-padded sort key, preserving relative order (see the tests/ directory layout in codingame_t...</td>
+<td>Renumber the ordinal directories under tests/ to a clean, sequential, zero-padded sort key, preserving their relative order.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-play"><code>cg contribution play</code></a></td>
-<td>Run the current local solution.src against tests/ test cases entirely locally (no network access at all)--by shelling out to the appropriate interpreter as a...</td>
+<td>Run the reference solution against the test cases under tests/, entirely locally with no network access at all.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-rebase"><code>cg contribution rebase</code></a></td>
-<td>Detect drift between the server and this working directory, resolving it automatically when unambiguous: a no-op if the server hasn't advanced since main las...</td>
+<td>Detect drift between the server and this working directory, and resolve it when unambiguous: a no-op if the server has not advanced, a fast-forward if only t...</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge"><code>cg contribution merge</code></a></td>
-<td>Resolve drift between the server and this working directory--parent for the merge state machine (start/continue/abort/interactive) and the instant discard-lo...</td>
+<td>Resolve drift between the server and this working directory.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-start"><code>cg contribution merge start</code></a></td>
@@ -6376,44 +6376,44 @@
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-continue"><code>cg contribution merge continue</code></a></td>
-<td>Finish an in-progress merge: stage everything and commit (refusing first if a still-unresolved path has a leftover conflict marker), then refresh the solutio...</td>
+<td>Finish an in-progress merge: stage everything and commit.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-abort"><code>cg contribution merge abort</code></a></td>
-<td>Abort an in-progress merge: restore the working directory to its pre-merge state and discard MERGE_HEAD.</td>
+<td>Abort an in-progress merge: restore the working directory to its pre-merge state.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-diff"><code>cg contribution merge diff</code></a></td>
-<td>Show the current merge conflict state (<code>git diff</code>, which during an unresolved merge shows a combined diff against both sides for each conflicted path).</td>
+<td>Show the current merge conflict state: during an unresolved merge, a combined diff against both sides for each conflicted path.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-interactive"><code>cg contribution merge interactive</code></a></td>
-<td>Start a merge if one isn't already in progress, then launch <code>git mergetool</code> against the working tree.</td>
+<td>Start a merge if one is not already in progress, then launch <code>git mergetool</code> against the working tree.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-discard-local"><code>cg contribution merge discard-local</code></a></td>
-<td>Discard all local edits: fetch, then move main's ref directly onto server's new tip (like <code>git reset --hard server</code>--no new commit).</td>
+<td>Discard all local edits: fetch, then move straight onto the server's new tip, like <code>git reset --hard</code>.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-merge-discard-server"><code>cg contribution merge discard-server</code></a></td>
-<td>Update server/version-data to match the current server state, without touching main/the working tree at all.</td>
+<td>Update the local server and version-data branches to match the server, leaving your working tree untouched.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-diff"><code>cg contribution diff</code></a></td>
-<td>Show what's changed: working tree vs server's cached state (no network access by default).</td>
+<td>Show what has changed between your working tree and the server state cg has cached -- no network access by default.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-fetch"><code>cg contribution fetch</code></a></td>
-<td>Refresh server/version-data via a fresh findContribution.</td>
+<td>Refresh cg's cached copy of the server state.</td>
 </tr>
 <tr>
 <td><a href="#cg-contribution-git"><code>cg contribution git</code></a></td>
-<td>Run a raw git command directly against this contribution's repo--e.g.</td>
+<td>Run a raw git command against this contribution's repository -- e.g.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="cg-contribution_1"><code>cg contribution</code><a class="headerlink" href="#cg-contribution_1" title="Permanent link">&para;</a></h2>
-<p>Contribution working directory commands--manage a local, possibly-uncommitted working view of a single contribution, backed by a real git repo (see codingame_tools.contribution_manager.manager for the main/server/version-data branch design). See <code>cg api contribution</code>/<code>cg api-helper contribution</code> for the raw, stateless API this is built on.</p>
+<p>Author and maintain your own CodinGame contributions in a local working directory. data/ is backed by a real git repository, so syncing with the server is a genuine fetch/merge workflow rather than a one-shot overwrite. See <code>cg api contribution</code> and <code>cg api-helper contribution</code> for the raw, stateless API underneath.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution [-h] [--contribution-dir DIR] COMMAND ...
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6422,30 +6422,30 @@
 </ul>
 <p><strong>Subcommands</strong></p>
 <ul>
-<li><a href="#cg-contribution-import"><strong><code>import</code></strong></a> — Build a fresh contribution working directory from an existing server-side contribution: findContribution, plus downloading the cover image if one is set, then initialize its git repo (main/server/version-data branches--see codingame_tools.contribution_manager.manager). DIRECTORY must not already exist. Ignores --contribution-dir.</li>
-<li><a href="#cg-contribution-repair"><strong><code>repair</code></strong></a> — Reconstruct this working directory's git-dir from scratch, without disturbing data/'s already-on-disk content--for recovering from a missing or corrupted .meta/ (e.g. an outer project clone that deliberately didn't bring the git-dir along--see codingame_tools.contribution_manager.manager's module docstring--or a manually deleted/corrupted git-dir). Two modes, chosen automatically from contribution.json's contribution_handle: if set, re-bases off the server (a fresh findContribution, same as <code>cg contribution import</code>'s own repair shortcut); if not (this working directory was <code>cg contribution create</code>d but never successfully pushed), purely local, no network access at all. See CgContributionManager.repair's docstring for the full story.</li>
-<li><a href="#cg-contribution-create"><strong><code>create</code></strong></a> — Initialize a brand new, <em>purely local</em> contribution working directory--no network access, no server-side contribution created yet (unlike <code>cg contribution import</code>, which always starts from one that already exists). Seeds minimal placeholder statement/difficulty/test-case content (the server rejects a title-only submission), with contribution-data.json's draft/readyForModeration defaulted to private-draft (true/false)--edit any of this via the usual sidecar files/contribution-data.json before your first <code>cg contribution push</code>, which is what actually establishes the contribution on the server and records its handle. By default that first push is itself two API calls (a throwaway minimal private stub, then your real content via a normal update using whatever draft/readyForModeration are set to at that point)--see <code>cg contribution push --help</code>/CgContributionManager.push's docstring for why. Every push after that is a normal update. DIRECTORY must not already exist. Ignores --contribution-dir.</li>
-<li><a href="#cg-contribution-push"><strong><code>push</code></strong></a> — Push this working directory's content to the server (with 524 retry/polling and test-case data normalization), then update <code>server</code>/<code>version-data</code> to reflect the result and fast-forward <code>main</code> to match. If this working directory has never been pushed before (created via <code>cg contribution create</code>), this <em>first</em> push is two API calls, not one, by default: createContribution with a minimal, throwaway, private stub (real title, otherwise unimportant, no cover) to establish the contribution and record its handle into contribution.json, then a normal updateContribution with your real content--createContribution has no prevVersion-style idempotency check, so a timeout/524/network error on it can't be safely retried without risking a duplicate, and that risk is worst exactly when the real content is large (e.g. a heavy test suite carried over via <code>cg contribution delete --keep-local</code>'s clone-as-template workflow)--see CgContributionManager.push's docstring for the full story. Pass --direct-create to skip this and call createContribution once, directly, with the real content.</li>
-<li><a href="#cg-contribution-debug"><strong><code>debug</code></strong></a> — Debug-session plumbing for languages whose debugger attaches to a running target (C++, via gdbserver in its container). Normally invoked for you by the VS Code tasks <code>cg contribution vscode</code> generates, not typed by hand. Languages whose debugger launches the program itself--Python3--don't use these at all.</li>
-<li><a href="#cg-contribution-build"><strong><code>build</code></strong></a> — Compile data/solution.src, if its language needs compiling (a no-op for interpreted languages like Python3). Normally you don't need this--<code>cg contribution play</code> builds first automatically--but it's useful to compile without running, or to warm a cold container image up front. Near-instant when the source hasn't changed since the last successful build. Compiler diagnostics go to stderr.</li>
-<li><a href="#cg-contribution-set-language"><strong><code>set-language</code></strong></a> — Switch this contribution's reference-solution language, writing a fresh starter stub. DESTRUCTIVE: unlike a puzzle, a contribution stores only ONE solution with no per-language history, so there is nothing to restore and nothing to switch back to--the existing solution is replaced by a stub, and the next <code>cg contribution push</code> overwrites the last durable copy. Refuses unless data/solution.src is still exactly the stub cg generated; note that matching what the server currently has does NOT make it safe, since that copy is what the next push destroys. Purely local--no network call.</li>
-<li><a href="#cg-contribution-activate"><strong><code>activate</code></strong></a> — Make DIRECTORY the active contribution working directory, so subsequent <code>cg contribution</code> commands use it without needing --contribution-dir. Set automatically by <code>cg contribution import</code>/<code>cg contribution create</code>, so this is for switching between working directories you already have. Outranks the configured default (<code>cg settings set contribution-dir</code>); <code>cg contribution deactivate</code> clears it.</li>
-<li><a href="#cg-contribution-deactivate"><strong><code>deactivate</code></strong></a> — Clear the active contribution working directory, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery. Does not touch any files--only the selection.</li>
-<li><a href="#cg-contribution-select-test"><strong><code>select-test</code></strong></a> — Choose which test case <code>cg contribution debug</code> (and <code>cg play --selected</code>) runs against. Debugging feeds one stdin, so it needs exactly one test. Recorded in .meta/selected-test.json rather than in launch.json, which is what lets one VS Code debug configuration serve every contribution directory instead of being regenerated per directory. With no ORDINAL, shows the current selection.</li>
-<li><a href="#cg-contribution-where"><strong><code>where</code></strong></a> — Show which contribution working directory would be used.</li>
-<li><a href="#cg-contribution-status"><strong><code>status</code></strong></a> — Human-friendly summary of this contribution: submission/review status, sync status against the server, votes/comments/views, the moderator approve/reject gate, and any in-progress validation. By default reports whatever .meta/contribution-status.json last cached (no network access); pass --refresh to fetch fresh first (updates that cache for next time too). With --json (top-level option), renders as JSON instead of text.</li>
-<li><a href="#cg-contribution-discard-local"><strong><code>discard-local</code></strong></a> — Discard local edits: reset this working directory's content to match server's current tip exactly. Purely local--no network access, unlike <code>cg contribution merge discard-local</code>, which re-fetches from the server first.</li>
-<li><a href="#cg-contribution-delete"><strong><code>delete</code></strong></a> — Delete this contribution from the server (unrecoverable) and, by default, remove this entire working directory too. Pass --keep-local to instead detach: drop the server/version-data git branches and reset contribution.json so the <em>same</em> local content is ready to become a brand new contribution on the next push--e.g. to use an existing contribution as a template/starting point for a new one. Pass --keep-server to do the opposite: leave the server-side contribution untouched and just remove the local working directory. Destructive--prompts for confirmation unless --force is given; requires --force outright if stdin/stdout aren't a terminal.</li>
-<li><a href="#cg-contribution-renormalize-tests"><strong><code>renormalize-tests</code></strong></a> — Renumber tests/'s ordinal directories to a clean, sequential, zero-padded sort key, preserving relative order (see the tests/ directory layout in codingame_tools.contribution_manager.test_cases_dir).</li>
-<li><a href="#cg-contribution-play"><strong><code>play</code></strong></a> — Run the current local solution.src against tests/ test cases entirely locally (no network access at all)--by shelling out to the appropriate interpreter as a subprocess, comparing captured stdout to each test's expected output. Runs both local and validator sides by default; --local/--validator narrow to one. With no ORDINAL arguments, runs every test case; give one or more ordinals (e.g. "3 5 7", matching tests/'s directory names, zero-padding optional) to run only those. Exits non-zero if any test case fails. Output matches <code>cg puzzle play</code>'s format (with the ordinal/side/title in place of an index/label). Captured stdout is only printed for a failing test (or with --update-expected), unless --show-stdout is given.</li>
-<li><a href="#cg-contribution-rebase"><strong><code>rebase</code></strong></a> — Detect drift between the server and this working directory, resolving it automatically when unambiguous: a no-op if the server hasn't advanced since main last synced (regardless of local edits), a true fast-forward if only the server changed (main's ref just moves, no new commit), or a reported conflict--left entirely alone--if both sides changed (see <code>cg contribution diff</code>/<code>merge</code>).</li>
-<li><a href="#cg-contribution-merge"><strong><code>merge</code></strong></a> — Resolve drift between the server and this working directory--parent for the merge state machine (start/continue/abort/interactive) and the instant discard-local/discard-server resolutions. Bare <code>cg contribution merge</code> is an alias for <code>merge start</code>.</li>
-<li><a href="#cg-contribution-diff"><strong><code>diff</code></strong></a> — Show what's changed: working tree vs server's cached state (no network access by default). If a merge is in progress, shows the merge's own conflict state instead (same as <code>cg contribution merge diff</code>)--<code>--remote</code> is refused then, since fetching mid-merge isn't allowed anyway. Pass --remote to fetch fresh first. Pass --interactive to launch <code>git mergetool</code> instead of printing text (same as <code>cg contribution merge interactive</code>).</li>
-<li><a href="#cg-contribution-fetch"><strong><code>fetch</code></strong></a> — Refresh server/version-data via a fresh findContribution. Leaves them untouched if the version hasn't changed, and avoids re-downloading the cover image if its binary ID hasn't changed either (reused straight from the object database). <code>rebase</code> and <code>merge start</code> do this automatically; use this to refresh the cache for <code>diff</code>/<code>diff --interactive</code> without either of those. Refuses while a merge is in progress.</li>
-<li><a href="#cg-contribution-git"><strong><code>git</code></strong></a> — Run a raw git command directly against this contribution's repo--e.g. <code>cg contribution git log --oneline --all --decorate</code>, <code>cg contribution git show server:solution.src</code>, <code>cg contribution git config merge.tool meld</code>. Resolves --git-dir/--work-tree from contribution.json automatically (plain <code>git</code> run by hand here can't find this repo at all--see codingame_tools.contribution_manager.manager's module docstring for why data/ deliberately carries no .git marker of its own). No <code>--</code> needed, and nothing you pass is ever misread as one of cg's own options.</li>
+<li><a href="#cg-contribution-import"><strong><code>import</code></strong></a> — Create a contribution working directory from an existing server-side contribution, downloading its cover image if one is set. Makes it the active contribution. DIRECTORY must not already exist. Ignores --contribution-dir.</li>
+<li><a href="#cg-contribution-repair"><strong><code>repair</code></strong></a> — Rebuild this working directory's git repository from scratch, without disturbing what is already in data/. Use it after cloning a repo that does not carry .meta/ (it is gitignored), or if the repository is missing or corrupt. If this contribution exists on the server it re-bases off a fresh copy; if it was created locally and never pushed, it works entirely offline.</li>
+<li><a href="#cg-contribution-create"><strong><code>create</code></strong></a> — Create a brand new contribution working directory, entirely locally -- no network access, and nothing exists on the server until your first <code>cg contribution push</code>. Seeds placeholder content for every file you will edit, consistent enough that <code>cg contribution play</code> passes on it immediately, and marks the contribution a private draft. Edit the files under data/, then push. DIRECTORY must not already exist. Ignores --contribution-dir.</li>
+<li><a href="#cg-contribution-push"><strong><code>push</code></strong></a> — Push this working directory's content to the server, then update the local server and version-data branches to match. The first push from a directory made by <code>cg contribution create</code> establishes the contribution on the server and records its handle; pass --direct-create to do that in a single call. A push with nothing to push does nothing and says so: CodinGame has no empty update, so republishing identical content costs you a moderation cycle -- pass --force to publish a version anyway.</li>
+<li><a href="#cg-contribution-debug"><strong><code>debug</code></strong></a> — Debug-session plumbing for languages whose debugger attaches to a running target, such as C++ in its container. Normally invoked for you by the VS Code configuration <code>cg vscode install</code> generates, rather than typed by hand. Languages whose debugger launches the program itself, such as Python3, never use these.</li>
+<li><a href="#cg-contribution-build"><strong><code>build</code></strong></a> — Compile the reference solution, if its language needs compiling (a no-op for interpreted languages such as Python3). You rarely need this -- <code>cg contribution play</code> builds first automatically -- but it is useful to compile without running, or to warm a cold container image up front. Near-instant when the source has not changed since the last successful build. Compiler diagnostics go to stderr.</li>
+<li><a href="#cg-contribution-set-language"><strong><code>set-language</code></strong></a> — Switch this contribution's reference-solution language, writing a fresh starter stub. DESTRUCTIVE: a contribution stores only one solution, with no per-language history, so there is nothing to restore and nothing to switch back to -- your existing solution is replaced by a stub, and the next push overwrites the last durable copy. Refuses unless the current solution is still exactly the stub cg generated; matching what the server has does not make it safe, since that copy is what the next push destroys. Save any real work outside the working directory first. Purely local -- no network call.</li>
+<li><a href="#cg-contribution-activate"><strong><code>activate</code></strong></a> — Make DIRECTORY the active contribution, so later <code>cg contribution</code> commands use it without --contribution-dir. <code>cg contribution import</code> and <code>cg contribution create</code> set this for you, so use this to switch between working directories you already have. Outranks the configured default (<code>cg settings set contribution-dir</code>); <code>cg contribution deactivate</code> clears it.</li>
+<li><a href="#cg-contribution-deactivate"><strong><code>deactivate</code></strong></a> — Clear the active contribution, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery. Touches no files -- only the selection.</li>
+<li><a href="#cg-contribution-select-test"><strong><code>select-test</code></strong></a> — Choose which test case the debugger runs against. Debugging feeds one stdin, so it needs exactly one test. The choice is recorded per working directory and survives until you change it; without one, debugging uses the first local test. With no ORDINAL, shows the current selection.</li>
+<li><a href="#cg-contribution-where"><strong><code>where</code></strong></a> — Print the path of the contribution working directory that would be used. Prints nothing but the path, so it composes: cd "$(cg contribution where)". Exits non-zero if no working directory can be found.</li>
+<li><a href="#cg-contribution-status"><strong><code>status</code></strong></a> — Summary of this contribution: submission and review status, sync status against the server, votes, comments and views, the moderator approve/reject gate, and any validation in progress. Reads a local cache by default, with no network access; --refresh fetches fresh and updates that cache. With --json, renders as JSON instead of text.</li>
+<li><a href="#cg-contribution-discard-local"><strong><code>discard-local</code></strong></a> — Discard local edits: reset this working directory's content to match the server state cg already has cached. No network access -- use <code>cg contribution merge discard-local</code> to re-fetch from the server first.</li>
+<li><a href="#cg-contribution-delete"><strong><code>delete</code></strong></a> — Delete this contribution from the server, unrecoverably, and by default remove this entire working directory too. Pass --keep-local to detach instead: the same local content is left ready to become a brand new contribution on the next push, which is how you use an existing contribution as a template. Pass --keep-server to do the opposite, leaving the server untouched and removing only your local files. Destructive: prompts for confirmation unless --force is given, and requires --force outright if stdin/stdout are not a terminal.</li>
+<li><a href="#cg-contribution-renormalize-tests"><strong><code>renormalize-tests</code></strong></a> — Renumber the ordinal directories under tests/ to a clean, sequential, zero-padded sort key, preserving their relative order. Use it after inserting directories such as '05a'.</li>
+<li><a href="#cg-contribution-play"><strong><code>play</code></strong></a> — Run the reference solution against the test cases under tests/, entirely locally with no network access at all. Worth doing before every push: the server validates your reference solution against every test case and rejects the whole push if any disagree. Runs both the local and validator sides by default; --local/--validator narrow it to one. With no ORDINAL, runs every test case; give one or more ordinals, e.g. "3 5 7", matching the directory names under tests/ with zero-padding optional. Exits non-zero if any test case fails. Captured stdout is printed only for failing tests, unless --show-stdout.</li>
+<li><a href="#cg-contribution-rebase"><strong><code>rebase</code></strong></a> — Detect drift between the server and this working directory, and resolve it when unambiguous: a no-op if the server has not advanced, a fast-forward if only the server changed, or a reported conflict -- left entirely alone -- if both sides changed. See <code>cg contribution diff</code> to inspect one and <code>cg contribution merge</code> to resolve it.</li>
+<li><a href="#cg-contribution-merge"><strong><code>merge</code></strong></a> — Resolve drift between the server and this working directory. Parent for the merge state machine (start/continue/abort/interactive) and for the instant discard-local and discard-server resolutions. Bare <code>cg contribution merge</code> is an alias for <code>merge start</code>.</li>
+<li><a href="#cg-contribution-diff"><strong><code>diff</code></strong></a> — Show what has changed between your working tree and the server state cg has cached -- no network access by default. Pass --remote to fetch fresh first, or --interactive to launch <code>git mergetool</code> instead of printing text. If a merge is in progress, shows the merge's own conflict state instead, and --remote is refused, since fetching mid-merge is not allowed.</li>
+<li><a href="#cg-contribution-fetch"><strong><code>fetch</code></strong></a> — Refresh cg's cached copy of the server state. Leaves it untouched if the version has not changed, and skips re-downloading the cover image if it has not changed either. <code>cg contribution rebase</code> and <code>cg contribution merge start</code> do this for you; use this to refresh the cache for <code>cg contribution diff</code> without either. Refuses while a merge is in progress.</li>
+<li><a href="#cg-contribution-git"><strong><code>git</code></strong></a> — Run a raw git command against this contribution's repository -- e.g. <code>cg contribution git log --oneline --all --decorate</code>, <code>cg contribution git show server:solution.py</code>, <code>cg contribution git config merge.tool meld</code>. Resolves --git-dir and --work-tree for you; plain <code>git</code> run by hand here cannot find this repository at all. No <code>--</code> needed, and nothing you pass is ever misread as one of cg's own options.</li>
 </ul>
 <h2 id="cg-contribution-import"><code>cg contribution import</code><a class="headerlink" href="#cg-contribution-import" title="Permanent link">&para;</a></h2>
-<p>Build a fresh contribution working directory from an existing server-side contribution: findContribution, plus downloading the cover image if one is set, then initialize its git repo (main/server/version-data branches--see codingame_tools.contribution_manager.manager). DIRECTORY must not already exist. Ignores --contribution-dir.</p>
+<p>Create a contribution working directory from an existing server-side contribution, downloading its cover image if one is set. Makes it the active contribution. DIRECTORY must not already exist. Ignores --contribution-dir.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution import [-h] DIRECTORY CONTRIBUTION-ID
 </code></pre></div>
 <p><strong>Arguments</strong></p>
@@ -6454,11 +6454,11 @@
 <li><strong><code>CONTRIBUTION-ID</code></strong> — Opaque contribution ID string (see <code>cg api contribution find-contribution</code>).</li>
 </ul>
 <h2 id="cg-contribution-repair"><code>cg contribution repair</code><a class="headerlink" href="#cg-contribution-repair" title="Permanent link">&para;</a></h2>
-<p>Reconstruct this working directory's git-dir from scratch, without disturbing data/'s already-on-disk content--for recovering from a missing or corrupted .meta/ (e.g. an outer project clone that deliberately didn't bring the git-dir along--see codingame_tools.contribution_manager.manager's module docstring--or a manually deleted/corrupted git-dir). Two modes, chosen automatically from contribution.json's contribution_handle: if set, re-bases off the server (a fresh findContribution, same as <code>cg contribution import</code>'s own repair shortcut); if not (this working directory was <code>cg contribution create</code>d but never successfully pushed), purely local, no network access at all. See CgContributionManager.repair's docstring for the full story.</p>
+<p>Rebuild this working directory's git repository from scratch, without disturbing what is already in data/. Use it after cloning a repo that does not carry .meta/ (it is gitignored), or if the repository is missing or corrupt. If this contribution exists on the server it re-bases off a fresh copy; if it was created locally and never pushed, it works entirely offline.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution repair [-h]
 </code></pre></div>
 <h2 id="cg-contribution-create"><code>cg contribution create</code><a class="headerlink" href="#cg-contribution-create" title="Permanent link">&para;</a></h2>
-<p>Initialize a brand new, <em>purely local</em> contribution working directory--no network access, no server-side contribution created yet (unlike <code>cg contribution import</code>, which always starts from one that already exists). Seeds minimal placeholder statement/difficulty/test-case content (the server rejects a title-only submission), with contribution-data.json's draft/readyForModeration defaulted to private-draft (true/false)--edit any of this via the usual sidecar files/contribution-data.json before your first <code>cg contribution push</code>, which is what actually establishes the contribution on the server and records its handle. By default that first push is itself two API calls (a throwaway minimal private stub, then your real content via a normal update using whatever draft/readyForModeration are set to at that point)--see <code>cg contribution push --help</code>/CgContributionManager.push's docstring for why. Every push after that is a normal update. DIRECTORY must not already exist. Ignores --contribution-dir.</p>
+<p>Create a brand new contribution working directory, entirely locally -- no network access, and nothing exists on the server until your first <code>cg contribution push</code>. Seeds placeholder content for every file you will edit, consistent enough that <code>cg contribution play</code> passes on it immediately, and marks the contribution a private draft. Edit the files under data/, then push. DIRECTORY must not already exist. Ignores --contribution-dir.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution create [-h] [--puzzle-type PUZZLE-TYPE] [--language LANGUAGE]
                               DIRECTORY [TITLE]
 </code></pre></div>
@@ -6470,10 +6470,10 @@
 <p><strong>Options</strong></p>
 <ul>
 <li><strong><code>-t, --puzzle-type PUZZLE-TYPE</code></strong> <em>(default: <code>PUZZLE_INOUT</code>)</em> — The type of the contribution. Defaults to 'PUZZLE_INOUT'.</li>
-<li><strong><code>-l, --language LANGUAGE</code></strong> <em>(default: <code>Python3</code>)</em> — Reference solution language (see CgSolutionLanguage, e.g. 'Python3', 'Java', 'C++'). Defaults to 'Python3'. Always creates the solution.<ext> convenience symlink if the language maps to a known extension, but only Python3 gets a real starter solution.src (a trivial stub that passes the seeded test case)--for any other language, the symlink is left dangling until you write data/solution.src yourself.</li>
+<li><strong><code>-l, --language LANGUAGE</code></strong> <em>(default: <code>Python3</code>)</em> — Reference solution language, e.g. 'Python3', 'Java', 'C++'. Defaults to 'Python3'. The solution file carries the language's own extension (data/solution.cpp for C++), but only Python3 gets a working starter solution that passes the seeded test case; every other language starts empty, for you to write.</li>
 </ul>
 <h2 id="cg-contribution-push"><code>cg contribution push</code><a class="headerlink" href="#cg-contribution-push" title="Permanent link">&para;</a></h2>
-<p>Push this working directory's content to the server (with 524 retry/polling and test-case data normalization), then update <code>server</code>/<code>version-data</code> to reflect the result and fast-forward <code>main</code> to match. If this working directory has never been pushed before (created via <code>cg contribution create</code>), this <em>first</em> push is two API calls, not one, by default: createContribution with a minimal, throwaway, private stub (real title, otherwise unimportant, no cover) to establish the contribution and record its handle into contribution.json, then a normal updateContribution with your real content--createContribution has no prevVersion-style idempotency check, so a timeout/524/network error on it can't be safely retried without risking a duplicate, and that risk is worst exactly when the real content is large (e.g. a heavy test suite carried over via <code>cg contribution delete --keep-local</code>'s clone-as-template workflow)--see CgContributionManager.push's docstring for the full story. Pass --direct-create to skip this and call createContribution once, directly, with the real content.</p>
+<p>Push this working directory's content to the server, then update the local server and version-data branches to match. The first push from a directory made by <code>cg contribution create</code> establishes the contribution on the server and records its handle; pass --direct-create to do that in a single call. A push with nothing to push does nothing and says so: CodinGame has no empty update, so republishing identical content costs you a moderation cycle -- pass --force to publish a version anyway.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution push [-h] [--direct-create] [--force]
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6482,16 +6482,16 @@
 <li><strong><code>-f, --force</code></strong> — Push even when nothing has changed. Without it, a push with no local changes does nothing: updateContribution has no empty update--it increments the version and re-runs moderation regardless--so republishing identical content costs a review cycle and buries the history of real changes.</li>
 </ul>
 <h2 id="cg-contribution-debug"><code>cg contribution debug</code><a class="headerlink" href="#cg-contribution-debug" title="Permanent link">&para;</a></h2>
-<p>Debug-session plumbing for languages whose debugger attaches to a running target (C++, via gdbserver in its container). Normally invoked for you by the VS Code tasks <code>cg contribution vscode</code> generates, not typed by hand. Languages whose debugger launches the program itself--Python3--don't use these at all.</p>
+<p>Debug-session plumbing for languages whose debugger attaches to a running target, such as C++ in its container. Normally invoked for you by the VS Code configuration <code>cg vscode install</code> generates, rather than typed by hand. Languages whose debugger launches the program itself, such as Python3, never use these.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution debug [-h] COMMAND ...
 </code></pre></div>
 <p><strong>Subcommands</strong></p>
 <ul>
-<li><a href="#cg-contribution-debug-start"><strong><code>start</code></strong></a> — Build the debug profile and start a stopped debug target fed by the given test case's input, ready for a debugger to attach. Prints the connection details.</li>
-<li><a href="#cg-contribution-debug-stop"><strong><code>stop</code></strong></a> — Stop a debug target started by <code>cg contribution debug start</code>. Always succeeds, including when nothing is running--it's wired to a postDebugTask, which fires even for a session that never really began.</li>
+<li><a href="#cg-contribution-debug-start"><strong><code>start</code></strong></a> — Build the debug profile and start a stopped debug target fed by the selected test case's input, ready for a debugger to attach. Prints the connection details.</li>
+<li><a href="#cg-contribution-debug-stop"><strong><code>stop</code></strong></a> — Stop a debug target started by <code>cg contribution debug start</code>. Always succeeds, including when nothing is running.</li>
 </ul>
 <h2 id="cg-contribution-debug-start"><code>cg contribution debug start</code><a class="headerlink" href="#cg-contribution-debug-start" title="Permanent link">&para;</a></h2>
-<p>Build the debug profile and start a stopped debug target fed by the given test case's input, ready for a debugger to attach. Prints the connection details.</p>
+<p>Build the debug profile and start a stopped debug target fed by the selected test case's input, ready for a debugger to attach. Prints the connection details.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution debug start [-h] [--build-timeout SECONDS] ORDINAL SIDE
 </code></pre></div>
 <p><strong>Arguments</strong></p>
@@ -6504,11 +6504,11 @@
 <li><strong><code>--build-timeout SECONDS</code></strong> <em>(default: <code>120.0</code>)</em> — Wall-clock timeout for the debug build.</li>
 </ul>
 <h2 id="cg-contribution-debug-stop"><code>cg contribution debug stop</code><a class="headerlink" href="#cg-contribution-debug-stop" title="Permanent link">&para;</a></h2>
-<p>Stop a debug target started by <code>cg contribution debug start</code>. Always succeeds, including when nothing is running--it's wired to a postDebugTask, which fires even for a session that never really began.</p>
+<p>Stop a debug target started by <code>cg contribution debug start</code>. Always succeeds, including when nothing is running.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution debug stop [-h]
 </code></pre></div>
 <h2 id="cg-contribution-build"><code>cg contribution build</code><a class="headerlink" href="#cg-contribution-build" title="Permanent link">&para;</a></h2>
-<p>Compile data/solution.src, if its language needs compiling (a no-op for interpreted languages like Python3). Normally you don't need this--<code>cg contribution play</code> builds first automatically--but it's useful to compile without running, or to warm a cold container image up front. Near-instant when the source hasn't changed since the last successful build. Compiler diagnostics go to stderr.</p>
+<p>Compile the reference solution, if its language needs compiling (a no-op for interpreted languages such as Python3). You rarely need this -- <code>cg contribution play</code> builds first automatically -- but it is useful to compile without running, or to warm a cold container image up front. Near-instant when the source has not changed since the last successful build. Compiler diagnostics go to stderr.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution build [-h] [--profile {run,debug}] [--build-timeout SECONDS]
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6517,7 +6517,7 @@
 <li><strong><code>--build-timeout SECONDS</code></strong> <em>(default: <code>120.0</code>)</em> — Wall-clock timeout. Generous by default, because a cold build can pull and build a container image. Default 120.0.</li>
 </ul>
 <h2 id="cg-contribution-set-language"><code>cg contribution set-language</code><a class="headerlink" href="#cg-contribution-set-language" title="Permanent link">&para;</a></h2>
-<p>Switch this contribution's reference-solution language, writing a fresh starter stub. DESTRUCTIVE: unlike a puzzle, a contribution stores only ONE solution with no per-language history, so there is nothing to restore and nothing to switch back to--the existing solution is replaced by a stub, and the next <code>cg contribution push</code> overwrites the last durable copy. Refuses unless data/solution.src is still exactly the stub cg generated; note that matching what the server currently has does NOT make it safe, since that copy is what the next push destroys. Purely local--no network call.</p>
+<p>Switch this contribution's reference-solution language, writing a fresh starter stub. DESTRUCTIVE: a contribution stores only one solution, with no per-language history, so there is nothing to restore and nothing to switch back to -- your existing solution is replaced by a stub, and the next push overwrites the last durable copy. Refuses unless the current solution is still exactly the stub cg generated; matching what the server has does not make it safe, since that copy is what the next push destroys. Save any real work outside the working directory first. Purely local -- no network call.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution set-language [-h] [--force] LANGUAGE
 </code></pre></div>
 <p><strong>Arguments</strong></p>
@@ -6529,7 +6529,7 @@
 <li><strong><code>-f, --force</code></strong> — Switch even though a real reference solution would be discarded. There is no way to get it back--save a copy outside the working directory first.</li>
 </ul>
 <h2 id="cg-contribution-activate"><code>cg contribution activate</code><a class="headerlink" href="#cg-contribution-activate" title="Permanent link">&para;</a></h2>
-<p>Make DIRECTORY the active contribution working directory, so subsequent <code>cg contribution</code> commands use it without needing --contribution-dir. Set automatically by <code>cg contribution import</code>/<code>cg contribution create</code>, so this is for switching between working directories you already have. Outranks the configured default (<code>cg settings set contribution-dir</code>); <code>cg contribution deactivate</code> clears it.</p>
+<p>Make DIRECTORY the active contribution, so later <code>cg contribution</code> commands use it without --contribution-dir. <code>cg contribution import</code> and <code>cg contribution create</code> set this for you, so use this to switch between working directories you already have. Outranks the configured default (<code>cg settings set contribution-dir</code>); <code>cg contribution deactivate</code> clears it.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution activate [-h] [DIRECTORY]
 </code></pre></div>
 <p><strong>Arguments</strong></p>
@@ -6537,11 +6537,11 @@
 <li><strong><code>[DIRECTORY]</code></strong> <em>(default: <code>/home/runner/work/codingame-tools/codingame-tools</code>)</em> — The contribution working directory to activate. Defaults to the current directory, so <code>cd</code> into one and run this with no arguments.</li>
 </ul>
 <h2 id="cg-contribution-deactivate"><code>cg contribution deactivate</code><a class="headerlink" href="#cg-contribution-deactivate" title="Permanent link">&para;</a></h2>
-<p>Clear the active contribution working directory, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery. Does not touch any files--only the selection.</p>
+<p>Clear the active contribution, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery. Touches no files -- only the selection.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution deactivate [-h]
 </code></pre></div>
 <h2 id="cg-contribution-select-test"><code>cg contribution select-test</code><a class="headerlink" href="#cg-contribution-select-test" title="Permanent link">&para;</a></h2>
-<p>Choose which test case <code>cg contribution debug</code> (and <code>cg play --selected</code>) runs against. Debugging feeds one stdin, so it needs exactly one test. Recorded in .meta/selected-test.json rather than in launch.json, which is what lets one VS Code debug configuration serve every contribution directory instead of being regenerated per directory. With no ORDINAL, shows the current selection.</p>
+<p>Choose which test case the debugger runs against. Debugging feeds one stdin, so it needs exactly one test. The choice is recorded per working directory and survives until you change it; without one, debugging uses the first local test. With no ORDINAL, shows the current selection.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution select-test [-h] [--clear] [ORDINAL] [SIDE]
 </code></pre></div>
 <p><strong>Arguments</strong></p>
@@ -6554,11 +6554,11 @@
 <li><strong><code>--clear</code></strong> — Forget the explicit selection and fall back to the first local test.</li>
 </ul>
 <h2 id="cg-contribution-where"><code>cg contribution where</code><a class="headerlink" href="#cg-contribution-where" title="Permanent link">&para;</a></h2>
-<p>Show which contribution working directory would be used.</p>
+<p>Print the path of the contribution working directory that would be used. Prints nothing but the path, so it composes: cd "$(cg contribution where)". Exits non-zero if no working directory can be found.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution where [-h]
 </code></pre></div>
 <h2 id="cg-contribution-status"><code>cg contribution status</code><a class="headerlink" href="#cg-contribution-status" title="Permanent link">&para;</a></h2>
-<p>Human-friendly summary of this contribution: submission/review status, sync status against the server, votes/comments/views, the moderator approve/reject gate, and any in-progress validation. By default reports whatever .meta/contribution-status.json last cached (no network access); pass --refresh to fetch fresh first (updates that cache for next time too). With --json (top-level option), renders as JSON instead of text.</p>
+<p>Summary of this contribution: submission and review status, sync status against the server, votes, comments and views, the moderator approve/reject gate, and any validation in progress. Reads a local cache by default, with no network access; --refresh fetches fresh and updates that cache. With --json, renders as JSON instead of text.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution status [-h] [--refresh]
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6566,11 +6566,11 @@
 <li><strong><code>--refresh</code></strong> — Fetch fresh from the server first (forces <code>fetch()</code>, which also refreshes .meta/contribution-status.json for next time), instead of using whatever's cached there already.</li>
 </ul>
 <h2 id="cg-contribution-discard-local"><code>cg contribution discard-local</code><a class="headerlink" href="#cg-contribution-discard-local" title="Permanent link">&para;</a></h2>
-<p>Discard local edits: reset this working directory's content to match server's current tip exactly. Purely local--no network access, unlike <code>cg contribution merge discard-local</code>, which re-fetches from the server first.</p>
+<p>Discard local edits: reset this working directory's content to match the server state cg already has cached. No network access -- use <code>cg contribution merge discard-local</code> to re-fetch from the server first.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution discard-local [-h]
 </code></pre></div>
 <h2 id="cg-contribution-delete"><code>cg contribution delete</code><a class="headerlink" href="#cg-contribution-delete" title="Permanent link">&para;</a></h2>
-<p>Delete this contribution from the server (unrecoverable) and, by default, remove this entire working directory too. Pass --keep-local to instead detach: drop the server/version-data git branches and reset contribution.json so the <em>same</em> local content is ready to become a brand new contribution on the next push--e.g. to use an existing contribution as a template/starting point for a new one. Pass --keep-server to do the opposite: leave the server-side contribution untouched and just remove the local working directory. Destructive--prompts for confirmation unless --force is given; requires --force outright if stdin/stdout aren't a terminal.</p>
+<p>Delete this contribution from the server, unrecoverably, and by default remove this entire working directory too. Pass --keep-local to detach instead: the same local content is left ready to become a brand new contribution on the next push, which is how you use an existing contribution as a template. Pass --keep-server to do the opposite, leaving the server untouched and removing only your local files. Destructive: prompts for confirmation unless --force is given, and requires --force outright if stdin/stdout are not a terminal.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution delete [-h] [--keep-local] [--keep-server] [--force]
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6580,11 +6580,11 @@
 <li><strong><code>-f, --force</code></strong> — Skip the interactive confirmation prompt. Required if stdin/stdout aren't a terminal.</li>
 </ul>
 <h2 id="cg-contribution-renormalize-tests"><code>cg contribution renormalize-tests</code><a class="headerlink" href="#cg-contribution-renormalize-tests" title="Permanent link">&para;</a></h2>
-<p>Renumber tests/'s ordinal directories to a clean, sequential, zero-padded sort key, preserving relative order (see the tests/ directory layout in codingame_tools.contribution_manager.test_cases_dir).</p>
+<p>Renumber the ordinal directories under tests/ to a clean, sequential, zero-padded sort key, preserving their relative order. Use it after inserting directories such as '05a'.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution renormalize-tests [-h]
 </code></pre></div>
 <h2 id="cg-contribution-play"><code>cg contribution play</code><a class="headerlink" href="#cg-contribution-play" title="Permanent link">&para;</a></h2>
-<p>Run the current local solution.src against tests/ test cases entirely locally (no network access at all)--by shelling out to the appropriate interpreter as a subprocess, comparing captured stdout to each test's expected output. Runs both local and validator sides by default; --local/--validator narrow to one. With no ORDINAL arguments, runs every test case; give one or more ordinals (e.g. "3 5 7", matching tests/'s directory names, zero-padding optional) to run only those. Exits non-zero if any test case fails. Output matches <code>cg puzzle play</code>'s format (with the ordinal/side/title in place of an index/label). Captured stdout is only printed for a failing test (or with --update-expected), unless --show-stdout is given.</p>
+<p>Run the reference solution against the test cases under tests/, entirely locally with no network access at all. Worth doing before every push: the server validates your reference solution against every test case and rejects the whole push if any disagree. Runs both the local and validator sides by default; --local/--validator narrow it to one. With no ORDINAL, runs every test case; give one or more ordinals, e.g. "3 5 7", matching the directory names under tests/ with zero-padding optional. Exits non-zero if any test case fails. Captured stdout is printed only for failing tests, unless --show-stdout.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution play [-h] [--local] [--validator] [--update-expected] [--show-stdout]
                             [--timeout SECONDS] [--build-timeout SECONDS]
                             [ORDINAL ...]
@@ -6603,41 +6603,41 @@
 <li><strong><code>--build-timeout SECONDS</code></strong> <em>(default: <code>120.0</code>)</em> — Wall-clock timeout for the one-time build step that runs before any test case. Separate from --timeout, and far more generous, because a cold build can pull/build a container image and compile from scratch. Default 120.0. Ignored for languages that need no build (e.g. Python3).</li>
 </ul>
 <h2 id="cg-contribution-rebase"><code>cg contribution rebase</code><a class="headerlink" href="#cg-contribution-rebase" title="Permanent link">&para;</a></h2>
-<p>Detect drift between the server and this working directory, resolving it automatically when unambiguous: a no-op if the server hasn't advanced since main last synced (regardless of local edits), a true fast-forward if only the server changed (main's ref just moves, no new commit), or a reported conflict--left entirely alone--if both sides changed (see <code>cg contribution diff</code>/<code>merge</code>).</p>
+<p>Detect drift between the server and this working directory, and resolve it when unambiguous: a no-op if the server has not advanced, a fast-forward if only the server changed, or a reported conflict -- left entirely alone -- if both sides changed. See <code>cg contribution diff</code> to inspect one and <code>cg contribution merge</code> to resolve it.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution rebase [-h]
 </code></pre></div>
 <h2 id="cg-contribution-merge"><code>cg contribution merge</code><a class="headerlink" href="#cg-contribution-merge" title="Permanent link">&para;</a></h2>
-<p>Resolve drift between the server and this working directory--parent for the merge state machine (start/continue/abort/interactive) and the instant discard-local/discard-server resolutions. Bare <code>cg contribution merge</code> is an alias for <code>merge start</code>.</p>
+<p>Resolve drift between the server and this working directory. Parent for the merge state machine (start/continue/abort/interactive) and for the instant discard-local and discard-server resolutions. Bare <code>cg contribution merge</code> is an alias for <code>merge start</code>.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge [-h] COMMAND ...
 </code></pre></div>
 <p><strong>Subcommands</strong></p>
 <ul>
-<li><a href="#cg-contribution-merge-start"><strong><code>start</code></strong></a> — Begin a merge: fetch, then a real <code>git merge server</code> against the working tree. If it completes cleanly (including a trivial fast-forward), it's already done--no <code>merge continue</code> needed. If it stops with conflicts, git writes its own conflict markers into the affected files (or, for a binary conflict, just keeps the local version)--resolve them, then <code>merge continue</code>. Idempotent--does nothing (and doesn't error) if a merge is already in progress, or if the server's version already matches where main last synced (nothing to merge).</li>
-<li><a href="#cg-contribution-merge-continue"><strong><code>continue</code></strong></a> — Finish an in-progress merge: stage everything and commit (refusing first if a still-unresolved path has a leftover conflict marker), then refresh the solution symlink.</li>
-<li><a href="#cg-contribution-merge-abort"><strong><code>abort</code></strong></a> — Abort an in-progress merge: restore the working directory to its pre-merge state and discard MERGE_HEAD. <code>server</code> is left untouched--nothing about the merge was ever recorded anywhere.</li>
-<li><a href="#cg-contribution-merge-diff"><strong><code>diff</code></strong></a> — Show the current merge conflict state (<code>git diff</code>, which during an unresolved merge shows a combined diff against both sides for each conflicted path). Equivalent to bare <code>cg contribution diff</code> while a merge is in progress. Fails if no merge is in progress.</li>
-<li><a href="#cg-contribution-merge-interactive"><strong><code>interactive</code></strong></a> — Start a merge if one isn't already in progress, then launch <code>git mergetool</code> against the working tree. The merge remains in progress after the tool exits (resolved files are staged, not committed)--run <code>cg contribution merge continue</code> (or <code>abort</code>) when done.</li>
-<li><a href="#cg-contribution-merge-discard-local"><strong><code>discard-local</code></strong></a> — Discard all local edits: fetch, then move main's ref directly onto server's new tip (like <code>git reset --hard server</code>--no new commit). Unlike <code>rebase</code>, doesn't check whether local actually diverged first--always overwrites. Instant--doesn't use the merge state machine.</li>
-<li><a href="#cg-contribution-merge-discard-server"><strong><code>discard-server</code></strong></a> — Update server/version-data to match the current server state, without touching main/the working tree at all. Just <code>fetch</code> under a different name--kept for CLI naming continuity. Instant--doesn't use the merge state machine.</li>
+<li><a href="#cg-contribution-merge-start"><strong><code>start</code></strong></a> — Begin a merge: fetch, then a real <code>git merge server</code> against the working tree. If it completes cleanly it is already done -- no <code>merge continue</code> needed. If it stops with conflicts, git writes conflict markers into the affected files (for a binary conflict it keeps your local version); resolve them, then run <code>cg contribution merge continue</code>. Does nothing, and does not error, if a merge is already in progress or there is nothing to merge.</li>
+<li><a href="#cg-contribution-merge-continue"><strong><code>continue</code></strong></a> — Finish an in-progress merge: stage everything and commit. Refuses if any path still contains a leftover conflict marker.</li>
+<li><a href="#cg-contribution-merge-abort"><strong><code>abort</code></strong></a> — Abort an in-progress merge: restore the working directory to its pre-merge state. Nothing about the merge is recorded anywhere.</li>
+<li><a href="#cg-contribution-merge-diff"><strong><code>diff</code></strong></a> — Show the current merge conflict state: during an unresolved merge, a combined diff against both sides for each conflicted path. Same as bare <code>cg contribution diff</code> while a merge is in progress. Fails if no merge is in progress.</li>
+<li><a href="#cg-contribution-merge-interactive"><strong><code>interactive</code></strong></a> — Start a merge if one is not already in progress, then launch <code>git mergetool</code> against the working tree. The merge stays in progress after the tool exits -- resolved files are staged, not committed -- so run <code>cg contribution merge continue</code>, or <code>abort</code>, when done.</li>
+<li><a href="#cg-contribution-merge-discard-local"><strong><code>discard-local</code></strong></a> — Discard all local edits: fetch, then move straight onto the server's new tip, like <code>git reset --hard</code>. Unlike <code>cg contribution rebase</code>, this never checks whether you actually diverged -- it always overwrites. Instant; does not use the merge state machine.</li>
+<li><a href="#cg-contribution-merge-discard-server"><strong><code>discard-server</code></strong></a> — Update the local server and version-data branches to match the server, leaving your working tree untouched. Same as <code>cg contribution fetch</code>. Instant; does not use the merge state machine.</li>
 </ul>
 <h2 id="cg-contribution-merge-start"><code>cg contribution merge start</code><a class="headerlink" href="#cg-contribution-merge-start" title="Permanent link">&para;</a></h2>
-<p>Begin a merge: fetch, then a real <code>git merge server</code> against the working tree. If it completes cleanly (including a trivial fast-forward), it's already done--no <code>merge continue</code> needed. If it stops with conflicts, git writes its own conflict markers into the affected files (or, for a binary conflict, just keeps the local version)--resolve them, then <code>merge continue</code>. Idempotent--does nothing (and doesn't error) if a merge is already in progress, or if the server's version already matches where main last synced (nothing to merge).</p>
+<p>Begin a merge: fetch, then a real <code>git merge server</code> against the working tree. If it completes cleanly it is already done -- no <code>merge continue</code> needed. If it stops with conflicts, git writes conflict markers into the affected files (for a binary conflict it keeps your local version); resolve them, then run <code>cg contribution merge continue</code>. Does nothing, and does not error, if a merge is already in progress or there is nothing to merge.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge start [-h]
 </code></pre></div>
 <h2 id="cg-contribution-merge-continue"><code>cg contribution merge continue</code><a class="headerlink" href="#cg-contribution-merge-continue" title="Permanent link">&para;</a></h2>
-<p>Finish an in-progress merge: stage everything and commit (refusing first if a still-unresolved path has a leftover conflict marker), then refresh the solution symlink.</p>
+<p>Finish an in-progress merge: stage everything and commit. Refuses if any path still contains a leftover conflict marker.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge continue [-h]
 </code></pre></div>
 <h2 id="cg-contribution-merge-abort"><code>cg contribution merge abort</code><a class="headerlink" href="#cg-contribution-merge-abort" title="Permanent link">&para;</a></h2>
-<p>Abort an in-progress merge: restore the working directory to its pre-merge state and discard MERGE_HEAD. <code>server</code> is left untouched--nothing about the merge was ever recorded anywhere.</p>
+<p>Abort an in-progress merge: restore the working directory to its pre-merge state. Nothing about the merge is recorded anywhere.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge abort [-h]
 </code></pre></div>
 <h2 id="cg-contribution-merge-diff"><code>cg contribution merge diff</code><a class="headerlink" href="#cg-contribution-merge-diff" title="Permanent link">&para;</a></h2>
-<p>Show the current merge conflict state (<code>git diff</code>, which during an unresolved merge shows a combined diff against both sides for each conflicted path). Equivalent to bare <code>cg contribution diff</code> while a merge is in progress. Fails if no merge is in progress.</p>
+<p>Show the current merge conflict state: during an unresolved merge, a combined diff against both sides for each conflicted path. Same as bare <code>cg contribution diff</code> while a merge is in progress. Fails if no merge is in progress.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge diff [-h]
 </code></pre></div>
 <h2 id="cg-contribution-merge-interactive"><code>cg contribution merge interactive</code><a class="headerlink" href="#cg-contribution-merge-interactive" title="Permanent link">&para;</a></h2>
-<p>Start a merge if one isn't already in progress, then launch <code>git mergetool</code> against the working tree. The merge remains in progress after the tool exits (resolved files are staged, not committed)--run <code>cg contribution merge continue</code> (or <code>abort</code>) when done.</p>
+<p>Start a merge if one is not already in progress, then launch <code>git mergetool</code> against the working tree. The merge stays in progress after the tool exits -- resolved files are staged, not committed -- so run <code>cg contribution merge continue</code>, or <code>abort</code>, when done.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge interactive [-h] [--tool NAME]
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6645,15 +6645,15 @@
 <li><strong><code>--tool NAME</code></strong> — Merge tool to use (see <code>git help mergetool</code> for the built-in choices). Defaults to <code>git config merge.tool</code> if set (configure via <code>cg contribution git config merge.tool &lt;name&gt;</code>), then git's own default.</li>
 </ul>
 <h2 id="cg-contribution-merge-discard-local"><code>cg contribution merge discard-local</code><a class="headerlink" href="#cg-contribution-merge-discard-local" title="Permanent link">&para;</a></h2>
-<p>Discard all local edits: fetch, then move main's ref directly onto server's new tip (like <code>git reset --hard server</code>--no new commit). Unlike <code>rebase</code>, doesn't check whether local actually diverged first--always overwrites. Instant--doesn't use the merge state machine.</p>
+<p>Discard all local edits: fetch, then move straight onto the server's new tip, like <code>git reset --hard</code>. Unlike <code>cg contribution rebase</code>, this never checks whether you actually diverged -- it always overwrites. Instant; does not use the merge state machine.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge discard-local [-h]
 </code></pre></div>
 <h2 id="cg-contribution-merge-discard-server"><code>cg contribution merge discard-server</code><a class="headerlink" href="#cg-contribution-merge-discard-server" title="Permanent link">&para;</a></h2>
-<p>Update server/version-data to match the current server state, without touching main/the working tree at all. Just <code>fetch</code> under a different name--kept for CLI naming continuity. Instant--doesn't use the merge state machine.</p>
+<p>Update the local server and version-data branches to match the server, leaving your working tree untouched. Same as <code>cg contribution fetch</code>. Instant; does not use the merge state machine.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution merge discard-server [-h]
 </code></pre></div>
 <h2 id="cg-contribution-diff"><code>cg contribution diff</code><a class="headerlink" href="#cg-contribution-diff" title="Permanent link">&para;</a></h2>
-<p>Show what's changed: working tree vs server's cached state (no network access by default). If a merge is in progress, shows the merge's own conflict state instead (same as <code>cg contribution merge diff</code>)--<code>--remote</code> is refused then, since fetching mid-merge isn't allowed anyway. Pass --remote to fetch fresh first. Pass --interactive to launch <code>git mergetool</code> instead of printing text (same as <code>cg contribution merge interactive</code>).</p>
+<p>Show what has changed between your working tree and the server state cg has cached -- no network access by default. Pass --remote to fetch fresh first, or --interactive to launch <code>git mergetool</code> instead of printing text. If a merge is in progress, shows the merge's own conflict state instead, and --remote is refused, since fetching mid-merge is not allowed.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution diff [-h] [--remote] [--interactive] [--tool NAME]
 </code></pre></div>
 <p><strong>Options</strong></p>
@@ -6663,11 +6663,11 @@
 <li><strong><code>--tool NAME</code></strong> — Merge tool to use with --interactive--see <code>git help mergetool</code>.</li>
 </ul>
 <h2 id="cg-contribution-fetch"><code>cg contribution fetch</code><a class="headerlink" href="#cg-contribution-fetch" title="Permanent link">&para;</a></h2>
-<p>Refresh server/version-data via a fresh findContribution. Leaves them untouched if the version hasn't changed, and avoids re-downloading the cover image if its binary ID hasn't changed either (reused straight from the object database). <code>rebase</code> and <code>merge start</code> do this automatically; use this to refresh the cache for <code>diff</code>/<code>diff --interactive</code> without either of those. Refuses while a merge is in progress.</p>
+<p>Refresh cg's cached copy of the server state. Leaves it untouched if the version has not changed, and skips re-downloading the cover image if it has not changed either. <code>cg contribution rebase</code> and <code>cg contribution merge start</code> do this for you; use this to refresh the cache for <code>cg contribution diff</code> without either. Refuses while a merge is in progress.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution fetch [-h]
 </code></pre></div>
 <h2 id="cg-contribution-git"><code>cg contribution git</code><a class="headerlink" href="#cg-contribution-git" title="Permanent link">&para;</a></h2>
-<p>Run a raw git command directly against this contribution's repo--e.g. <code>cg contribution git log --oneline --all --decorate</code>, <code>cg contribution git show server:solution.src</code>, <code>cg contribution git config merge.tool meld</code>. Resolves --git-dir/--work-tree from contribution.json automatically (plain <code>git</code> run by hand here can't find this repo at all--see codingame_tools.contribution_manager.manager's module docstring for why data/ deliberately carries no .git marker of its own). No <code>--</code> needed, and nothing you pass is ever misread as one of cg's own options.</p>
+<p>Run a raw git command against this contribution's repository -- e.g. <code>cg contribution git log --oneline --all --decorate</code>, <code>cg contribution git show server:solution.py</code>, <code>cg contribution git config merge.tool meld</code>. Resolves --git-dir and --work-tree for you; plain <code>git</code> run by hand here cannot find this repository at all. No <code>--</code> needed, and nothing you pass is ever misread as one of cg's own options.</p>
 <div class="highlight"><pre><span></span><code>usage: cg contribution git [git_args ...]
 </code></pre></div>
 <p><strong>Arguments</strong></p>
