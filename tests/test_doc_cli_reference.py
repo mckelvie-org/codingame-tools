@@ -7,11 +7,10 @@ that actually happens here--`cg puzzle push` became `cg puzzle submit`, `revert`
 every guide mentioning it. This can't check that the surrounding advice is still *correct*, but a
 command that no longer exists makes a whole page look abandoned.
 
-**Deliberately does not check that `doc/cli/reference/` is up to date.** That directory is a build
-artifact, not source: it can be deleted and rebuilt from the parser at any time, and on `main` it is
-a cached copy that may lag. `bin/cut-rc` regenerates it into every release commit, which is where
-being current actually matters. A staleness test here would quietly reclassify it as source and fail
-builds over a file nobody has to hand-maintain.
+There is no staleness test for the command reference, and no longer any need for one: it is
+generated during the docs build (scripts/gen_cli_pages.py) and never committed, so it cannot lag
+behind the parser it describes. It used to be committed, which is exactly what made a staleness
+test tempting and its absence dangerous.
 """
 
 from __future__ import annotations
@@ -33,34 +32,39 @@ SCRIPTS = REPO_ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from gen_cli_docs import REFERENCE_SUBDIR  # noqa: E402  (needs the path fix above)
+from gen_cli_docs import iter_pages  # noqa: E402  (needs the path fix above)
+
+REFERENCE_DIR = DOC_ROOT / "cli" / "reference"
+"""Where the generated pages appear *in the built site*. Nothing exists here on disk."""
 
 
-def test_generated_pages_contain_no_terminal_escapes(tmp_path: Path) -> None:
+def test_generated_pages_contain_no_terminal_escapes() -> None:
     """Generated pages must be plain text, whatever terminal the generator was run from.
 
        Python 3.14's argparse colourises help when `sys.stdout` is a terminal, which is right for a
-       human running `cg --help` and wrong when `format_help()` is being captured into files.
+       human running `cg --help` and wrong when `format_help()` is being captured into pages.
        Generating from an interactive shell wrote raw ANSI escapes into every page; generating
-       through a pipe produced clean text. The same source, different files, decided by how the
+       through a pipe produced clean text. The same source, different output, decided by how the
        command happened to be invoked -- and it reached a commit before anyone noticed, because
        every automated run here is piped.
 
-       Generated under `FORCE_COLOR`, which is the loudest thing a caller's environment can say, so
-       this fails if the generator ever stops pinning colour off."""
+       Run in a subprocess under `FORCE_COLOR`, which is the loudest thing an environment can say,
+       so this fails if the generator ever stops pinning colour off. In-process would prove nothing:
+       pytest captures stdout, so argparse would decline to colourise regardless."""
     env = dict(os.environ, FORCE_COLOR="1")
     env.pop("PYTHON_COLORS", None)
     env.pop("NO_COLOR", None)
-    subprocess.run(
-            [sys.executable, str(SCRIPTS / "gen_cli_docs.py"), str(tmp_path)],
-            check=True, capture_output=True, env=env, cwd=REPO_ROOT,
+    probe = (
+        "import sys; sys.path.insert(0, 'scripts')\n"
+        "from gen_cli_docs import iter_pages\n"
+        "bad = [name for name, text in iter_pages() if '\\x1b' in text]\n"
+        "print('|'.join(bad))\n"
+    )
+    result = subprocess.run(
+            [sys.executable, "-c", probe],
+            check=True, capture_output=True, text=True, env=env, cwd=REPO_ROOT,
         )
-
-    offenders = [
-        str(page.relative_to(tmp_path))
-        for page in (tmp_path / REFERENCE_SUBDIR).rglob("*.md")
-        if "\x1b" in page.read_text(encoding="utf-8")
-    ]
+    offenders = [name for name in result.stdout.strip().split("|") if name]
     assert not offenders, f"ANSI escapes leaked into generated pages: {offenders[:5]}"
 
 
@@ -73,8 +77,8 @@ _PLACEHOLDERS = {"command", "options", "subcommand"}
 
 
 def _hand_written_pages() -> list[Path]:
-    reference = REPO_ROOT / REFERENCE_SUBDIR
-    return sorted(p for p in DOC_ROOT.rglob("*.md") if reference not in p.parents)
+    """Every page under doc/ -- all of which are hand-written now that the reference is virtual."""
+    return sorted(DOC_ROOT.rglob("*.md"))
 
 
 def _command_paths(parser: argparse.ArgumentParser, path: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
@@ -136,12 +140,23 @@ def _markdown_pages() -> list[Path]:
     return sorted(p for p in pages if p.is_file())
 
 
-def test_relative_doc_links_resolve() -> None:
-    """Every relative link between docs points at a file that exists.
+@pytest.fixture(scope="module")
+def generated_reference_pages() -> set[str]:
+    """The page paths the docs build will create under `cli/reference/`, e.g. `api/vote.md`."""
+    return {name for name, _content in iter_pages()}
+
+
+def test_relative_doc_links_resolve(generated_reference_pages: set[str]) -> None:
+    """Every relative link between docs points at a page that will exist.
 
        Cheap, and it's the other half of the rename problem: the command linter catches a `cg ...`
        that no longer exists, this catches a page that no longer exists. Both are the kind of rot
-       that makes documentation look unmaintained long before anyone notices it's wrong."""
+       that makes documentation look unmaintained long before anyone notices it's wrong.
+
+       Links into `cli/reference/` are resolved against what the generator *will* produce rather
+       than against the filesystem, because nothing is written there until the site is built. The
+       alternative -- skipping them -- would leave the most-linked area of the docs unchecked here,
+       and those links outnumber the rest."""
     broken: list[str] = []
     for page in _markdown_pages():
         for target in _LINK_RE.findall(page.read_text(encoding="utf-8")):
@@ -150,6 +165,19 @@ def test_relative_doc_links_resolve() -> None:
             path, _, _anchor = target.partition("#")
             if not path:
                 continue  # a bare anchor, into this same page
-            if not (page.parent / path).resolve().exists():
+            resolved = (page.parent / path).resolve()
+            if resolved.is_relative_to(REFERENCE_DIR):
+                if resolved.relative_to(REFERENCE_DIR).as_posix() not in generated_reference_pages:
+                    broken.append(f"{page.relative_to(REPO_ROOT)} -> {target} (not generated)")
+            elif not resolved.exists():
                 broken.append(f"{page.relative_to(REPO_ROOT)} -> {target}")
     assert not broken, "broken relative links:\n  " + "\n  ".join(broken)
+
+
+def test_the_generated_reference_is_not_committed() -> None:
+    """The whole point of the change: no copy on disk that can drift from the parser.
+
+       A regenerated file reappearing in the working tree means something still writes there, and a
+       stale copy would then shadow the generated pages in the build."""
+    assert not REFERENCE_DIR.exists(), \
+        f"{REFERENCE_DIR.relative_to(REPO_ROOT)} exists on disk; it is generated at build time"

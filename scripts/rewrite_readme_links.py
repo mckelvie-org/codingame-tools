@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-"""Rewrite a README's relative links into absolute GitHub URLs pinned to a release ref.
+"""Pin a release's outward-facing links: the README's, and the project URLs PyPI shows.
 
     python scripts/rewrite_readme_links.py README.md mckelvie-org/codingame-tools v1.2.3 [ROOT]
+    python scripts/rewrite_readme_links.py --pin-docs pyproject.toml v1.2.3
 
 PyPI renders `README.md` as the project's front page but does **not** resolve relative links --
 they're resolved against `pypi.org`, so `[docs](doc/index.md)` 404s for anyone who clicks it there.
@@ -15,9 +16,12 @@ that render correctly on GitHub and can be checked by `tests/test_doc_cli_refere
 displays -- gets absolute URLs pinned to that exact tag.
 
 Pinned to the tag rather than to a branch on purpose: the README PyPI shows for version 1.2.3 should
-link to the docs as they were at 1.2.3, not to whatever `main` says today. A separate, deliberately
-unpinned "latest release" link belongs in the README itself, pointing at the moving `prod-latest`
-tag (see `.github/workflows/publish.yml`, which force-updates it after a successful publish).
+link to the docs as they were at 1.2.3, not to whatever `main` says today.
+
+The `--pin-docs` form does the documentation-site half of that for a file that is not the README --
+in practice `pyproject.toml`, whose `[project.urls]` become the link sidebar on the PyPI page. Those
+are already absolute, so they need no link rewriting; what they need is the same version pinning, or
+1.2.3's sidebar sends people to `dev` docs describing unreleased work.
 """
 
 from __future__ import annotations
@@ -119,24 +123,37 @@ def rewrite_links(text: str, repo: str, ref: str, root: Path) -> str:
 
 
 
-_DOCS_LATEST_RE = re.compile(r"(https://[^/\s)]+/[^/\s)]+/)latest/")
-"""A link into the published documentation site's `latest` alias.
+_DOCS_UNPINNED_RE = re.compile(r"(https://[^/\s)]+/[^/\s)]+/)(?:dev|latest)/")
+"""A link into a documentation-site alias that moves: `dev` or `latest`.
 
-   The site is versioned (see `.github/workflows/docs.yml`): `latest` follows the newest release,
-   which is right for the README you browse on GitHub but wrong for the copy PyPI freezes with a
-   release. A 2.0.0 project page linking at `latest` sends readers to whatever shipped since."""
+   The site is versioned (see `.github/workflows/docs.yml`), and README links at the docs for
+   whatever copy of the README you are reading. On `main` that is `dev`, which is correct there and
+   wrong the moment the file is frozen into a release: a 2.0.0 PyPI page pointing at `dev` documents
+   unreleased work, and one pointing at `latest` documents whatever shipped since. Both have to
+   become that release's own series."""
 
 
 def pin_docs_version(text: str, ref: str) -> str:
-    """Repoint documentation-site links from `latest` to the series this release belongs to.
+    """Repoint moving documentation-site links to the series this release belongs to.
 
        `v2.0.1` -> `2.0`, matching the alias `mike` publishes. Left alone for a ref that isn't a
-       release tag (an rc, a branch), since there is no published series to pin to."""
+       release tag (an rc, a branch), since there is no published series to pin to -- an rc's README
+       keeps pointing at `dev`, which is where its code actually is."""
     match = re.fullmatch(r"v?(\d+)\.(\d+)\.\d+", ref)
     if match is None:
         return text
     series = f"{match.group(1)}.{match.group(2)}"
-    return _DOCS_LATEST_RE.sub(rf"\g<1>{series}/", text)
+    return _DOCS_UNPINNED_RE.sub(rf"\g<1>{series}/", text)
+
+
+def pin_docs_version_in_file(path: Path, ref: str) -> bool:
+    """Pin every moving documentation-site link in `path`. Returns whether anything changed."""
+    original = path.read_text(encoding="utf-8")
+    updated = pin_docs_version(original, ref)
+    if updated == original:
+        return False
+    path.write_text(updated, encoding="utf-8")
+    return True
 
 
 def rewrite_readme_file(readme_path: Path, repo: str, ref: str, root: Path | None = None) -> int:
@@ -153,6 +170,15 @@ def rewrite_readme_file(readme_path: Path, repo: str, ref: str, root: Path | Non
 
 
 def main() -> None:
+    if len(sys.argv) >= 2 and sys.argv[1] == "--pin-docs":
+        if len(sys.argv) != 4:
+            sys.exit(__doc__)
+        target, ref = Path(sys.argv[2]), sys.argv[3]
+        changed = pin_docs_version_in_file(target, ref)
+        print(f"{'pinned' if changed else 'no documentation links to pin in'} {target} -> {ref}",
+              file=sys.stderr)
+        return
+
     if len(sys.argv) < 4:
         sys.exit(__doc__)
     readme_path = Path(sys.argv[1])

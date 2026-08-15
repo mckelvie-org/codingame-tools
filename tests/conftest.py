@@ -82,6 +82,13 @@ class _FakeGlobalPlatformDirs:
     def user_data_dir(self) -> str:
         return str(self._root / "data")
 
+    @property
+    def user_cache_dir(self) -> str:
+        """Redirected for the same reason as the others: `cg doc` builds here when the checkout it
+           was installed from is not writable, and a test suite must not write into the real
+           ~/.cache -- nor read a build left there by a previous run."""
+        return str(self._root / "cache")
+
 
 @pytest.fixture(autouse=True)
 def fake_global_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:

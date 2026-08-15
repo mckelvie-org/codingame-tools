@@ -117,6 +117,15 @@ def default_global_data_dir() -> Path:
     return Path(_global_platformdirs().user_data_dir) / DATA_SUBDIR_NAME
 
 
+def default_global_cache_dir() -> Path:
+    """The global (per-user) cache directory, e.g. `~/.cache/codingame/cg` on Linux/macOS.
+
+       For output that can be regenerated from the source at any time and is never authored by the
+       user -- unlike `default_global_data_dir()`, whose contents would be a real loss. Anything
+       here must survive being deleted between runs."""
+    return Path(_global_platformdirs().user_cache_dir)
+
+
 def _resolve_explicit(value: str) -> Path:
     """Resolve an explicit `--config`/`CG_CONFIG` value (a config file, or a directory containing
        `config/config.yaml`) to a config file path.

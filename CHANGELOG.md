@@ -17,6 +17,46 @@
   A strict build runs in CI, so an unresolved cross-reference fails the build rather than rotting
   quietly -- which matters once a renamed symbol can silently break links nothing checks.
 
+- **Fixed: the API reference sidebar was unreadable.** Entries used full dotted module paths, and
+  Material's sidebar neither wraps, scrolls horizontally, nor resizes by dragging — so every
+  protocol module rendered as `codingame_tools.client.common`, truncated at 29 characters, exactly
+  where the names begin to differ. All 74 entries were indistinguishable.
+
+  Labels are now relative to their area (`achievement.schema`, `clash_of_code_description.schema`),
+  putting the distinguishing part where it survives. Not the bare leaf name: 18 modules are called
+  `schema`. Page headings keep the full path. A small stylesheet lets any label that is still too
+  wide wrap instead of vanishing, so a narrow window degrades to two lines rather than to nothing.
+  Measured before and after in a real browser: 74 of 74 truncated, then 0 of 74.
+
+- **PyPI's "Documentation" sidebar link points at the rendered site.** It pointed at
+  `blob/main/doc/index.md` -- raw Markdown, on `main`, from the page of a version released months
+  earlier. It now tracks `dev` and is pinned to the release's own `X.Y` by `bin/cut-rc`/`bin/cut-prod`,
+  the same treatment README's links get. An rc is deliberately left on `dev`, since that is the code
+  it ships.
+
+- **The CLI command reference is generated at build time and no longer committed.** It joins the API
+  reference in mkdocs' virtual file tree (`scripts/gen_cli_pages.py`), so 32 generated files leave
+  the repository and PR diffs.
+
+  It was committed for one reason -- the README linked readers straight at those Markdown files on
+  GitHub -- and once the README started linking at the rendered site, only the downside was left:
+  nothing in CI checked the committed copy was current, so a changed help string could publish a
+  site documenting the previous one. Now it cannot go stale, because between builds it does not
+  exist.
+
+  Consequently `bin/gen-cli-reference` and `bin/cut-rc-prep` are gone: the release hook existed
+  solely to regenerate and commit that directory. `bin/gen-docs` now just builds the site.
+
+- **README links at the rendered documentation, not raw Markdown.** Every guide link now points at
+  the site, which renders those same files with search and with live cross-links into the API
+  reference; pointing at the Markdown sent readers to a strictly worse copy of the page they wanted.
+
+  The links track the README they are in: `dev` on `main`, and that release's own `X.Y` once the
+  release rewrite runs -- so a PyPI page documents the version you installed rather than whatever
+  shipped afterwards. The rewriter pins `dev` as well as `latest` for this reason, and the three-way
+  "this version / latest release / in development" link set is gone, since the site's own version
+  selector does that job better.
+
 - **New: `cg doc`** opens the documentation in a dedicated browser window -- the same wrapped
   Chromium `cg login` uses, with a throwaway profile that cannot see the saved session.
 
@@ -25,7 +65,16 @@
   `2.1.0rc1`) opens `/dev/`, because its own series has not shipped yet and would 404.
 
   In a source checkout it serves that tree's own documentation instead, uncommitted edits included,
-  and stops the server when the window closes. `--online` overrides that, `--version` shows another
+  and stops the server when the window closes. It builds into a **per-user cache**
+  (`~/.cache/codingame/cg/docs/<checkout>-<hash>` on Linux/macOS), never into the checkout: `cg doc`
+  is package functionality a user runs from anywhere, not a contributor tool operating on a tree
+  they are working in. Both `cg doc` and `cg doc --no-rebuild` use that one directory, so the second
+  serves exactly what the first produced. The cache is keyed by the checkout's path, so two clones
+  never overwrite each other.
+
+  The contributor tools keep the checkout's `site/`: `bin/gen-docs` builds it, `bin/docs -q` serves
+  it, and `mike` deploys from it. (`bin/docs` itself keeps the live-reloading server, which serves
+  from memory and writes nothing -- what you want while *writing* docs.) `--online` overrides that, `--version` shows another
   release's docs, `--no-rebuild` trades live-reload for opening about ten times faster, and `--url`
   prints the address rather than opening anything, for use over SSH or in a container.
 

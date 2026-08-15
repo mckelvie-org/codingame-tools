@@ -4,47 +4,47 @@
 [![PyPI version](https://img.shields.io/pypi/v/codingame-tools.svg)](https://pypi.org/project/codingame-tools/)
 [![Python versions](https://img.shields.io/pypi/pyversions/codingame-tools.svg)](https://pypi.org/project/codingame-tools/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://mckelvie-org.github.io/codingame-tools/latest/)
+[![Documentation](https://img.shields.io/badge/docs-blue.svg)](https://mckelvie-org.github.io/codingame-tools/dev/)
 
 Solve [CodinGame](https://www.codingame.com/) puzzles and author CodinGame contributions from your
 own editor, under version control — instead of in the browser IDE.
 
-📖 **[Read the documentation](https://mckelvie-org.github.io/codingame-tools/latest/)** — guides, a
+📖 **[Read the documentation](https://mckelvie-org.github.io/codingame-tools/dev/)** — guides, a
 full command reference, and an API reference generated from the source. Or run `cg doc`, which opens
 the docs for the version you actually have installed.
 
 ## Highlights
 
-- **[Browser login](doc/concepts/authentication.md)** — CodinGame has no API tokens, so `cg login`
+- **[Browser login](https://mckelvie-org.github.io/codingame-tools/dev/concepts/authentication/)** — CodinGame has no API tokens, so `cg login`
   drives a real browser and captures the session. Works with any sign-in method, including
   third-party identity providers. Credentials are stored per
-  [profile](doc/concepts/profiles.md); a headless `--manual` path exists for CI.
+  [profile](https://mckelvie-org.github.io/codingame-tools/dev/concepts/profiles/); a headless `--manual` path exists for CI.
 
-- **[Async client with structured API wrappers](doc/client/index.md)** — `CgClient` exposes 22
+- **[Async client with structured API wrappers](https://mckelvie-org.github.io/codingame-tools/dev/client/)** — `CgClient` exposes 22
   service endpoints as typed methods, with dataclasses for every request and response, plus a helper
   layer that handles retries and the CDN timeouts that heavy operations provoke.
 
-- **[Puzzle manager](doc/tools/puzzle-manager.md)** — a local working directory for solving a
+- **[Puzzle manager](https://mckelvie-org.github.io/codingame-tools/dev/tools/puzzle-manager/)** — a local working directory for solving a
   puzzle: import it, edit one file, run its test cases, submit. Language switching restores your own
   previous code, since CodinGame stores your latest source per language.
 
-- **[Contribution manager](doc/tools/contribution-manager.md)** — a local working directory for a
+- **[Contribution manager](https://mckelvie-org.github.io/codingame-tools/dev/tools/contribution-manager/)** — a local working directory for a
   puzzle you're *writing*. `data/` is a real git working tree with `main`/`server`/`version-data`
   branches, so syncing with CodinGame is a genuine fetch/rebase/merge workflow — conflicts included
   — rather than a one-shot overwrite.
 
-- **[A CLI exposing all of it](doc/cli/index.md)** — 148 commands, from the two workflow groups down
+- **[A CLI exposing all of it](https://mckelvie-org.github.io/codingame-tools/dev/cli/)** — 148 commands, from the two workflow groups down
   to one subcommand per raw API method. Nothing is library-only.
 
-- **[Local validation](doc/cli/puzzles.md#running-tests)** — run your solution against real test
+- **[Local validation](https://mckelvie-org.github.io/codingame-tools/dev/cli/puzzles/#running-tests)** — run your solution against real test
   cases with **no network access at all**. Output comparison reproduces CodinGame's own rule
   exactly, measured against the live service, so a local pass predicts a remote one.
 
-- **[VS Code integration, including debugging](doc/cli/debugging.md)** — generated run/debug
+- **[VS Code integration, including debugging](https://mckelvie-org.github.io/codingame-tools/dev/cli/debugging/)** — generated run/debug
   configuration, breakpoints in your solution, and a test-case picker. Compiled languages build,
   run and debug inside Docker, so C++ works with no local toolchain at all.
 
-- **[The protocol, documented](doc/client/services.md)** — CodinGame publishes no API spec. Every
+- **[The protocol, documented](https://mckelvie-org.github.io/codingame-tools/dev/client/services/)** — CodinGame publishes no API spec. Every
   endpoint here was reverse-engineered, wrapped in dataclasses, and documented with what it actually
   does — including the parts that contradict what the name suggests. Where behaviour was confirmed
   by probing the live service, the docstring says so.
@@ -119,34 +119,23 @@ asyncio.run(main())
 
 ## Documentation
 
-**[The documentation site](https://mckelvie-org.github.io/codingame-tools/latest/)** is the fullest
-version: the same guides, plus a searchable [API reference](https://mckelvie-org.github.io/codingame-tools/latest/api/)
-generated from the source. It carries its own version selector — `dev` for the tip of `main`, and
-every released `X.Y`.
+**[The documentation site](https://mckelvie-org.github.io/codingame-tools/dev/)** has all of it: the
+guides linked above, a [command reference](https://mckelvie-org.github.io/codingame-tools/dev/cli/reference/)
+generated from the CLI itself, and an [API reference](https://mckelvie-org.github.io/codingame-tools/dev/api/)
+generated from the source.
 
-`cg doc` opens it for you, in the version that matches the `cg` you have installed — which is the
-version you actually want, since the site keeps every release side by side. Add `--url` to print the
-address instead, for machines where a browser cannot open.
+**Every link here points at the docs for _this_ copy of the README.** Each version is published as a
+complete, independent copy of the site — `dev` for the tip of `main`, and each released `X.Y` — and
+these links are rewritten when a release is cut. So a PyPI page documents the version you installed,
+never whatever shipped afterwards. To move between versions, use the version selector in the site's
+own header.
 
-The guides are also plain Markdown in the repository, readable straight from GitHub:
+`cg doc` does the same from a terminal: it opens the docs matching the `cg` you have installed. Add
+`--url` to print the address instead, for machines where a browser cannot open one.
 
-- **[Documentation for this version](doc/index.md)** — concepts, workflow guides, the client
-  library, and a [command reference](doc/cli/reference/index.md) generated from the CLI itself.
-- **[Documentation for the latest release](https://github.com/mckelvie-org/codingame-tools/blob/prod-latest/doc/index.md)**
-  — if you're reading an older version's page and want current docs.
-- **[Documentation for in-development code](https://github.com/mckelvie-org/codingame-tools/blob/main/doc/index.md)**
-  — the tip of `main`, describing work that hasn't been released yet.
-
-The first link is relative in the repository and is rewritten to an absolute, tag-pinned URL when a
-release is cut, so it resolves both on GitHub and on PyPI, and always points at the docs as they
-were for *that* version. The other two are absolute and deliberately unpinned, so they keep tracking
-`prod-latest` and `main` no matter which version's page you found them on. The site link is pinned
-the same way — a release's PyPI page links at that release's `X.Y` docs, not at whatever `latest`
-has become since.
-
-The API reference is only on the site. It is generated at build time rather than committed, because
-its value is the cross-links: several hundred references inside these docstrings become real links
-only once the site resolves them.
+The API reference is site-only. It is generated at build time rather than committed, because its
+value *is* the cross-links: several hundred references inside these docstrings become real links
+only once the site resolves them, and a committed copy would render them as dead text.
 
 ## Caveats
 

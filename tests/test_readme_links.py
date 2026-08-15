@@ -25,6 +25,7 @@ if str(SCRIPTS) not in sys.path:
 
 from rewrite_readme_links import (  # noqa: E402  (needs the path fix above)
     pin_docs_version,
+    pin_docs_version_in_file,
     rewrite_links,
 )
 
@@ -131,27 +132,45 @@ def test_already_pinned_links_are_not_repointed() -> None:
         assert _rewrite(pinned) == pinned
 
 
-def test_the_readme_offers_pinned_and_unpinned_documentation_links() -> None:
-    """All three doc links, each pointing where it should: one pinned to a version, two tracking.
+def test_the_readme_documents_this_version_not_a_moving_one() -> None:
+    """Every documentation link in the README must point at the docs for the copy being read.
 
-       They're easy to conflate, and the difference only shows up on a published page -- "this
-       version" must be pinned to the release tag, while "latest release" and "in development" keep
-       tracking `prod-latest` and `main` for a reader who landed on an old version's page.
+       On `main` that is the `dev` site; frozen into a release it must become that release's own
+       `X.Y`. Getting this wrong is invisible in review and only shows up on a published page: a
+       2.0.0 PyPI page linking at `dev` documents unreleased work, and one linking at `latest`
+       documents whatever shipped after it.
 
        **Must pass from a release commit as well as from `main`,** which is the subtlety that
        matters here: CI checks out the *tag*, and `bin/cut-rc` has already rewritten that README, so
-       its links are absolute and pinned to the real release. Rewriting them again is correctly a
-       no-op (the rewriter leaves absolute URLs alone), so asserting on this test's own fake `REF`
-       holds only on `main`. An earlier version of this test did exactly that and failed every
-       release candidate's publish -- after tagging and pushing, which is the expensive place to
-       find out. Hence matching any version tag rather than one specific ref."""
-    rewritten = _rewrite((REPO_ROOT / "README.md").read_text(encoding="utf-8"))
-    prefix = re.escape(f"https://github.com/{REPO}/blob")
+       its links are already pinned. Rewriting them again is correctly a no-op, so asserting on this
+       test's own fake `REF` holds only on `main`. An earlier version of this test asserted exactly
+       that and failed every release candidate's publish -- after tagging and pushing, which is the
+       expensive place to find out. Hence accepting either state."""
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    site_links = re.findall(r"https://[^/\s)]+/codingame-tools/([^/\s)]+)/", readme)
+    assert site_links, "README links at no documentation site at all"
 
-    assert re.search(rf"{prefix}/v[0-9][^/]*/doc/index\.md", rewritten), \
-        "no version-pinned documentation link"
-    assert f"https://github.com/{REPO}/blob/prod-latest/doc/index.md" in rewritten
-    assert f"https://github.com/{REPO}/blob/main/doc/index.md" in rewritten
+    # On main every one of them is `dev`; on an already-rewritten release commit, every one is the
+    # series. Either way they must all agree -- a mix means one link was missed by the rewriter.
+    assert len(set(site_links)) == 1, f"documentation links disagree about version: {set(site_links)}"
+    assert site_links[0] == "dev" or re.fullmatch(r"\d+\.\d+", site_links[0]), \
+        f"documentation links point at an unexpected alias: {site_links[0]!r}"
+
+
+def test_a_release_pins_every_documentation_link() -> None:
+    """Cutting a release must leave no moving alias behind, `dev` or `latest`."""
+    pinned = pin_docs_version((REPO_ROOT / "README.md").read_text(encoding="utf-8"), "v2.0.1")
+    assert "/codingame-tools/dev/" not in pinned
+    assert "/codingame-tools/latest/" not in pinned
+    assert "/codingame-tools/2.0/" in pinned
+
+
+def test_the_guides_are_linked_as_rendered_pages_not_raw_markdown() -> None:
+    """The site renders these same files; linking the raw Markdown instead sends readers to a worse
+       copy of the page they wanted -- no search, and no links into the API reference."""
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    raw = re.findall(r"\]\((doc/[^)]+\.md[^)]*)\)", readme)
+    assert raw == [], f"README links raw Markdown guides instead of the site: {raw}"
 
 
 def test_rewriting_is_idempotent() -> None:
@@ -222,3 +241,48 @@ def test_pinning_leaves_unrelated_urls_untouched() -> None:
 
     assert "github.com/o/r/releases/latest" in out
     assert "codingame-tools/3.1/" in out
+
+
+def test_pypi_sidebar_documents_this_version_too() -> None:
+    """`[project.urls] Documentation` is the "Documentation" link in PyPI's sidebar.
+
+       It has the same job as the README's links and the same failure mode -- it used to point at
+       `blob/main/doc/index.md`, i.e. raw Markdown on GitHub for whatever main says today, from the
+       page of a version released months earlier."""
+    pyproject = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    match = re.search(r'^Documentation = "([^"]+)"', pyproject, re.MULTILINE)
+    assert match, "pyproject.toml declares no Documentation URL"
+    url = match.group(1)
+    assert "github.io" in url, f"Documentation URL is not the rendered site: {url}"
+    assert not url.endswith(".md"), f"Documentation URL points at raw Markdown: {url}"
+
+    # Same alias the README uses: both describe the copy of the project they ship with.
+    readme_aliases = set(re.findall(r"github\.io/codingame-tools/([^/\s)]+)/",
+                                    (REPO_ROOT / "README.md").read_text(encoding="utf-8")))
+    assert re.search(r"github\.io/codingame-tools/([^/\s\"]+)/", url).group(1) in readme_aliases
+
+
+def test_a_release_pins_the_pypi_sidebar_link(tmp_path: Path) -> None:
+    """The release scripts pin pyproject.toml as well as README.md; verify the mechanism they call.
+
+       An rc is deliberately left alone: it ships the `dev` code, so `dev` docs are the honest
+       target, and its own series is not published yet."""
+    target = tmp_path / "pyproject.toml"
+    target.write_text((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8")
+
+    assert pin_docs_version_in_file(target, "v2.0.1") is True
+    assert "/codingame-tools/2.0/" in target.read_text(encoding="utf-8")
+    assert "/codingame-tools/dev/" not in target.read_text(encoding="utf-8")
+
+    target.write_text((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8")
+    assert pin_docs_version_in_file(target, "v2.0.1-rc.1") is False
+    assert "/codingame-tools/dev/" in target.read_text(encoding="utf-8")
+
+
+def test_both_release_scripts_pin_the_project_urls() -> None:
+    """Guard against the two release paths drifting apart -- cut-prod is the one that reaches PyPI,
+       and it would be easy to add this to cut-rc alone and never notice."""
+    for script in ("bin/cut-rc", "bin/cut-prod"):
+        text = (REPO_ROOT / script).read_text(encoding="utf-8")
+        assert "--pin-docs" in text, f"{script} does not pin pyproject.toml's documentation URL"
+        assert "pyproject.toml" in text

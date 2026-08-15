@@ -9,17 +9,25 @@ schema modules and 19 service modules; concatenated they would be unreadable, an
 importantly--every cross-reference would land on the same page, so `autorefs` links would stop
 telling you where a symbol lives.
 
-The counterpart to the CLI reference under `doc/cli/reference/`, which is generated *ahead* of time
-and committed because it has to be readable on GitHub. This one is not: it exists to be
-cross-linked, which only works once mkdocstrings and autorefs have resolved 643 references that are
-plain backticked text in the source.
+The counterpart to the CLI command reference (scripts/gen_cli_pages.py), which is generated the same
+way and for the same reason: neither has a committed copy, so neither can drift from the code it
+describes. This one could not be committed usefully anyway -- it exists to be cross-linked, and that
+only works once mkdocstrings and autorefs have resolved 643 references that are plain backticked
+text in the source.
 """
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import mkdocs_gen_files
+
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from api_nav import nav_label  # noqa: E402  (needs the path fix above)
 
 PACKAGE = "codingame_tools"
 
@@ -110,9 +118,13 @@ with mkdocs_gen_files.open(overview, "w") as fd:
 nav[("Overview",)] = overview.relative_to(API_ROOT).as_posix()
 
 for slug, (subdir, title, blurb) in AREAS.items():
+    # Labels are relative to the area's own package -- see nav_label() for why full dotted paths
+    # are unusable in Material's sidebar.
+    prefix = f"{PACKAGE}.{subdir.replace('/', '.')}"
+
     for source in _modules_under(subdir):
         module = _module_path(source)
-        leaf = module.split(".")[-1] if not module.endswith(PACKAGE) else "index"
+        label = nav_label(module, prefix)
         page = API_ROOT / slug / f"{module}.md"
 
         with mkdocs_gen_files.open(page, "w") as fd:
@@ -121,7 +133,7 @@ for slug, (subdir, title, blurb) in AREAS.items():
         # Relative to SUMMARY.md's own directory. `nav_file: SUMMARY.md` scopes literate-nav to
         # the directory it sits in, so these agree with how mkdocs resolves the file's links --
         # a docs-root-relative path satisfies the nav but makes the link checker look for api/api/.
-        nav[(title, module)] = page.relative_to(API_ROOT).as_posix()
+        nav[(title, label)] = page.relative_to(API_ROOT).as_posix()
 
     index = API_ROOT / slug / "index.md"
     with mkdocs_gen_files.open(index, "w") as fd:

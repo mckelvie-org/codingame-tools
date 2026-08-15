@@ -7,7 +7,14 @@ directory for your version, or, in a source checkout, that tree's own docs inste
 from __future__ import annotations
 
 from .browser import open_window_and_wait
-from .local import LocalDocsError, LocalDocsServer, start_local_docs, wait_until_serving
+from .local import (
+    LocalDocsError,
+    LocalDocsMode,
+    LocalDocsServer,
+    docs_cache_dir,
+    start_local_docs,
+    wait_until_serving,
+)
 from .site import (
     DEV_ALIAS,
     DOCS_SITE_ROOT,
@@ -22,8 +29,10 @@ __all__ = [
     "DOCS_SITE_ROOT",
     "LATEST_ALIAS",
     "LocalDocsError",
+    "LocalDocsMode",
     "LocalDocsServer",
     "docs_alias_for_version",
+    "docs_cache_dir",
     "find_source_checkout",
     "open_window_and_wait",
     "published_docs_url",

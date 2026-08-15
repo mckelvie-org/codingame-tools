@@ -54,7 +54,8 @@ def _install_signal_handlers() -> None:
 
 async def _run(host: str, port: int | None, *, app_window: bool = True, quick: bool = False) -> int:
     try:
-        server = start_local_docs(REPO_ROOT, host=host, port=port, rebuild=not quick)
+        server = start_local_docs(REPO_ROOT, host=host, port=port,
+                                  mode="existing" if quick else "watch")
     except LocalDocsError as e:
         print(f"{e}", file=sys.stderr)
         return 2

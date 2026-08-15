@@ -247,6 +247,12 @@ PY
 pdm run python "$TMP/scripts/rewrite_readme_links.py" \
     "$TMP/README.md" "$GITHUB_REPO" "v$PROD_VERSION" "$TMP"
 
+# Same pinning for pyproject.toml's [project.urls], which become the link sidebar on the PyPI page.
+# Those URLs are already absolute, so the rewrite above leaves them alone -- but a released version
+# whose "Documentation" link points at `dev` would send readers to docs for unreleased work.
+pdm run python "$TMP/scripts/rewrite_readme_links.py" \
+    --pin-docs "$TMP/pyproject.toml" "v$PROD_VERSION"
+
 git -C "$TMP" add pyproject.toml CHANGELOG.md README.md
 git -C "$TMP" commit -m "chore: release $PROD_VERSION"
 PROD_SHA=$(git -C "$TMP" rev-parse HEAD)

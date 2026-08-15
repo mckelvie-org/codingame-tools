@@ -1,22 +1,18 @@
 #!/usr/bin/env bash
 # Usage: gen-docs [--serve]
 #
-# Regenerate everything this project generates for its documentation:
+# Build the documentation site into site/ (never committed; CI deploys it).
 #
-#   1. the CLI command reference under doc/cli/reference/  (committed -- see bin/gen-cli-reference)
-#   2. the documentation site under site/                  (never committed; CI deploys it)
+# Everything generated is generated *during* the build and lives only inside it: the API reference
+# from the source (scripts/gen_api_pages.py) and the CLI command reference from the argparse tree
+# (scripts/gen_cli_pages.py). Neither has a committed copy, so neither can drift from the code it
+# describes -- there is nothing to regenerate by hand, and nothing to forget to regenerate.
 #
-# The two are generated differently on purpose. The CLI reference is committed markdown, because
-# README links people straight at it on GitHub and there is no build step for a reader to run. The
-# site's API reference is not: it exists to be cross-linked, and several hundred references inside
-# the docstrings only become links once mkdocstrings and autorefs have resolved them. So it is built
-# from the source being released rather than from a checked-in copy that could go stale.
+# Runs with --strict, so an unresolved cross-reference fails here exactly as it does in CI, rather
+# than being discovered after a deploy.
 #
-# Step 2 runs with --strict, so an unresolved cross-reference fails here exactly as it does in CI,
-# rather than being discovered after a deploy.
-#
-# With --serve, step 2 becomes a live-reloading local server instead of a one-shot build; use it
-# when writing docs. Step 1 still runs first, so the served site includes a current CLI reference.
+# With --serve, runs a live-reloading local server instead of a one-shot build; use it when writing
+# docs. For a browser window whose lifetime is the server's, use bin/docs instead.
 set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -29,9 +25,6 @@ for arg in "$@"; do
         *) echo "gen-docs: unrecognized argument: $arg" >&2; exit 2 ;;
     esac
 done
-
-echo "==> CLI command reference (doc/cli/reference/)" >&2
-pdm run gen-cli-reference >&2
 
 if [ "$SERVE" = true ]; then
     echo "==> Serving the documentation site (Ctrl-C to stop)" >&2

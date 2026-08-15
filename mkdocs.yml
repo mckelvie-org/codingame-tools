@@ -31,7 +31,7 @@ plugins:
   # committed, unlike the CLI reference: it exists to be cross-linked, and the links only resolve
   # once mkdocstrings and autorefs have run.
   - gen-files:
-      scripts: [scripts/gen_api_pages.py]
+      scripts: [scripts/gen_api_pages.py, scripts/gen_cli_pages.py]
   - literate-nav:
       nav_file: SUMMARY.md
   # autorefs resolves `[Thing][]` and mkdocstrings' own cross-references across pages, which is the
@@ -87,6 +87,9 @@ nav:
       - What CodinGame runs: design/codingame-runtime.md
       - Toolchain images: design/toolchain-images.md
       - Documentation toolchain: design/docs-toolchain.md
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - admonition

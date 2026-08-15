@@ -61,6 +61,7 @@ from ..credentials.cg_credentials import (
 )
 from ..docs import (
     LocalDocsError,
+    docs_cache_dir,
     find_source_checkout,
     open_window_and_wait,
     published_docs_url,
@@ -852,7 +853,11 @@ class CgCli(CliBase):
             # exists: they describe the code in front of you, not the code that was last released.
             self.logger.debug(f"Serving documentation from the source checkout at {checkout}")
             try:
-                server = start_local_docs(checkout, rebuild=rebuild)
+                # The cache, never the checkout: `cg doc` is something a user runs, not
+                # a contributor tool operating on a tree they are working in.
+                server = start_local_docs(
+                        checkout, mode="build" if rebuild else "existing",
+                        output=docs_cache_dir(checkout))
             except LocalDocsError as e:
                 raise CliError(f"cannot serve local documentation: {e}") from e
             try:
@@ -890,9 +895,11 @@ class CgCli(CliBase):
             )
         p.add_argument(
                 "--no-rebuild", default=False, action="store_true",
-                help="In a source checkout, serve the existing site/ build instead of rebuilding "
-                     "first. Much faster to open, but shows the docs as of the last build and does "
-                     "not live-reload. Ignored when using the published site.",
+                help="In a source checkout, serve the existing site/ build instead of building "
+                     "first. Much faster to open, but shows the docs as of the last cg doc run. "
+                     "Both build into and read from a per-user cache directory, never the "
+                     "checkout, so this serves exactly what the previous run showed. Ignored "
+                     "when using the published site.",
             )
         p.add_argument(
                 "--windowed", default=False, action="store_true",

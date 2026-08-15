@@ -51,7 +51,10 @@ dependencies = [
 Homepage = "https://github.com/mckelvie-org/codingame-tools"
 Source = "https://github.com/mckelvie-org/codingame-tools"
 "Bug Tracker" = "https://github.com/mckelvie-org/codingame-tools/issues"
-Documentation = "https://github.com/mckelvie-org/codingame-tools/blob/main/doc/index.md"
+# The rendered site, not the Markdown source -- this is the "Documentation" link in PyPI's sidebar.
+# Tracks `dev` on main and is pinned to the release's own X.Y when a release is cut, the same way
+# README's links are (bin/cut-rc, via scripts/rewrite_readme_links.py --pin-docs).
+Documentation = "https://mckelvie-org.github.io/codingame-tools/dev/"
 Changelog = "https://github.com/mckelvie-org/codingame-tools/blob/main/CHANGELOG.md"
 
 [project.scripts]
@@ -141,7 +144,6 @@ includes = ["codingame_tools"]
 
 [tool.pdm.scripts]
 test = "pytest"
-gen-cli-reference = "python scripts/gen_cli_docs.py"
 # --strict turns an unresolved cross-reference into a build failure. With 643 of them in
 # docstrings, that is the difference between a reference you can trust and one that quietly
 # rots -- so CI runs this, not the lenient build.
