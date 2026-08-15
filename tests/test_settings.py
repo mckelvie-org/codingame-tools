@@ -1,4 +1,4 @@
-"""Unit tests for codingame_tools.settings.cg_settings: CgSettingsData/CgSettings resolution and
+"""Unit tests for codingame_tools.settings: CgSettingsData/CgSettings resolution and
    the defaultProfile fallback chain (settings.json -> config.yaml -> hardcoded "default").
 
 These are pure/local tests--no network--so they run under the default `pdm run test` invocation.
@@ -12,7 +12,7 @@ import pytest
 
 from codingame_tools.config.cg_config import CgConfigData
 from codingame_tools.config.resolver import CgConfig
-from codingame_tools.settings.cg_settings import (
+from codingame_tools.settings import (
     SETTINGS_FILE_NAME,
     CgSettings,
     CgSettingsData,

@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, cast
 
 from json_data_types import JsonData
 
-from ...common.protocol.schema import CgSolutionLanguage
 from ...common.protocol.test_session import CgPlayRequest, CgPlayResult, CgSubmitRequest, CgTestSession
+from ...common.protocol.typedefs import CgSolutionLanguage
 from ..cg_service import CgService, CgServiceHelper
 
 if TYPE_CHECKING:

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from codingame_tools.client.common.protocol.contribution.schema import (
+from codingame_tools.client.common.protocol.contribution import (
     CgContributionStatusChange,
     CgContributionStatusHistoryEntry,
 )

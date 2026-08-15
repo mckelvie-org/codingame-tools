@@ -2,6 +2,22 @@
 
 ## {{UNRELEASED}}
 
+- **Single-module packages are now plain modules.** Nineteen packages consisted of an `__init__.py`
+  that did nothing but re-export a single sibling: the eighteen protocol schemas
+  (`client/common/protocol/vote/schema.py` -> `client/common/protocol/vote.py`) and
+  `settings/cg_settings.py` -> `settings.py`.
+
+  **No import changes for callers.** Every public name was already imported from the package, and
+  that is exactly what the module is now named -- `from codingame_tools.settings import CgSettings`
+  and `from ...protocol.vote import CgVotableValue` are unchanged. Only the inner `.schema` /
+  `.cg_settings` paths are gone, and those were the layer that existed solely to be re-exported.
+  The deliberate cross-package re-exports are preserved intact: `protocol.puzzle` still exports
+  `CgSolutionLanguage` and `CgLastActivityPuzzle` alongside its own dataclasses.
+
+  This also halves the API reference's protocol section, which had been carrying two pages per
+  service -- one for the package listing re-exports, one for the schema defining them -- and
+  shortens every sidebar label by the `.schema` suffix.
+
 - **A documentation site, with a generated API reference.** Published to GitHub Pages and versioned:
   `dev` tracks `main`, and every release gets its own `X.Y` with `latest` following the newest. The
   guides stay in `doc/` as plain Markdown and remain readable on GitHub exactly as before -- the site
@@ -22,11 +38,12 @@
   protocol module rendered as `codingame_tools.client.common`, truncated at 29 characters, exactly
   where the names begin to differ. All 74 entries were indistinguishable.
 
-  Labels are now relative to their area (`achievement.schema`, `clash_of_code_description.schema`),
-  putting the distinguishing part where it survives. Not the bare leaf name: 18 modules are called
-  `schema`. Page headings keep the full path. A small stylesheet lets any label that is still too
-  wide wrap instead of vanishing, so a narrow window degrades to two lines rather than to nothing.
-  Measured before and after in a real browser: 74 of 74 truncated, then 0 of 74.
+  Labels are now relative to their area (`achievement`, `clash_of_code_description`), putting the
+  distinguishing part where it survives. Not the bare leaf name: `language.registry` and
+  `language.toolchain.registry` would both render as `registry`. Page headings keep the full path. A
+  small stylesheet lets any label that is still too wide wrap instead of vanishing, so a narrow
+  window degrades to two lines rather than to nothing. Measured before and after in a real browser:
+  74 of 74 truncated, then 0 of 74.
 
 - **PyPI's "Documentation" sidebar link points at the rendered site.** It pointed at
   `blob/main/doc/index.md` -- raw Markdown, on `main`, from the page of a version released months

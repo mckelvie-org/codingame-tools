@@ -17,10 +17,10 @@ def nav_label(module: str, prefix: str) -> str:
        exactly where they start to differ.
 
        Stripping the area prefix puts the distinguishing part first, where it survives truncation.
-       The bare leaf name would be shorter still and is wrong: 18 modules in this package are called
-       `schema`, and a sidebar of eighteen `schema` entries is no better than eighteen identical
-       prefixes. The area's own package module keeps its last segment, having nothing left after the
-       prefix is removed."""
+       The bare leaf name would be shorter still and is wrong: `language.registry` and
+       `language.toolchain.registry` would both render as `registry`, which is no better than a
+       column of identical prefixes. The area's own package module keeps its last segment, having
+       nothing left after the prefix is removed."""
     if module.startswith(f"{prefix}."):
         return module[len(prefix) + 1:]
     return module.rsplit(".", 1)[-1]

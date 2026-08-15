@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ..client.common.protocol.schema import CgSolutionLanguage
+from ..client.common.protocol.typedefs import CgSolutionLanguage
 from ..common.dataclass_wizard_x import CatchAll, JSONWizardX
 
 __all__ = [

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from ...common.protocol.schema import CgSolutionLanguage
+from ...common.protocol.typedefs import CgSolutionLanguage
 from ..cg_service import CgService, CgServiceHelper
 
 if TYPE_CHECKING:

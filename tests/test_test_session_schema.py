@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from codingame_tools.client.common.protocol.test_session.schema import CgTestSessionQuestionDetails
+from codingame_tools.client.common.protocol.test_session import CgTestSessionQuestionDetails
 
 
 def _question_payload(**overrides: Any) -> dict[str, Any]:

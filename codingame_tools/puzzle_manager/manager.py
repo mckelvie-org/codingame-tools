@@ -61,13 +61,13 @@ from pathlib import Path
 from ..client.client import CgClient
 from ..client.common.protocol.last_activities import CgLastActivityPuzzle
 from ..client.common.protocol.report import CgSubmissionReport
-from ..client.common.protocol.schema import CgSolutionLanguage
 from ..client.common.protocol.test_session import (
     CgMultipleLanguagesTestParams,
     CgPlayRequest,
     CgPlayResult,
     CgSubmitRequest,
 )
+from ..client.common.protocol.typedefs import CgSolutionLanguage
 from ..client.common.raw_client import CgClientHttpError
 from ..common.text_files import file_to_server_text, server_text_to_file
 from ..config.resolver import default_global_data_dir

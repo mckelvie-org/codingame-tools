@@ -14,7 +14,7 @@ import pytest
 from codingame_tools.client.common.raw_client import CgRawClient
 from codingame_tools.config.cg_config import CgConfigData
 from codingame_tools.config.resolver import CgConfig
-from codingame_tools.settings.cg_settings import CgSettings, CgSettingsData
+from codingame_tools.settings import CgSettings, CgSettingsData
 
 
 @pytest.fixture(autouse=True)

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, cast
 
 from json_data_types import JsonDict
 
-from ...common.protocol.search.schema import CgSearchResult, CgSearchResultType
+from ...common.protocol.search import CgSearchResult, CgSearchResultType
 from ..cg_service import CgService, CgServiceHelper
 
 if TYPE_CHECKING:

@@ -93,7 +93,7 @@ from ..client.common.protocol.contribution import (
     CgPuzzleType,
     CgTestCase,
 )
-from ..client.common.protocol.schema import CgSolutionLanguage
+from ..client.common.protocol.typedefs import CgSolutionLanguage
 from ..client.common.raw_client import compute_content_hash
 from ..common.dataclass_wizard_x import CgEpochMillis
 from ..common.text_files import file_to_server_text, server_text_to_file
