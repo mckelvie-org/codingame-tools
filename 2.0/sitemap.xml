@@ -225,15 +225,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.achievement.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.clash_of_code/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.clash_of_code.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -241,15 +233,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.clash_of_code_description.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.codingamer/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.codingamer.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -257,15 +241,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.codingamer_puzzle_topic.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.contribution/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.contribution.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -273,15 +249,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.featured_event.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.last_activities/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.last_activities.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -293,15 +261,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.notification.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.puzzle/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.puzzle.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -309,19 +269,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.quest.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.report/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.report.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -329,15 +277,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.search.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.survey/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.survey.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -345,15 +285,11 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.test_session.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.test_session_question_submission/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.test_session_question_submission.schema/</loc>
+         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.typedefs/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
@@ -361,15 +297,7 @@
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.user.schema/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
          <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.vote/</loc>
-         <lastmod>2026-08-15</lastmod>
-    </url>
-    <url>
-         <loc>https://mckelvie-org.github.io/codingame-tools/2.0/api/protocol/codingame_tools.client.common.protocol.vote.schema/</loc>
          <lastmod>2026-08-15</lastmod>
     </url>
     <url>
