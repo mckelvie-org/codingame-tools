@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## {{UNRELEASED}}
+## 2.0.3 (2026-08-15)
 
 - **Single-module packages are now plain modules.** Nineteen packages consisted of an `__init__.py`
   that did nothing but re-export a single sibling: the eighteen protocol schemas
