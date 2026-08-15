@@ -157,12 +157,32 @@ def test_the_readme_documents_this_version_not_a_moving_one() -> None:
         f"documentation links point at an unexpected alias: {site_links[0]!r}"
 
 
+_MOVING_LINKS = (
+    "[docs](https://mckelvie-org.github.io/codingame-tools/dev/)\n"
+    "[api](https://mckelvie-org.github.io/codingame-tools/dev/api/)\n"
+    "[latest](https://mckelvie-org.github.io/codingame-tools/latest/)\n"
+)
+"""Synthetic, *not* the real README.
+
+   These assert what pinning does to a moving alias, and the real README only has one on `main`:
+   from a release commit `bin/cut-rc` has already pinned it, so there would be nothing left to
+   rewrite and the assertions would describe the fixture rather than the mechanism. Worse, a literal
+   expected series passes for the release that happens to match and fails at the next one."""
+
+
 def test_a_release_pins_every_documentation_link() -> None:
     """Cutting a release must leave no moving alias behind, `dev` or `latest`."""
-    pinned = pin_docs_version((REPO_ROOT / "README.md").read_text(encoding="utf-8"), "v2.0.1")
+    pinned = pin_docs_version(_MOVING_LINKS, "v2.0.1")
     assert "/codingame-tools/dev/" not in pinned
     assert "/codingame-tools/latest/" not in pinned
-    assert "/codingame-tools/2.0/" in pinned
+    assert pinned.count("/codingame-tools/2.0/") == 3
+
+
+def test_pinning_is_series_wide_not_tied_to_one_release() -> None:
+    """The bug this guards: asserting a hardcoded series passes for 2.0.x and fails when 2.1.0 is
+       cut, in the release pipeline, after the tag is pushed."""
+    assert "/codingame-tools/2.1/" in pin_docs_version(_MOVING_LINKS, "v2.1.0")
+    assert "/codingame-tools/10.4/" in pin_docs_version(_MOVING_LINKS, "v10.4.11")
 
 
 def test_the_guides_are_linked_as_rendered_pages_not_raw_markdown() -> None:
@@ -266,17 +286,33 @@ def test_a_release_pins_the_pypi_sidebar_link(tmp_path: Path) -> None:
     """The release scripts pin pyproject.toml as well as README.md; verify the mechanism they call.
 
        An rc is deliberately left alone: it ships the `dev` code, so `dev` docs are the honest
-       target, and its own series is not published yet."""
-    target = tmp_path / "pyproject.toml"
-    target.write_text((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8")
+       target, and its own series is not published yet.
 
+       Synthetic content rather than the repo's own pyproject.toml, because `bin/cut-prod` runs this
+       suite from the release worktree where `bin/cut-rc` has *already* pinned that file. Reading it
+       there left nothing to rewrite, so the mechanism reported "no change" -- correctly -- and an
+       earlier version of this test asserted that change had happened. It failed the production
+       release, after the rc was tagged and pushed."""
+    target = tmp_path / "pyproject.toml"
+    original = 'Documentation = "https://mckelvie-org.github.io/codingame-tools/dev/"\n'
+
+    target.write_text(original, encoding="utf-8")
     assert pin_docs_version_in_file(target, "v2.0.1") is True
     assert "/codingame-tools/2.0/" in target.read_text(encoding="utf-8")
     assert "/codingame-tools/dev/" not in target.read_text(encoding="utf-8")
 
-    target.write_text((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8")
+    target.write_text(original, encoding="utf-8")
     assert pin_docs_version_in_file(target, "v2.0.1-rc.1") is False
-    assert "/codingame-tools/dev/" in target.read_text(encoding="utf-8")
+    assert target.read_text(encoding="utf-8") == original
+
+
+def test_pinning_an_already_pinned_file_is_a_no_op(tmp_path: Path) -> None:
+    """Which is the state `bin/cut-prod` finds, and must not treat as an error."""
+    target = tmp_path / "pyproject.toml"
+    pinned = 'Documentation = "https://mckelvie-org.github.io/codingame-tools/2.0/"\n'
+    target.write_text(pinned, encoding="utf-8")
+    assert pin_docs_version_in_file(target, "v2.0.1") is False
+    assert target.read_text(encoding="utf-8") == pinned
 
 
 def test_both_release_scripts_pin_the_project_urls() -> None:
