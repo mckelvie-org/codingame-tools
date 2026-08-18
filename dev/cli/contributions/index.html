@@ -517,6 +517,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#title-difficulty-and-the-publish-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Title, difficulty and the publish flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Topics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#validate-before-you-push" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1566,6 +1588,34 @@
     
   
     Test session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
   
 
     
@@ -3489,6 +3539,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5757,6 +5835,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#title-difficulty-and-the-publish-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Title, difficulty and the publish flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Topics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#validate-before-you-push" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5931,6 +6031,49 @@ title is co-located under one directory, with <code>local/</code> and <code>vali
 Tidy them up afterwards with:</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>renormalize-tests
 </code></pre></div>
+<h2 id="title-difficulty-and-the-publish-flags">Title, difficulty and the publish flags<a class="headerlink" href="#title-difficulty-and-the-publish-flags" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w">                          </span><span class="c1"># every field and its current value</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>title<span class="w"> </span><span class="s2">&quot;Simple Makefiles&quot;</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>difficulty<span class="w"> </span>medium<span class="w">        </span><span class="c1"># easy | medium | hard</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>draft<span class="w"> </span><span class="nb">false</span><span class="w">              </span><span class="c1"># true/false, yes/no, on/off, 1/0</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>ready-for-moderation<span class="w"> </span><span class="nb">true</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>title<span class="w">                    </span><span class="c1"># print one value, for $(...)</span>
+</code></pre></div>
+<p>Purely local, like everything under <code>data/</code> — nothing reaches the server until the next <code>push</code>.</p>
+<p>Each field is its own subcommand, so it documents what it accepts and the parser enforces it:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>difficulty<span class="w"> </span>--help<span class="w">    </span><span class="c1"># One of: easy, medium, hard</span>
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>draft<span class="w"> </span>--help<span class="w">         </span><span class="c1"># Accepts true/false, yes/no, on/off, 1/0</span>
+</code></pre></div>
+<p><code>draft</code> and <code>ready-for-moderation</code> decide whether a push publishes: a draft stays private, and
+moderation only starts once you mark it ready. <code>puzzle-type</code> accepts only <code>PUZZLE_INOUT</code>, the one
+contribution type this tool can author.</p>
+<p><code>solution-language</code> is in the same list, but setting it does more than write a field — see
+<a href="#changing-language">changing language</a>.</p>
+<h2 id="topics">Topics<a class="headerlink" href="#topics" title="Permanent link">&para;</a></h2>
+<p>Topics are what solvers browse by. Search the catalogue, then tag:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>topics<span class="w">                        </span><span class="c1"># all of them, tabular</span>
+cg<span class="w"> </span>topics<span class="w"> </span>graph<span class="w">                  </span><span class="c1"># search handles and labels</span>
+cg<span class="w"> </span>topics<span class="w"> </span>-c<span class="w"> </span>ADVANCED<span class="w">            </span><span class="c1"># one category</span>
+
+cg<span class="w"> </span>contribution<span class="w"> </span>topic<span class="w"> </span>add<span class="w"> </span>graphs<span class="w"> </span><span class="s2">&quot;Hash tables&quot;</span><span class="w"> </span><span class="m">171</span>
+cg<span class="w"> </span>contribution<span class="w"> </span>topic<span class="w"> </span>remove<span class="w"> </span>DFS
+cg<span class="w"> </span>contribution<span class="w"> </span>topic<span class="w">            </span><span class="c1"># what this contribution carries</span>
+</code></pre></div>
+<p><code>add</code> takes a handle, a numeric id, or a display label — whichever you have in front of you. Topics
+carry a label per CodinGame UI language, so the French label works too (<code>Ensembles</code> finds <code>sets</code>).
+An unambiguous fragment is enough; anything matching more than one topic is refused, and lists the
+candidates:</p>
+<div class="highlight"><pre><span></span><code>$ cg contribution topic add graph
+&#39;graph&#39; matches 5 topics:
+    cryptology  (id 74)  Cryptography
+    dependency-graph  (id 171)  Dependency Graph
+    graph-theory  (id 100)  Graph theory
+    graph-traversal  (id 150)  graph traversal
+    graphs  (id 48)  Graphs
+Error: &#39;graph&#39; is ambiguous--use one of the handles above, or its id.
+</code></pre></div>
+<p>The catalogue is cached per user for a week; <code>cg topics --refresh</code> refetches it. <code>remove</code> matches
+against the topics you already have, so it needs no network at all.</p>
 <h2 id="validate-before-you-push">Validate before you push<a class="headerlink" href="#validate-before-you-push" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>play<span class="w">          </span><span class="c1"># run the reference solution against every local test case</span>
 cg<span class="w"> </span>contribution<span class="w"> </span>play<span class="w"> </span><span class="m">2</span><span class="w">        </span><span class="c1"># just ordinal 2</span>
@@ -5980,7 +6123,7 @@ cg<span class="w"> </span>contribution<span class="w"> </span>merge<span class="
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>discard-local<span class="w">    </span><span class="c1"># give up on local edits, match the server exactly</span>
 </code></pre></div>
 <h2 id="changing-language">Changing language<a class="headerlink" href="#changing-language" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>set-language<span class="w"> </span>C++
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>solution-language<span class="w"> </span>C++
 </code></pre></div>
 <p><strong>Destructive</strong> — a contribution has one solution and no per-language memory, so this replaces it
 with a starter stub and there's nothing to switch back to. It refuses unless the current solution is

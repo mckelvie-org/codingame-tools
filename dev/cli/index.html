@@ -1492,6 +1492,34 @@
   
   
     <li class="md-nav__item">
+      <a href="reference/api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="reference/api/user/" class="md-nav__link">
         
   
@@ -3395,6 +3423,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/services/codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5716,6 +5772,10 @@ experiment.</p>
 <td>Configuration you edit, and state the app remembers.</td>
 </tr>
 <tr>
+<td><a href="reference/top-level/"><code>cg topics</code></a></td>
+<td>Search the catalogue of puzzle topics a contribution can be tagged with.</td>
+</tr>
+<tr>
 <td><a href="reference/docker/"><code>cg docker</code></a></td>
 <td>Manage the container toolchain image and the containers built from it.</td>
 </tr>
@@ -5780,8 +5840,10 @@ cg<span class="w"> </span>--json<span class="w"> </span>puzzle<span class="w"> <
 <p>Worth knowing, because several are irreversible:</p>
 <ul>
 <li><strong>Entirely local, always:</strong> <code>play</code>, <code>build</code>, <code>description</code>, <code>where</code>, <code>status</code> (without
-  <code>--refresh</code>), and the whole merge state machine.</li>
-<li><strong>Reads only:</strong> <code>import</code>, <code>repair</code>, <code>diff</code>, <code>fetch</code>, <code>status --refresh</code>.</li>
+  <code>--refresh</code>), <code>cg contribution set</code>, <code>cg contribution topic remove</code>, and the whole merge
+  state machine.</li>
+<li><strong>Reads only:</strong> <code>import</code>, <code>repair</code>, <code>diff</code>, <code>fetch</code>, <code>status --refresh</code>, <code>cg topics</code>, and
+  <code>cg contribution topic add</code> (which needs the topic catalogue).</li>
 <li><strong>Writes something real:</strong> <code>cg puzzle submit</code> (a permanent graded submission),
   <code>cg contribution push</code> (updates published content), <code>cg contribution delete</code> (unrecoverable), and
   <code>cg puzzle play-server</code> — which durably overwrites your saved code on the server as a side effect

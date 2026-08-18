@@ -1399,6 +1399,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../cli/reference/api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../cli/reference/api/user/" class="md-nav__link">
         
   
@@ -3398,6 +3426,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5748,11 +5804,7 @@ For example, to find a codingamer's points stats by their handle:</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>codingame_tools/client/service/cg_services.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
@@ -5769,7 +5821,12 @@ For example, to find a codingamer's points stats by their handle:</p>
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
-<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">CgClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">CgClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">achievement</span> <span class="o">=</span> <span class="n">CgAchievementService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">clash_of_code</span> <span class="o">=</span> <span class="n">CgClashOfCodeService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
@@ -5787,6 +5844,7 @@ For example, to find a codingamer's points stats by their handle:</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">report</span> <span class="o">=</span> <span class="n">CgReportService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">search</span> <span class="o">=</span> <span class="n">CgSearchService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">=</span> <span class="n">CgSurveyService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">topic</span> <span class="o">=</span> <span class="n">CgTopicService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">test_session</span> <span class="o">=</span> <span class="n">CgTestSessionService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">test_session_question_submission</span> <span class="o">=</span> <span class="n">CgTestSessionQuestionSubmissionService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">CgUserService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>

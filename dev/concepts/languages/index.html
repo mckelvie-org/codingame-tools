@@ -1399,6 +1399,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../cli/reference/api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../cli/reference/api/user/" class="md-nav__link">
         
   
@@ -3406,6 +3434,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5702,19 +5758,19 @@
 <p>A working directory has exactly one language at a time, recorded alongside its content and reflected
 in the solution file's own extension — <code>data/solution.py</code>, <code>data/solution.cpp</code>, and so on. Switching
 language renames the file.</p>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>set-language<span class="w"> </span>C++
-cg<span class="w"> </span>contribution<span class="w"> </span>set-language<span class="w"> </span>Python3
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span><span class="nb">set</span><span class="w"> </span>solution-language<span class="w"> </span>C++
+cg<span class="w"> </span>contribution<span class="w"> </span><span class="nb">set</span><span class="w"> </span>solution-language<span class="w"> </span>Python3
 </code></pre></div>
 <h2 id="puzzles-remember-every-language-youve-used">Puzzles remember every language you've used<a class="headerlink" href="#puzzles-remember-every-language-youve-used" title="Permanent link">&para;</a></h2>
 <p>CodinGame stores your most recent source <strong>per language</strong> for a puzzle. So switching a puzzle's
 language is reversible: anything you previously wrote in the target language comes back, and a
 language you've never used gets a placeholder.</p>
-<p><code>cg puzzle set-language</code> refuses if the solution holds work the server doesn't have — submit
+<p><code>cg puzzle set solution-language</code> refuses if the solution holds work the server doesn't have — submit
 it first, or pass <code>--force</code> to discard it. It needs the network even though it only changes local
 state, because restoring your previous code means fetching it.</p>
 <h2 id="contributions-remember-exactly-one">Contributions remember exactly one<a class="headerlink" href="#contributions-remember-exactly-one" title="Permanent link">&para;</a></h2>
 <p>A contribution stores a single reference solution with no per-language history. So
-<code>cg contribution set-language</code> is <strong>destructive by design</strong>: it replaces the solution with a starter
+<code>cg contribution set solution-language</code> is <strong>destructive by design</strong>: it replaces the solution with a starter
 stub, and the next <code>cg contribution push</code> overwrites the last durable copy. There is nothing to
 switch back to. It refuses unless the current solution is still the stub <code>cg</code> generated, and
 <code>--force</code> is required to discard real work — save it somewhere outside the working directory first.</p>

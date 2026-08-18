@@ -1399,6 +1399,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../cli/reference/api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../cli/reference/api/user/" class="md-nav__link">
         
   
@@ -3943,6 +3971,45 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codingame_tools.client.service.services.CgTopicService" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CgTopicService
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CgTopicService">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.client.service.services.CgTopicService.get_all_children_topics_with_puzzle_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_all_children_topics_with_puzzle_count
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.client.service.services.CgTopicServiceHelper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CgTopicServiceHelper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codingame_tools.client.service.services.CgUserService" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4525,6 +4592,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -7825,6 +7920,45 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CgTestSessionQuestionSubmissionServiceHelper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.client.service.services.CgTopicService" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CgTopicService
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CgTopicService">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.client.service.services.CgTopicService.get_all_children_topics_with_puzzle_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_all_children_topics_with_puzzle_count
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.client.service.services.CgTopicServiceHelper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CgTopicServiceHelper
       
     </span>
   </a>
@@ -18324,6 +18458,238 @@ if the status code is not 2xx, or if the decoded content is not a list.</p>
 
 
         <p>Helper methods for CgTestSessionQuestionSubmissionService. Currently empty.</p>
+
+
+
+
+
+
+
+
+                  <details class="mkdocstrings-source">
+                    <summary>Source code in <code>codingame_tools/client/service/cg_service.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+<span class="normal">125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="n">TService</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">service</span> <span class="o">=</span> <span class="n">service</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="codingame_tools.client.service.services.CgTopicService" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CgTopicService</span>
+
+
+<a href="#codingame_tools.client.service.services.CgTopicService" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CgTopicService</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            CgService (codingame_tools.client.service.cg_service.CgService)" href="../codingame_tools.client.service.cg_service/#codingame_tools.client.service.cg_service.CgService">CgService</a></code></p>
+
+
+
+        <p>Async Topic service endpoint.</p>
+
+
+
+
+
+
+
+
+                  <details class="mkdocstrings-source">
+                    <summary>Source code in <code>codingame_tools/client/service/services/topic.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">CgClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s2">&quot;Topic&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span> <span class="o">=</span> <span class="n">CgTopicServiceHelper</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="codingame_tools.client.service.services.CgTopicService.get_all_children_topics_with_puzzle_count" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get_all_children_topics_with_puzzle_count</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#codingame_tools.client.service.services.CgTopicService.get_all_children_topics_with_puzzle_count" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_all_children_topics_with_puzzle_count</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The full catalogue of puzzle topics a contribution can be tagged with, each with the
+   number of published puzzles currently carrying it.</p>
+<p>"Children" topics are the leaves an author actually picks--<code>parent_topic_id</code> names the
+   grouping they hang off, and no parent appears in the list itself.</p>
+<p>Returns the same <code>CgTopic</code> shape that <code>findContribution</code> reports under a contribution's
+   own <code>topics</code>, which is what makes tagging a contribution a copy rather than a
+   translation: 135 topics as of 2026-08, every one carrying <code>id</code>, <code>handle</code>, <code>category</code>,
+   <code>label_map</code> and <code>puzzle_count</code>. Only <code>puzzle_count</code> drifts between this catalogue and a
+   topic already stored on a contribution, since it counts the live puzzle population.</p>
+<p>Takes no arguments and needs no authentication.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            CgTopic
+
+
+  
+      dataclass
+   (codingame_tools.client.common.protocol.contribution.CgTopic)" href="../../protocol/codingame_tools.client.common.protocol.contribution/#codingame_tools.client.common.protocol.contribution.CgTopic">CgTopic</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Every selectable topic, in the server's own order.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="CgClientHttpError">CgClientHttpError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>If a transport error occurs, if the response content could not be decoded at all,
+if the status code is not 2xx, or if the decoded content is not a list.</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>codingame_tools/client/service/services/topic.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_all_children_topics_with_puzzle_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CgTopic</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The full catalogue of puzzle topics a contribution can be tagged with, each with the</span>
+<span class="sd">       number of published puzzles currently carrying it.</span>
+
+<span class="sd">       &quot;Children&quot; topics are the leaves an author actually picks--`parent_topic_id` names the</span>
+<span class="sd">       grouping they hang off, and no parent appears in the list itself.</span>
+
+<span class="sd">       Returns the same `CgTopic` shape that `findContribution` reports under a contribution&#39;s</span>
+<span class="sd">       own `topics`, which is what makes tagging a contribution a copy rather than a</span>
+<span class="sd">       translation: 135 topics as of 2026-08, every one carrying `id`, `handle`, `category`,</span>
+<span class="sd">       `label_map` and `puzzle_count`. Only `puzzle_count` drifts between this catalogue and a</span>
+<span class="sd">       topic already stored on a contribution, since it counts the live puzzle population.</span>
+
+<span class="sd">       Takes no arguments and needs no authentication.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Every selectable topic, in the server&#39;s own order.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        CgClientHttpError:</span>
+<span class="sd">            If a transport error occurs, if the response content could not be decoded at all,</span>
+<span class="sd">            if the status code is not 2xx, or if the decoded content is not a list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw_topics</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_request_to_list</span><span class="p">(</span>
+            <span class="s2">&quot;getAllChildrenTopicsWithPuzzleCount&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">return</span> <span class="n">CgTopic</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="nb">list</span><span class="p">[</span><span class="n">JsonDict</span><span class="p">],</span> <span class="n">raw_topics</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="codingame_tools.client.service.services.CgTopicServiceHelper" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CgTopicServiceHelper</span>
+
+
+<a href="#codingame_tools.client.service.services.CgTopicServiceHelper" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CgTopicServiceHelper</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            CgServiceHelper (codingame_tools.client.service.cg_service.CgServiceHelper)" href="../codingame_tools.client.service.cg_service/#codingame_tools.client.service.cg_service.CgServiceHelper">CgServiceHelper</a>[&#39;CgTopicService&#39;]</code></p>
+
+
+
+        <p>Helper methods for CgTopicService. Currently empty.</p>
 
 
 

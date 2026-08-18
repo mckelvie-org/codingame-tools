@@ -951,6 +951,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cg-topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg topics
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1584,6 +1595,34 @@
     
   
     Test session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
   
 
     
@@ -3507,6 +3546,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/services/codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5878,6 +5945,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cg-topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg topics
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5968,6 +6046,10 @@
 <td><a href="#cg-contributions"><code>cg contributions</code></a></td>
 <td>List server-side contributions, one line each: handle, id, status, puzzle type, title.</td>
 </tr>
+<tr>
+<td><a href="#cg-topics"><code>cg topics</code></a></td>
+<td>List or search the catalogue of puzzle topics a contribution can be tagged with (Topic/getAllChildrenTopicsWithPuzzleCount).</td>
+</tr>
 </tbody>
 </table>
 <h2 id="cg"><code>cg</code><a class="headerlink" href="#cg" title="Permanent link">&para;</a></h2>
@@ -6003,6 +6085,7 @@
 <li><a href="#cg-vscode"><strong><code>vscode</code></strong></a> — Editor integration for VS Code. All-or-nothing opt-in: nothing here is written unless you ask for it, and what is written is confined to entries cg names as its own.</li>
 <li><a href="#cg-debug"><strong><code>debug</code></strong></a> — Debug-session commands that work in any working directory, puzzle or contribution. The kind-agnostic counterparts of <code>cg puzzle debug</code> / <code>cg contribution debug</code>, taking a file instead of a directory and a test selection instead of a test argument--which is what lets one static VS Code launch configuration per language serve a whole workspace.</li>
 <li><a href="#cg-contributions"><strong><code>contributions</code></strong></a> — List server-side contributions, one line each: handle, id, status, puzzle type, title. By default lists every author's pending contributions from the community review queue (Contribution/getAllPendingContributions); --personal lists only your own, in any status (Contribution/getPersonalContributions). With --json, prints the raw list instead: CgPendingContribution or CgPersonalContribution depending on which was listed -- there is no unified schema between the two.</li>
+<li><a href="#cg-topics"><strong><code>topics</code></strong></a> — List or search the catalogue of puzzle topics a contribution can be tagged with (Topic/getAllChildrenTopicsWithPuzzleCount). With no SEARCH, lists every topic; with one, matches it against handles and display labels, ignoring case. Topics carry a label per CodinGame UI language region, and SEARCH matches any of them, so either the English or the French label finds a topic. The catalogue is global CodinGame data, cached per user for a week; --refresh refetches it. With --json, prints the raw CgTopic list instead of a table.</li>
 <li><a href="../contribution/#cg-contribution"><strong><code>contribution</code></strong></a> — Author and maintain your own CodinGame contributions in a local working directory. data/ is backed by a real git repository, so syncing with the server is a genuine fetch/merge workflow rather than a one-shot overwrite. See <code>cg api contribution</code> and <code>cg api-helper contribution</code> for the raw, stateless API underneath.</li>
 <li><a href="../puzzle/#cg-puzzle"><strong><code>puzzle</code></strong></a> — Solve an existing CodinGame puzzle in a local working directory: import it, edit one file, run its test cases locally, and submit. Currently supports classic PUZZLE_INOUT puzzles.</li>
 <li><a href="../docker/#cg-docker"><strong><code>docker</code></strong></a> — Manage the Docker containers and images cg builds for languages that run in a container. One image carries every language cg can containerize (see <code>cg docker toolchain list</code>); C++ is currently the one with a container-backed build, run and debug path. Nothing here holds anything you authored--see <code>cg docker clean</code>.</li>
@@ -6125,6 +6208,20 @@
 <p><strong>Options</strong></p>
 <ul>
 <li><strong><code>--personal</code></strong> — List only the logged-in codingamer's own contributions (any status), instead of all pending contributions from every author.</li>
+</ul>
+<h2 id="cg-topics"><code>cg topics</code><a class="headerlink" href="#cg-topics" title="Permanent link">&para;</a></h2>
+<p>List or search the catalogue of puzzle topics a contribution can be tagged with (Topic/getAllChildrenTopicsWithPuzzleCount). With no SEARCH, lists every topic; with one, matches it against handles and display labels, ignoring case. Topics carry a label per CodinGame UI language region, and SEARCH matches any of them, so either the English or the French label finds a topic. The catalogue is global CodinGame data, cached per user for a week; --refresh refetches it. With --json, prints the raw CgTopic list instead of a table.</p>
+<div class="highlight"><pre><span></span><code>usage: cg topics [-h] [--category CATEGORY] [--all-labels] [--refresh] [SEARCH]
+</code></pre></div>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><strong><code>[SEARCH]</code></strong> — Match topics whose handle or any display label contains this, ignoring case. Omit to list all of them.</li>
+</ul>
+<p><strong>Options</strong></p>
+<ul>
+<li><strong><code>-c, --category CATEGORY</code></strong> — Only topics in this category, e.g. 'FUNDAMENTALS', 'INTERMEDIATE', 'ADVANCED'.</li>
+<li><strong><code>--all-labels</code></strong> — Show every language region's label rather than just the English one.</li>
+<li><strong><code>--refresh</code></strong> — Refetch the catalogue instead of using the cached copy.</li>
 </ul>
 <hr />
 <p>Generated from the parser itself. For <em>when</em> to use these, see the <a href="../../">CLI guides</a>.</p>

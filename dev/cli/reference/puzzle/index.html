@@ -868,10 +868,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cg-puzzle-set-language" class="md-nav__link">
+  <a href="#cg-puzzle-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cg puzzle set-language
+        cg puzzle set
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cg-puzzle-set-solution-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg puzzle set solution-language
       
     </span>
   </a>
@@ -1650,6 +1661,34 @@
     
   
     Test session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
   
 
     
@@ -3573,6 +3612,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/services/codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5945,10 +6012,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cg-puzzle-set-language" class="md-nav__link">
+  <a href="#cg-puzzle-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cg puzzle set-language
+        cg puzzle set
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cg-puzzle-set-solution-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg puzzle set solution-language
       
     </span>
   </a>
@@ -6101,8 +6179,12 @@
 <td>Compile your solution, if its language needs compiling (a no-op for interpreted languages such as Python3).</td>
 </tr>
 <tr>
-<td><a href="#cg-puzzle-set-language"><code>cg puzzle set-language</code></a></td>
-<td>Switch this puzzle to a different language, restoring your own most recent code for it.</td>
+<td><a href="#cg-puzzle-set"><code>cg puzzle set</code></a></td>
+<td>Show the puzzle's editable fields, or set one.</td>
+</tr>
+<tr>
+<td><a href="#cg-puzzle-set-solution-language"><code>cg puzzle set solution-language</code></a></td>
+<td>Show or switch the language this puzzle is solved in, restoring your own most recent code for it.</td>
 </tr>
 <tr>
 <td><a href="#cg-puzzle-activate"><code>cg puzzle activate</code></a></td>
@@ -6147,7 +6229,7 @@
 <li><a href="#cg-puzzle-discard-local"><strong><code>discard-local</code></strong></a> — Throw local edits away: replace your solution with the answer the server currently has for this puzzle. Reads from the server; changes nothing there.</li>
 <li><a href="#cg-puzzle-debug"><strong><code>debug</code></strong></a> — Debug-session plumbing for languages whose debugger attaches to a running target, such as C++ in its container. Normally invoked for you by the VS Code configuration <code>cg vscode install</code> generates, rather than typed by hand. Languages whose debugger launches the program itself, such as Python3, never use these.</li>
 <li><a href="#cg-puzzle-build"><strong><code>build</code></strong></a> — Compile your solution, if its language needs compiling (a no-op for interpreted languages such as Python3). You rarely need this -- <code>cg puzzle play</code> builds first automatically -- but it is useful to compile without running, or to warm a cold container image up front. Near-instant when the source has not changed since the last successful build. Compiler diagnostics go to stderr.</li>
-<li><a href="#cg-puzzle-set-language"><strong><code>set-language</code></strong></a> — Switch this puzzle to a different language, restoring your own most recent code for it. CodinGame keeps your latest source per language, so anything you previously wrote in the target language comes back; a language you have never used gets a placeholder. Refuses if your solution holds work the server does not have -- submit it first, or pass --force to discard it. Changes local state only; the server's language follows once you run a server-side test or submit in the new one.</li>
+<li><a href="#cg-puzzle-set"><strong><code>set</code></strong></a> — Show the puzzle's editable fields, or set one. Each field is its own subcommand, so <code>cg puzzle set solution-language --help</code> documents what it accepts. Bare <code>cg puzzle set</code> lists every field and its current value. These live in data/puzzle-data.json.</li>
 <li><a href="#cg-puzzle-activate"><strong><code>activate</code></strong></a> — Make DIRECTORY the active puzzle, so later <code>cg puzzle</code> commands use it without --puzzle-dir. <code>cg puzzle import</code> sets this for you, so use this to switch between working directories you already have. Outranks the configured default (<code>cg settings set puzzle-dir</code>); <code>cg puzzle deactivate</code> clears it.</li>
 <li><a href="#cg-puzzle-deactivate"><strong><code>deactivate</code></strong></a> — Clear the active puzzle, so <code>cg puzzle</code> commands fall back to the configured default and the usual directory discovery. Touches no files -- only the selection.</li>
 <li><a href="#cg-puzzle-select-test"><strong><code>select-test</code></strong></a> — Choose which test case the debugger runs against. Debugging feeds one stdin, so it needs exactly one test. The choice is recorded per working directory and survives until you change it; without one, debugging uses the first test case. With no INDEX, shows the current selection.</li>
@@ -6256,13 +6338,21 @@
 <li><strong><code>--profile {run,debug}</code></strong> <em>(default: <code>run</code>)</em> — Which build to produce. "debug" is built for debuggability rather than speed (no optimization, full symbols) and is what a debug session uses. Ignored by languages that need no build. Default: run.</li>
 <li><strong><code>--build-timeout SECONDS</code></strong> <em>(default: <code>120.0</code>)</em> — Wall-clock timeout. Generous by default, because a cold build can pull and build a container image. Default 120.0.</li>
 </ul>
-<h2 id="cg-puzzle-set-language"><code>cg puzzle set-language</code><a class="headerlink" href="#cg-puzzle-set-language" title="Permanent link">&para;</a></h2>
-<p>Switch this puzzle to a different language, restoring your own most recent code for it. CodinGame keeps your latest source per language, so anything you previously wrote in the target language comes back; a language you have never used gets a placeholder. Refuses if your solution holds work the server does not have -- submit it first, or pass --force to discard it. Changes local state only; the server's language follows once you run a server-side test or submit in the new one.</p>
-<div class="highlight"><pre><span></span><code>usage: cg puzzle set-language [-h] [--force] LANGUAGE
+<h2 id="cg-puzzle-set"><code>cg puzzle set</code><a class="headerlink" href="#cg-puzzle-set" title="Permanent link">&para;</a></h2>
+<p>Show the puzzle's editable fields, or set one. Each field is its own subcommand, so <code>cg puzzle set solution-language --help</code> documents what it accepts. Bare <code>cg puzzle set</code> lists every field and its current value. These live in data/puzzle-data.json.</p>
+<div class="highlight"><pre><span></span><code>usage: cg puzzle set [-h] COMMAND ...
+</code></pre></div>
+<p><strong>Subcommands</strong></p>
+<ul>
+<li><a href="#cg-puzzle-set-solution-language"><strong><code>solution-language</code></strong></a> — Show or switch the language this puzzle is solved in, restoring your own most recent code for it. With no LANGUAGE, prints the current one. CodinGame keeps your latest source per language, so anything you previously wrote in the target language comes back; a language you have never used gets a placeholder. Refuses if your solution holds work the server does not have--submit it first, or pass --force to discard it. Changes local state only; the server's language follows once you run a server-side test or submit in the new one.</li>
+</ul>
+<h2 id="cg-puzzle-set-solution-language"><code>cg puzzle set solution-language</code><a class="headerlink" href="#cg-puzzle-set-solution-language" title="Permanent link">&para;</a></h2>
+<p>Show or switch the language this puzzle is solved in, restoring your own most recent code for it. With no LANGUAGE, prints the current one. CodinGame keeps your latest source per language, so anything you previously wrote in the target language comes back; a language you have never used gets a placeholder. Refuses if your solution holds work the server does not have--submit it first, or pass --force to discard it. Changes local state only; the server's language follows once you run a server-side test or submit in the new one.</p>
+<div class="highlight"><pre><span></span><code>usage: cg puzzle set solution-language [-h] [--force] [LANGUAGE]
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>LANGUAGE</code></strong> — CodinGame language ID to switch to, e.g. 'C++', 'Python3'.</li>
+<li><strong><code>[LANGUAGE]</code></strong> — CodinGame language ID to switch to, e.g. 'C++', 'Python3'. Omit to print the current language.</li>
 </ul>
 <p><strong>Options</strong></p>
 <ul>

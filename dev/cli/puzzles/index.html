@@ -1558,6 +1558,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/api/topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/api/user/" class="md-nav__link">
         
   
@@ -3461,6 +3489,34 @@
     
   
     services.test_session_question_submission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/codingame_tools.client.service.services.topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    services.topic
   
 
     
@@ -5872,7 +5928,9 @@ debug inside Docker, so C++ needs no local toolchain.</p>
 There's no undo. For a puzzle with many heavy validators this can take a while — the server runs
 your code once per validator.</p>
 <h2 id="switching-language">Switching language<a class="headerlink" href="#switching-language" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>set-language<span class="w"> </span>C++
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span><span class="nb">set</span><span class="w">                       </span><span class="c1"># the puzzle&#39;s editable fields</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span><span class="nb">set</span><span class="w"> </span>solution-language<span class="w">     </span><span class="c1"># just the current language</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span><span class="nb">set</span><span class="w"> </span>solution-language<span class="w"> </span>C++
 </code></pre></div>
 <p>CodinGame keeps your latest source per language, so this restores your previous C++ work if you had
 any. It refuses if <code>data/solution.&lt;ext&gt;</code> holds edits the server doesn't have; submit them first or
