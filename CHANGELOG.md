@@ -2,6 +2,63 @@
 
 ## {{UNRELEASED}}
 
+- **Edit a contribution's metadata and topics from the CLI**, instead of hand-editing
+  `data/contribution-data.json`.
+
+  ```bash
+  cg contribution set                            # every field and its value
+  cg contribution set title "Simple Makefiles"
+  cg contribution set difficulty medium          # easy | medium | hard
+  cg contribution set draft false                # true/false, yes/no, on/off, 1/0
+  cg contribution set ready-for-moderation true
+  ```
+
+  Each field is its own subcommand, so `cg contribution set difficulty --help` documents what that
+  field accepts and the parser enforces it -- `difficulty` and `puzzle-type` by choices, the two
+  booleans by an argument type accepting true/false, yes/no, on/off and 1/0. `cg contribution set
+  FIELD` with no value prints just that value, so it composes in a shell.
+
+  `puzzle-type` accepts only `PUZZLE_INOUT`, the one contribution type this working-directory
+  format handles.
+
+- **BREAKING: `set-language` moved into `set solution-language`,** on both working-directory types:
+
+  | was | now |
+  | --- | --- |
+  | `cg contribution set-language C++` | `cg contribution set solution-language C++` |
+  | `cg puzzle set-language C++` | `cg puzzle set solution-language C++` |
+
+  Same behaviour, including `--force` and the refusal to discard a real solution -- it is the same
+  manager call, just reached through the field it sets. The language is a field of
+  `contribution-data.json` / `puzzle-data.json` like any other, so it now appears in the same
+  listing as the rest and is read the same way (`cg puzzle set solution-language` with no value
+  prints the current one). `cg puzzle set` is new, and lists the puzzle's editable fields.
+
+  Setting the language still does more than write a field -- it rewrites the solution file and
+  renames it to the new extension -- which is why it keeps its own handler and its own `--force`.
+
+- **Fixed: `python -m codingame_tools.cli` always exited 0**, even when the command failed. `main()`
+  returns an exit code and the `cg` console script wraps it in `sys.exit()`; `__main__.py` discarded
+  it, so a failure was invisible to a shell, a script, or CI. The `cg` entry point was never
+  affected.
+
+- **Topics.** `cg topics` searches the full catalogue in tabular form, matching handles and display
+  labels; `cg contribution topic add`/`remove`/`list` tag a contribution.
+
+  A topic can be named by handle, numeric id, or display label, tried in that order, with an
+  unambiguous fragment accepted last. Topics carry one label per CodinGame UI language region --
+  French and English, differing for 41 of the 135 topics -- and any region's label resolves, so the
+  label you see is the label that works. Anything matching more than one topic is refused and lists
+  the candidates with their handles and ids.
+
+  `remove` resolves against the topics the contribution already carries rather than the catalogue,
+  so it needs no network and can still remove a topic CodinGame has since retired. `add` is
+  idempotent. The catalogue is cached per user for a week; `--refresh` refetches it.
+
+- **New `Topic` API service**, wrapping `Topic/getAllChildrenTopicsWithPuzzleCount` -- also reachable
+  as `cg api topic get-all-children-topics-with-puzzle-count`. It returns the same `CgTopic` shape a
+  contribution stores, so tagging copies the catalogue entry rather than reconstructing one.
+
 - **CLI documentation rewritten for people using the tool, not building it.** The two workflow
   guides and the `--help` text for all 52 `cg puzzle` and `cg contribution` commands dropped the
   design rationale, internal class names (`CgTestSessionTestCase`, `CgSolutionLanguage`), raw API

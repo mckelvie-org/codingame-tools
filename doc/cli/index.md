@@ -28,6 +28,7 @@ experiment.
 | [`cg puzzle`](reference/puzzle.md) | Solve an existing CodinGame puzzle locally. |
 | [`cg contribution`](reference/contribution.md) | Author and maintain your own contributions. |
 | [`cg config`](reference/config.md), [`cg settings`](reference/settings.md) | Configuration you edit, and state the app remembers. |
+| [`cg topics`](reference/top-level.md) | Search the catalogue of puzzle topics a contribution can be tagged with. |
 | [`cg docker`](reference/docker.md) | Manage the container toolchain image and the containers built from it. |
 | [`cg api`](reference/api/index.md) | Thin wrappers over CodinGame's own service endpoints, one subcommand per method. |
 | [`cg api-helper`](reference/api-helper.md) | The same endpoints with retries and polling layered on. |
@@ -63,8 +64,10 @@ cg --json puzzle status
 Worth knowing, because several are irreversible:
 
 - **Entirely local, always:** `play`, `build`, `description`, `where`, `status` (without
-  `--refresh`), and the whole merge state machine.
-- **Reads only:** `import`, `repair`, `diff`, `fetch`, `status --refresh`.
+  `--refresh`), `cg contribution set`, `cg contribution topic remove`, and the whole merge
+  state machine.
+- **Reads only:** `import`, `repair`, `diff`, `fetch`, `status --refresh`, `cg topics`, and
+  `cg contribution topic add` (which needs the topic catalogue).
 - **Writes something real:** `cg puzzle submit` (a permanent graded submission),
   `cg contribution push` (updates published content), `cg contribution delete` (unrecoverable), and
   `cg puzzle play-server` — which durably overwrites your saved code on the server as a side effect

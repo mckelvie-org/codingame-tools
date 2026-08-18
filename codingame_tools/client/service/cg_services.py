@@ -32,6 +32,7 @@ from .services.test_session_question_submission import (
     CgTestSessionQuestionSubmissionService,
     CgTestSessionQuestionSubmissionServiceHelper,
 )
+from .services.topic import CgTopicService, CgTopicServiceHelper
 from .services.user import CgUserService, CgUserServiceHelper
 from .services.vote import CgVoteService, CgVoteServiceHelper
 
@@ -75,6 +76,8 @@ __all__ = [
     "CgSearchServiceHelper",
     "CgSurveyService",
     "CgSurveyServiceHelper",
+    "CgTopicService",
+    "CgTopicServiceHelper",
     "CgTestSessionService",
     "CgTestSessionServiceHelper",
     "CgTestSessionQuestionSubmissionService",
@@ -116,6 +119,7 @@ class CgServices:
     report: CgReportService
     search: CgSearchService
     survey: CgSurveyService
+    topic: CgTopicService
     test_session: CgTestSessionService
     test_session_question_submission: CgTestSessionQuestionSubmissionService
     user: CgUserService
@@ -139,6 +143,7 @@ class CgServices:
         self.report = CgReportService(client)
         self.search = CgSearchService(client)
         self.survey = CgSurveyService(client)
+        self.topic = CgTopicService(client)
         self.test_session = CgTestSessionService(client)
         self.test_session_question_submission = CgTestSessionQuestionSubmissionService(client)
         self.user = CgUserService(client)

@@ -92,6 +92,7 @@ from ..client.common.protocol.contribution import (
     CgContributionModerator,
     CgPuzzleType,
     CgTestCase,
+    CgTopic,
 )
 from ..client.common.protocol.typedefs import CgSolutionLanguage
 from ..client.common.raw_client import compute_content_hash
@@ -114,6 +115,7 @@ from ..language import (
     write_provisioning,
 )
 from ..test_runner import outputs_match
+from ..topics import same_topic
 from .contribution_commit_data import (
     CONTRIBUTION_COMMIT_DATA_FILE_NAME,
     CgContributionCommitMetadata,
@@ -181,6 +183,8 @@ __all__ = [
     "find_solution_file",
     "solution_file_name",
     "COVER_IMAGE_FILE_NAME",
+    "CONTRIBUTION_DIFFICULTIES",
+    "SUPPORTED_PUZZLE_TYPES",
     "CgContributionManagerError",
     "CgRebaseStatus",
     "CgMergeStartStatus",
@@ -200,6 +204,24 @@ _ACTIVE_VERSION_POLL_MAX_ATTEMPTS = 10
    consistency lag confirmed live (caught up within a few seconds), not the much longer 524-
    timeout scenario `CgContributionServiceHelper` polls for (30s interval, unbounded by
    default)."""
+
+
+CONTRIBUTION_DIFFICULTIES = ("easy", "medium", "hard")
+"""The difficulty values CodinGame's contribution form offers, easiest first."""
+
+SUPPORTED_PUZZLE_TYPES = ("PUZZLE_INOUT",)
+"""Contribution types this client can author. CodinGame has others (CLASHOFCODE, PUZZLE_MULTI,
+   PUZZLE_SOLO, PUZZLE_OPTI); none of them round-trip through this working-directory format yet, so
+   setting one is refused rather than half-supported."""
+
+
+class _Unset:
+    """Type of `UNSET`."""
+
+
+UNSET = _Unset()
+"""`update_metadata`'s "leave this field alone" default, so that `None` stays available as a real
+   value to store."""
 
 
 class CgContributionManagerError(Exception):
@@ -2360,6 +2382,126 @@ class CgContributionManager:
         return CgContributionSetLanguageResult(
                 language=language, previous_language=previous_language, wrote_stub=stub is not None,
             )
+
+    def update_metadata(
+                self,
+                *,
+                title: str | _Unset = UNSET,
+                difficulty: str | _Unset = UNSET,
+                draft: bool | _Unset = UNSET,
+                ready_for_moderation: bool | _Unset = UNSET,
+                puzzle_type: CgPuzzleType | _Unset = UNSET,
+            ) -> CgContributionView:
+        """Set one or more of the scalar metadata fields in `data/contribution-data.json`.
+
+           Purely local, like every edit to `data/`: nothing reaches the server until the next
+           `push()`. Any field left unset is left alone, so this never has to read-modify-write a
+           field the caller did not mention.
+
+           `solution_language` is deliberately not settable here -- it is not just a label, since
+           changing it rewrites the reference solution. Use `set_language()`.
+
+        Args:
+            title:                The contribution's title.
+            difficulty:           One of `CONTRIBUTION_DIFFICULTIES`.
+            draft:                Whether the next pushed version is a private draft.
+            ready_for_moderation: Whether the next pushed version is submitted for moderation.
+            puzzle_type:          The contribution type. Only `PUZZLE_INOUT` is supported.
+
+        Returns:
+            The updated view, as written to disk.
+
+        Raises:
+            FileNotFoundError:           if this working directory hasn't been initialized.
+            CgContributionManagerError:  if a value is not valid for its field.
+        """
+        view = self.load()
+        data = view.data
+
+        if not isinstance(title, _Unset):
+            if not title.strip():
+                raise CgContributionManagerError("a contribution title cannot be empty.")
+            data = dataclasses.replace(data, title=title)
+        if not isinstance(difficulty, _Unset):
+            if difficulty not in CONTRIBUTION_DIFFICULTIES:
+                raise CgContributionManagerError(
+                        f"{difficulty!r} isn't a difficulty CodinGame accepts. Valid values: "
+                        f"{', '.join(CONTRIBUTION_DIFFICULTIES)}."
+                    )
+            data = dataclasses.replace(data, difficulty=difficulty)
+        if not isinstance(puzzle_type, _Unset) and puzzle_type not in SUPPORTED_PUZZLE_TYPES:
+            raise CgContributionManagerError(
+                    f"{puzzle_type!r} isn't a contribution type this client supports yet. "
+                    f"Supported: {', '.join(SUPPORTED_PUZZLE_TYPES)}."
+                )
+
+        view = dataclasses.replace(
+                view,
+                data=data,
+                draft=view.draft if isinstance(draft, _Unset) else draft,
+                ready_for_moderation=(view.ready_for_moderation
+                                      if isinstance(ready_for_moderation, _Unset)
+                                      else ready_for_moderation),
+                puzzle_type=view.puzzle_type if isinstance(puzzle_type, _Unset) else puzzle_type,
+            )
+        self.save(view)
+        return view
+
+    def add_topics(self, topics: list[CgTopic]) -> list[CgTopic]:
+        """Tag this contribution with `topics`, ignoring any it already carries.
+
+           Purely local. Each topic is stored as the catalogue gave it, so the stored entry keeps
+           the label map and category the server reports.
+
+        Args:
+            topics: Resolved catalogue topics -- see `codingame_tools.topics.resolve_topic`.
+
+        Returns:
+            Only the topics actually added, in the order given. Empty means every one was already
+            present, which is not an error.
+
+        Raises:
+            FileNotFoundError: if this working directory hasn't been initialized.
+        """
+        view = self.load()
+        current = list(view.data.topics)
+        added = []
+        for topic in topics:
+            if any(same_topic(topic, existing) for existing in current):
+                continue
+            current.append(topic)
+            added.append(topic)
+        if added:
+            self.save(dataclasses.replace(view, data=dataclasses.replace(view.data, topics=current)))
+        return added
+
+    def remove_topics(self, topics: list[CgTopic]) -> list[CgTopic]:
+        """Remove `topics` from this contribution, ignoring any it does not carry.
+
+           Purely local.
+
+        Args:
+            topics: Topics to remove. Matched by id, falling back to handle, so a topic resolved
+                    from the catalogue removes the stored copy even though `puzzle_count` differs.
+
+        Returns:
+            Only the topics actually removed. Empty means none of them were present, which is not
+            an error.
+
+        Raises:
+            FileNotFoundError: if this working directory hasn't been initialized.
+        """
+        view = self.load()
+        current = list(view.data.topics)
+        removed = []
+        for topic in topics:
+            match = next((e for e in current if same_topic(topic, e)), None)
+            if match is not None:
+                current.remove(match)
+                removed.append(match)
+        if removed:
+            self.save(dataclasses.replace(view, data=dataclasses.replace(view.data, topics=current)))
+        return removed
 
     async def provision_vscode(
                 self,

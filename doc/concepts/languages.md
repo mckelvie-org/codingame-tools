@@ -5,8 +5,8 @@ in the solution file's own extension — `data/solution.py`, `data/solution.cpp`
 language renames the file.
 
 ```bash
-cg puzzle set-language C++
-cg contribution set-language Python3
+cg puzzle set solution-language C++
+cg contribution set solution-language Python3
 ```
 
 ## Puzzles remember every language you've used
@@ -15,14 +15,14 @@ CodinGame stores your most recent source **per language** for a puzzle. So switc
 language is reversible: anything you previously wrote in the target language comes back, and a
 language you've never used gets a placeholder.
 
-`cg puzzle set-language` refuses if the solution holds work the server doesn't have — submit
+`cg puzzle set solution-language` refuses if the solution holds work the server doesn't have — submit
 it first, or pass `--force` to discard it. It needs the network even though it only changes local
 state, because restoring your previous code means fetching it.
 
 ## Contributions remember exactly one
 
 A contribution stores a single reference solution with no per-language history. So
-`cg contribution set-language` is **destructive by design**: it replaces the solution with a starter
+`cg contribution set solution-language` is **destructive by design**: it replaces the solution with a starter
 stub, and the next `cg contribution push` overwrites the last durable copy. There is nothing to
 switch back to. It refuses unless the current solution is still the stub `cg` generated, and
 `--force` is required to discard real work — save it somewhere outside the working directory first.

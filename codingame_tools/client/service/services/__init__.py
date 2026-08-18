@@ -20,6 +20,7 @@ from .search import CgSearchService, CgSearchServiceHelper
 from .survey import CgSurveyService, CgSurveyServiceHelper
 from .test_session import CgTestSessionService, CgTestSessionServiceHelper
 from .test_session_question_submission import CgTestSessionQuestionSubmissionService, CgTestSessionQuestionSubmissionServiceHelper
+from .topic import CgTopicService, CgTopicServiceHelper
 from .user import CgUserService, CgUserServiceHelper
 from .vote import CgVoteService, CgVoteServiceHelper
 
@@ -56,6 +57,8 @@ __all__ = [
     "CgSearchServiceHelper",
     "CgSurveyService",
     "CgSurveyServiceHelper",
+    "CgTopicService",
+    "CgTopicServiceHelper",
     "CgTestSessionService",
     "CgTestSessionServiceHelper",
     "CgTestSessionQuestionSubmissionService",

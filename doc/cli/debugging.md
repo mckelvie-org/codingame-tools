@@ -20,7 +20,7 @@ a `.vscode/` inside a subdirectory is ignored.
 **Run it once per language, not once per working directory.** The generated entries contain nothing
 specific to a puzzle or contribution, so a single `CG C++: Debug solution` serves every C++ working
 directory in the workspace, now and in the future. You do not need to re-run it after an `import`, a
-`repair`, a `set-language`, or when you start a new puzzle.
+`repair`, a language change, or when you start a new puzzle.
 
 Nothing is written unless you ask: `import`, `create` and `repair` never touch `.vscode/`.
 

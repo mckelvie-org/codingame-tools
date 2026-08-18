@@ -47,10 +47,12 @@ from .layout import (
 )
 from .manager import (
     CONSTRAINTS_FILE_NAME,
+    CONTRIBUTION_DIFFICULTIES,
     INPUT_DESCRIPTION_FILE_NAME,
     OUTPUT_DESCRIPTION_FILE_NAME,
     STATEMENT_FILE_NAME,
     STUB_GENERATOR_FILE_NAME,
+    SUPPORTED_PUZZLE_TYPES,
     CgContributionBuildFailedError,
     CgContributionLocalTestFailedError,
     CgContributionLocalTestResult,
@@ -98,6 +100,8 @@ from .test_cases_dir import (
 
 __all__ = [
     "CgContributionManager",
+    "CONTRIBUTION_DIFFICULTIES",
+    "SUPPORTED_PUZZLE_TYPES",
     "CgContributionManagerError",
     "CgRebaseStatus",
     "CgMergeStartStatus",

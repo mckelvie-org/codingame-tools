@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import argparse
 import difflib
 import json
 import logging
 import subprocess
 import sys
 import textwrap
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from types import TracebackType
@@ -20,7 +22,12 @@ from rich.console import Console
 
 from ..client.client import CgClient
 from ..client.common.protocol.codingamer import CgCodingamePointsStats, CgXpThreshold
-from ..client.common.protocol.contribution import CgContributionData, CgPendingContribution, CgPersonalContribution
+from ..client.common.protocol.contribution import (
+    CgContributionData,
+    CgPendingContribution,
+    CgPersonalContribution,
+    CgTopic,
+)
 from ..client.common.protocol.test_session import CgMultipleLanguagesTestParams, CgPlayRequest, CgSubmitRequest
 from ..client.common.protocol.user import CgUserProperties
 from ..client.common.raw_client import CgAuthenticationError, CgDownloadFileResult, compute_content_hash
@@ -38,13 +45,17 @@ from ..config import (
     resolve_config,
 )
 from ..contribution_manager import (
+    CONTRIBUTION_DIFFICULTIES,
     CONTRIBUTION_IDENTITY_FILE_NAME,
     SERVER_BRANCH_NAME,
+    SUPPORTED_PUZZLE_TYPES,
     CgContributionCommitMetadata,
     CgContributionLocalTestResult,
     CgContributionManager,
+    CgContributionManagerError,
     CgContributionStatus,
     CgContributionSyncStatus,
+    CgContributionView,
     CgMergeStartStatus,
     CgRebaseStatus,
     find_contribution_dir,
@@ -102,6 +113,16 @@ from ..puzzle_manager import (
     resolve_puzzle_dir,
 )
 from ..settings import CgSettings, relativize_settings_dir, resolve_settings
+from ..topics import (
+    AmbiguousTopicError,
+    TopicResolutionError,
+    get_topic_catalogue,
+    resolve_topic,
+    same_topic,
+    search_topics,
+    topic_label,
+    topic_labels,
+)
 from ..workdir import CgWorkingDir, find_working_dir, resolve_working_dir, working_dir_kind
 
 logger = logging.getLogger(__name__)
@@ -193,6 +214,91 @@ def default_config_template(default_data_dir: str) -> str:
 #  contributionDir: /path/to/my/contribution
 #  puzzleDir: /path/to/my/puzzle
 """
+
+CONTRIBUTION_SET_FIELDS: dict[str, Callable[[CgContributionView], object]] = {
+    "title": lambda v: v.data.title,
+    "difficulty": lambda v: v.data.difficulty,
+    "draft": lambda v: v.draft,
+    "ready-for-moderation": lambda v: v.ready_for_moderation,
+    "puzzle-type": lambda v: v.puzzle_type,
+    "solution-language": lambda v: v.data.solution_language,
+}
+"""Every field `cg contribution set` shows, mapped to how each is read off the view.
+
+   Keyed by CLI spelling; each is also a subcommand of `set`, so it documents and types its own
+   value."""
+
+PUZZLE_SET_FIELDS: dict[str, Callable[[CgPuzzleManager], object]] = {
+    "solution-language": lambda m: (d.solution_language
+                                    if (d := m.load_puzzle_data()) is not None else None),
+}
+"""Every field `cg puzzle set` shows. A puzzle has exactly one editable manifest field, so this is
+   a table of one -- kept as a table so `cg puzzle set` and `cg contribution set` stay the same
+   shape, and so a second field costs a row rather than a redesign."""
+
+CONTRIBUTION_METADATA_FIELDS = frozenset(CONTRIBUTION_SET_FIELDS) - {"solution-language"}
+"""Which of `CONTRIBUTION_SET_FIELDS` are plain edits routed through `update_metadata`.
+
+   `solution-language` is the exception: setting it rewrites the reference solution and can refuse,
+   so it goes through `set_language()` instead of being written straight into the JSON."""
+
+CONTRIBUTION_BOOLEAN_FIELDS = frozenset({"draft", "ready-for-moderation"})
+"""Which of `CONTRIBUTION_SET_FIELDS` take true/false rather than a string."""
+
+def _format_field_value(value: object) -> str:
+    """Render a field value for display: booleans lowercase, an unset field visibly unset."""
+    if value is None or value == "":
+        return "(unset)"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
+
+
+def _print_topic_table(topics: list[CgTopic], *, show_all_labels: bool = False) -> None:
+    """Print topics as a fixed-width table, sized to the data rather than to fixed guesses --
+       handles range from 3 to 30-odd characters, so a fixed width either truncates or wastes."""
+    rows = []
+    for topic in topics:
+        label = (" / ".join(topic_labels(topic)) if show_all_labels else topic_label(topic))
+        rows.append((topic.handle or "", str(topic.id or ""), topic.category or "",
+                     str(topic.puzzle_count if topic.puzzle_count is not None else ""), label))
+    headers = ("HANDLE", "ID", "CATEGORY", "PUZZLES", "LABEL")
+    numeric = (1, 3)  # ID and PUZZLES read as columns of numbers, so they line up on the right
+    widths = [max(len(h), *(len(r[i]) for r in rows)) for i, h in enumerate(headers)]
+
+    def _cell(text: str, index: int) -> str:
+        return text.rjust(widths[index]) if index in numeric else text.ljust(widths[index])
+
+    print("  ".join(_cell(h, i) for i, h in enumerate(headers[:-1])) + "  " + headers[-1])
+    for row in rows:
+        print("  ".join(_cell(row[i], i) for i in range(len(headers) - 1)) + "  " + row[-1])
+
+
+CLI_TRUE_SPELLINGS = ("true", "t", "yes", "y", "on", "1")
+CLI_FALSE_SPELLINGS = ("false", "f", "no", "n", "off", "0")
+
+
+def _cli_bool(raw: str) -> bool:
+    """argparse `type` for a boolean a user typed, accepting the spellings people reach for.
+
+       Raises ArgumentTypeError rather than returning None for a bad value, so argparse reports it
+       with the usual usage line instead of the command failing later."""
+    lowered = raw.strip().casefold()
+    if lowered in CLI_TRUE_SPELLINGS:
+        return True
+    if lowered in CLI_FALSE_SPELLINGS:
+        return False
+    raise argparse.ArgumentTypeError(
+            f"expected true or false, got {raw!r} (accepted: "
+            f"{', '.join((*CLI_TRUE_SPELLINGS, *CLI_FALSE_SPELLINGS))})")
+
+
+def _add_cli_bool_argument(parser: argparse.ArgumentParser, field: str) -> None:
+    """Add the optional true/false VALUE positional the boolean `set` subcommands share."""
+    parser.add_argument("value", type=_cli_bool, nargs="?", default=None, metavar="VALUE",
+                        help=f"Whether {field} is on. Accepts true/false, yes/no, on/off, 1/0. "
+                             "Omit to print the current setting.")
+
 
 class CgCli(CliBase):
     """Command-line interface for the contribution manager."""
@@ -1530,6 +1636,21 @@ class CgCli(CliBase):
                        help="Assumed maximum number of results; unconfirmed. Defaults to 2.")
         return handler
 
+    @cli_command("Topic service commands.")
+    async def cmd_api__topic(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        return None  # No handler for the parent command; subcommands will be handled by their own handlers.
+
+    @cli_command("List every puzzle topic a contribution can be tagged with, each with the number "
+                 "of published puzzles carrying it. Takes no arguments. See `cg topics` for the "
+                 "same data as a searchable table, and `cg contribution topic` to tag with it.")
+    async def cmd_api__topic__get_all_children_topics_with_puzzle_count(
+                self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            client = await self.get_client()
+            topics = await client.services.topic.get_all_children_topics_with_puzzle_count()
+            print(json.dumps([t.to_dict() for t in topics], indent=2, sort_keys=True))
+        return handler
+
     @cli_command("Achievement service commands.")
     async def cmd_api__achievement(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         return None  # No handler for the parent command; subcommands will be handled by their own handlers.
@@ -2278,6 +2399,42 @@ class CgCli(CliBase):
                             "status), instead of all pending contributions from every author.")
         return handler
 
+    @cli_command("List or search the catalogue of puzzle topics a contribution can be tagged with "
+                 "(Topic/getAllChildrenTopicsWithPuzzleCount). With no SEARCH, lists every topic; "
+                 "with one, matches it against handles and display labels, ignoring case. Topics "
+                 "carry a label per CodinGame UI language region, and SEARCH matches any of them, "
+                 "so either the English or the French label finds a topic. The catalogue is global "
+                 "CodinGame data, cached per user for a week; --refresh refetches it. With --json, "
+                 "prints the raw CgTopic list instead of a table.")
+    async def cmd_topics(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            search: str | None = self.args.search
+            category: str | None = self.args.category
+            refresh: bool = self.args.refresh
+            use_json: bool = self.args.json
+            client = await self.get_client()
+            catalogue = await get_topic_catalogue(client, refresh=refresh)
+            topics = search_topics(catalogue, search, category=category)
+            if use_json:
+                print(json.dumps([t.to_dict() for t in topics], indent=2, sort_keys=True))
+                return
+            if not topics:
+                print("No topics matched.")
+                return
+            _print_topic_table(topics, show_all_labels=self.args.all_labels)
+        p = cmd.get_parser()
+        p.add_argument("search", type=str, nargs="?", default=None, metavar="SEARCH",
+                       help="Match topics whose handle or any display label contains this, "
+                            "ignoring case. Omit to list all of them.")
+        p.add_argument("--category", "-c", type=str, default=None, metavar="CATEGORY",
+                       help="Only topics in this category, e.g. 'FUNDAMENTALS', 'INTERMEDIATE', "
+                            "'ADVANCED'.")
+        p.add_argument("--all-labels", default=False, action="store_true",
+                       help="Show every language region's label rather than just the English one.")
+        p.add_argument("--refresh", default=False, action="store_true",
+                       help="Refetch the catalogue instead of using the cached copy.")
+        return handler
+
     @cli_command("Author and maintain your own CodinGame contributions in a local working "
                  "directory. data/ is backed by a real git repository, so syncing with the server "
                  "is a genuine fetch/merge workflow rather than a one-shot overwrite. See `cg api "
@@ -2547,27 +2704,162 @@ class CgCli(CliBase):
                             f"and build a container image. Default {DEFAULT_BUILD_TIMEOUT_SECONDS}.")
         return handler
 
-    @cli_command("Switch this contribution's reference-solution language, writing a fresh starter "
-                 "stub. DESTRUCTIVE: a contribution stores only one solution, with no per-language "
-                 "history, so there is nothing to restore and nothing to switch back to -- your "
+    async def _show_or_set_field(self, field: str, value: object) -> None:
+        """Print a contribution metadata field, or set it when a value was given.
+
+           Shared by the `cg contribution set <field>` subcommands that are plain edits. They
+           differ only in how argparse types and documents their value, which is the whole reason
+           each is its own subcommand. `solution-language` is not one of these -- setting it
+           rewrites the reference solution, so it has its own handler."""
+        resolved_dir = resolve_contribution_dir(
+                self.args.contribution_dir, settings=self.resolve_default_settings())
+        manager = CgContributionManager(resolved_dir, cast(CgClient, None))
+        view = manager.load()
+        if value is None:
+            print(_format_field_value(CONTRIBUTION_SET_FIELDS[field](view)))
+            return
+        update: dict[str, Any] = {field.replace("-", "_"): value}
+        try:
+            updated = manager.update_metadata(**update)
+        except CgContributionManagerError as e:
+            raise CliError(str(e)) from e
+        self.eprint(f"{resolved_dir}: {field} = "
+                    f"{_format_field_value(CONTRIBUTION_SET_FIELDS[field](updated))}")
+
+    def _resolve_topic_or_fail(self, token: str, catalogue: list[CgTopic],
+                               *, not_found_hint: str | None = None) -> CgTopic:
+        """Resolve one topic reference, turning an ambiguous or unknown one into a CLI error.
+
+           An ambiguous reference prints every handle that matched, which is the thing the user
+           needs in order to retype it unambiguously."""
+        try:
+            if not_found_hint is None:
+                return resolve_topic(token, catalogue)
+            return resolve_topic(token, catalogue, not_found_hint=not_found_hint)
+        except AmbiguousTopicError as e:
+            self.eprint(f"{token!r} matches {len(e.candidates)} topics:")
+            for candidate in sorted(e.candidates, key=lambda t: t.handle or ""):
+                self.eprint(f"    {candidate.handle}  (id {candidate.id})  {topic_label(candidate)}")
+            raise CliError(f"{token!r} is ambiguous--use one of the handles above, or its id.") from e
+        except TopicResolutionError as e:
+            raise CliError(str(e)) from e
+
+    async def _list_contribution_topics(self) -> None:
+        """Print this contribution's own topics, shared by `cg contribution topic` and its
+           `list` subcommand."""
+        resolved_dir = resolve_contribution_dir(
+                self.args.contribution_dir, settings=self.resolve_default_settings())
+        manager = CgContributionManager(resolved_dir, cast(CgClient, None))
+        topics = list(manager.load().data.topics)
+        if self.args.json:
+            print(json.dumps([t.to_dict() for t in topics], indent=2, sort_keys=True))
+            return
+        if not topics:
+            print("No topics set. Add one with `cg contribution topic add TOPIC` "
+                  "(`cg topics` lists them).")
+            return
+        _print_topic_table(topics)
+
+    @cli_command("Show the contribution's scalar metadata fields, or set one. Each field is its "
+                 "own subcommand, so `cg contribution set difficulty --help` documents what that "
+                 "field accepts. Bare `cg contribution set` lists every field and its current "
+                 "value. Every field is stored in data/contribution-data.json and is purely "
+                 "local--nothing reaches the server until the next `cg contribution push`.")
+    async def cmd_contribution__set(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            resolved_dir = resolve_contribution_dir(
+                    self.args.contribution_dir, settings=self.resolve_default_settings())
+            view = CgContributionManager(resolved_dir, cast(CgClient, None)).load()
+            values = {name: reader(view) for name, reader in CONTRIBUTION_SET_FIELDS.items()}
+            if self.args.json:
+                print(json.dumps(values, indent=2, sort_keys=True))
+                return
+            for name, current in values.items():
+                print(f"{name:<22}{_format_field_value(current)}")
+        return handler
+
+    @cli_command("Show or set the contribution's title--what solvers see in listings and at the "
+                 "top of the puzzle. With no TITLE, prints the current one.")
+    async def cmd_contribution__set__title(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._show_or_set_field("title", self.args.value)
+        p = cmd.get_parser()
+        p.add_argument("value", type=str, nargs="?", default=None, metavar="TITLE",
+                       help="The new title. Omit to print the current one.")
+        return handler
+
+    @cli_command("Show or set how hard the puzzle is. CodinGame offers exactly three levels and "
+                 "shows this as a badge on the puzzle. With no LEVEL, prints the current one.")
+    async def cmd_contribution__set__difficulty(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._show_or_set_field("difficulty", self.args.value)
+        p = cmd.get_parser()
+        p.add_argument("value", type=str, nargs="?", default=None, metavar="LEVEL",
+                       choices=CONTRIBUTION_DIFFICULTIES,
+                       help=f"One of: {', '.join(CONTRIBUTION_DIFFICULTIES)}. Omit to print the "
+                            "current level.")
+        return handler
+
+    @cli_command("Show or set whether the next pushed version is a private draft. A draft is "
+                 "visible only to you, so this is what keeps work in progress off the community "
+                 "queue. New contributions start as drafts. With no VALUE, prints the current "
+                 "setting.")
+    async def cmd_contribution__set__draft(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._show_or_set_field("draft", self.args.value)
+        _add_cli_bool_argument(cmd.get_parser(), "draft")
+        return handler
+
+    @cli_command("Show or set whether the next pushed version is formally submitted for "
+                 "moderation. Turning this on is what puts the contribution in front of "
+                 "moderators; it starts off. With no VALUE, prints the current setting.")
+    async def cmd_contribution__set__ready_for_moderation(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._show_or_set_field("ready-for-moderation", self.args.value)
+        _add_cli_bool_argument(cmd.get_parser(), "ready-for-moderation")
+        return handler
+
+    @cli_command("Show or set the contribution type. CodinGame has several (CLASHOFCODE, "
+                 "PUZZLE_MULTI, PUZZLE_SOLO, PUZZLE_OPTI), but PUZZLE_INOUT--a standard "
+                 "non-interactive solo puzzle--is the only one this working-directory format "
+                 "handles, so it is the only value accepted. With no TYPE, prints the current one.")
+    async def cmd_contribution__set__puzzle_type(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._show_or_set_field("puzzle-type", self.args.value)
+        p = cmd.get_parser()
+        p.add_argument("value", type=str, nargs="?", default=None, metavar="TYPE",
+                       choices=SUPPORTED_PUZZLE_TYPES,
+                       help=f"One of: {', '.join(SUPPORTED_PUZZLE_TYPES)}. Omit to print the "
+                            "current type.")
+        return handler
+
+    @cli_command("Show or switch the language the reference solution is written in, writing a "
+                 "fresh starter stub. With no LANGUAGE, prints the current one. "
+                 "DESTRUCTIVE: a contribution stores only one solution, with no per-language "
+                 "history, so there is nothing to restore and nothing to switch back to--your "
                  "existing solution is replaced by a stub, and the next push overwrites the last "
                  "durable copy. Refuses unless the current solution is still exactly the stub cg "
                  "generated; matching what the server has does not make it safe, since that copy "
                  "is what the next push destroys. Save any real work outside the working directory "
-                 "first. Purely local -- no network call.")
-    async def cmd_contribution__set_language(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+                 "first. Purely local--no network call.")
+    async def cmd_contribution__set__solution_language(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
-            contribution_dir: Path | None = self.args.contribution_dir
-            language: str = self.args.language
-            force: bool = self.args.force
-            resolved_dir = resolve_contribution_dir(contribution_dir, settings=self.resolve_default_settings())
-            # No client: there is no per-language code to fetch, unlike `cg puzzle set-language`.
+            language: str | None = self.args.value
+            resolved_dir = resolve_contribution_dir(
+                    self.args.contribution_dir, settings=self.resolve_default_settings())
+            # No client: there is no per-language code to fetch, unlike `cg puzzle set`.
             manager = CgContributionManager(
                     resolved_dir, cast(CgClient, None),
                     toolchain_dir=self.resolve_toolchain_dir(),
                     toolchain_languages=self.resolve_toolchain_languages(),
                     toolchain_image=self.resolve_toolchain_image())
-            result = await manager.set_language(language, force=force)
+            if language is None:
+                print(_format_field_value(manager.load().data.solution_language))
+                return
+            try:
+                result = await manager.set_language(language, force=self.args.force)
+            except CgContributionManagerError as e:
+                raise CliError(str(e)) from e
             self.eprint(f"{resolved_dir}: {result.previous_language!r} -> {result.language!r}")
             if result.wrote_stub:
                 self.eprint(f"  wrote a starter {result.language} solution to {manager.solution_file}.")
@@ -2576,12 +2868,85 @@ class CgCli(CliBase):
                             f"{manager.solution_file} empty; write your solution there. (An empty "
                             "solution is pushed as none at all, which is valid.)")
         p = cmd.get_parser()
-        p.add_argument("language", type=str, metavar="LANGUAGE",
-                       help="CodinGame language ID to switch to, e.g. 'C++', 'Python3'.")
+        p.add_argument("value", type=str, nargs="?", default=None, metavar="LANGUAGE",
+                       help="CodinGame language ID to switch to, e.g. 'C++', 'Python3'. Omit to "
+                            "print the current language.")
         p.add_argument("--force", "-f", default=False, action="store_true",
-                       help="Switch even though a real reference solution would be discarded. There "
-                            "is no way to get it back--save a copy outside the working directory "
-                            "first.")
+                       help="Switch even though a real reference solution would be discarded. "
+                            "There is no way to get it back--save a copy outside the working "
+                            "directory first.")
+        return handler
+
+    @cli_command("Tag this contribution with puzzle topics, or untag it. Topics are what a solver "
+                 "browses by, and are stored in data/contribution-data.json like any other "
+                 "content--purely local until the next `cg contribution push`. Bare `cg "
+                 "contribution topic` lists this contribution's own topics; see `cg topics` for "
+                 "the catalogue to pick from.")
+    async def cmd_contribution__topic(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._list_contribution_topics()
+        return handler
+
+    @cli_command("List the topics this contribution is tagged with. Purely local, no network. "
+                 "With --json, prints the raw CgTopic list instead of a table.")
+    async def cmd_contribution__topic__list(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            await self._list_contribution_topics()
+        return handler
+
+    @cli_command("Tag this contribution with one or more topics. Each TOPIC is resolved against "
+                 "the topic catalogue, preferring, in order: an exact handle; a handle ignoring "
+                 "case; a numeric id; an exact display label in any language region; and finally "
+                 "a substring of a handle or label, accepted only when exactly one topic matches. "
+                 "An ambiguous TOPIC is refused, listing the handles that matched so you can pick "
+                 "one. A topic already present is left alone rather than duplicated.")
+    async def cmd_contribution__topic__add(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            tokens: list[str] = self.args.topics
+            resolved_dir = resolve_contribution_dir(
+                    self.args.contribution_dir, settings=self.resolve_default_settings())
+            client = await self.get_client()
+            catalogue = await get_topic_catalogue(client, refresh=self.args.refresh)
+            manager = CgContributionManager(resolved_dir, cast(CgClient, None))
+            wanted = [self._resolve_topic_or_fail(token, catalogue) for token in tokens]
+            added = manager.add_topics(wanted)
+            for topic in wanted:
+                if any(same_topic(topic, a) for a in added):
+                    self.eprint(f"  + {topic.handle} ({topic_label(topic)})")
+                else:
+                    self.eprint(f"    {topic.handle} was already set--left alone")
+            self.eprint(f"{resolved_dir}: {len(added)} topic(s) added.")
+        p = cmd.get_parser()
+        p.add_argument("topics", type=str, nargs="+", metavar="TOPIC",
+                       help="Topic handle, numeric id, display label, or an unambiguous part of "
+                            "one. Run `cg topics` to see them.")
+        p.add_argument("--refresh", default=False, action="store_true",
+                       help="Refetch the topic catalogue instead of using the cached copy.")
+        return handler
+
+    @cli_command("Remove one or more topics from this contribution. Each TOPIC is resolved against "
+                 "the topics this contribution actually carries--not the whole catalogue--so it "
+                 "needs no network access, and a topic CodinGame has since retired can still be "
+                 "removed. Resolution and ambiguity work as they do for `cg contribution topic "
+                 "add`. A topic that isn't set is reported and otherwise ignored.")
+    async def cmd_contribution__topic__remove(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            tokens: list[str] = self.args.topics
+            resolved_dir = resolve_contribution_dir(
+                    self.args.contribution_dir, settings=self.resolve_default_settings())
+            manager = CgContributionManager(resolved_dir, cast(CgClient, None))
+            current = list(manager.load().data.topics)
+            if not current:
+                raise CliError(f"{resolved_dir} has no topics set--nothing to remove.")
+            wanted = [self._resolve_topic_or_fail(token, current) for token in tokens]
+            removed = manager.remove_topics(wanted)
+            for topic in removed:
+                self.eprint(f"  - {topic.handle} ({topic_label(topic)})")
+            self.eprint(f"{resolved_dir}: {len(removed)} topic(s) removed.")
+        p = cmd.get_parser()
+        p.add_argument("topics", type=str, nargs="+", metavar="TOPIC",
+                       help="Topic handle, numeric id, display label, or an unambiguous part of "
+                            "one, among those this contribution carries.")
         return handler
 
     @cli_command("Make DIRECTORY the active contribution, so later `cg contribution` commands use "
@@ -3971,27 +4336,48 @@ class CgCli(CliBase):
                             f"{DEFAULT_TOOLCHAIN_BUILD_TIMEOUT_SECONDS}.")
         return handler
 
-    @cli_command("Switch this puzzle to a different language, restoring your own most recent code "
-                 "for it. CodinGame keeps your latest source per language, so anything you "
-                 "previously wrote in the target language comes back; a language you have never "
-                 "used gets a placeholder. Refuses if your solution holds work the server does not "
-                 "have -- submit it first, or pass --force to discard it. Changes local state "
-                 "only; the server's language follows once you run a server-side test or submit in "
-                 "the new one.")
-    async def cmd_puzzle__set_language(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+    @cli_command("Show the puzzle's editable fields, or set one. Each field is its own "
+                 "subcommand, so `cg puzzle set solution-language --help` documents what it "
+                 "accepts. Bare `cg puzzle set` lists every field and its current value. These "
+                 "live in data/puzzle-data.json.")
+    async def cmd_puzzle__set(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
-            puzzle_dir: Path | None = self.args.puzzle_dir
-            language: str = self.args.language
-            force: bool = self.args.force
-            resolved_dir = resolve_puzzle_dir(puzzle_dir, settings=self.resolve_default_settings())
+            resolved_dir = resolve_puzzle_dir(
+                    self.args.puzzle_dir, settings=self.resolve_default_settings())
+            manager = CgPuzzleManager(resolved_dir, cast(CgClient, None))
+            values = {name: reader(manager) for name, reader in PUZZLE_SET_FIELDS.items()}
+            if self.args.json:
+                print(json.dumps(values, indent=2, sort_keys=True))
+                return
+            for name, current in values.items():
+                print(f"{name:<22}{_format_field_value(current)}")
+        return handler
+
+    @cli_command("Show or switch the language this puzzle is solved in, restoring your own most "
+                 "recent code for it. With no LANGUAGE, prints the current one. CodinGame keeps "
+                 "your latest source per language, so anything you previously wrote in the target "
+                 "language comes back; a language you have never used gets a placeholder. Refuses "
+                 "if your solution holds work the server does not have--submit it first, or pass "
+                 "--force to discard it. Changes local state only; the server's language follows "
+                 "once you run a server-side test or submit in the new one.")
+    async def cmd_puzzle__set__solution_language(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            language: str | None = self.args.value
+            resolved_dir = resolve_puzzle_dir(
+                    self.args.puzzle_dir, settings=self.resolve_default_settings())
+            if language is None:
+                manager = CgPuzzleManager(resolved_dir, cast(CgClient, None))
+                data = manager.load_puzzle_data()
+                print(_format_field_value(data.solution_language if data is not None else None))
+                return
             client = await self.get_client()
-            manager = CgPuzzleManager(resolved_dir, client,
-            toolchain_dir=self.resolve_toolchain_dir(),
-            toolchain_languages=self.resolve_toolchain_languages(),
-            toolchain_image=self.resolve_toolchain_image())
-            result = await manager.set_language(language, force=force)
-            self.eprint(
-                    f"{resolved_dir}: {result.previous_language!r} -> {result.language!r}")
+            manager = CgPuzzleManager(
+                    resolved_dir, client,
+                    toolchain_dir=self.resolve_toolchain_dir(),
+                    toolchain_languages=self.resolve_toolchain_languages(),
+                    toolchain_image=self.resolve_toolchain_image())
+            result = await manager.set_language(language, force=self.args.force)
+            self.eprint(f"{resolved_dir}: {result.previous_language!r} -> {result.language!r}")
             if result.from_server:
                 self.eprint(f"  restored your saved {result.language} solution "
                             f"({len(result.code.splitlines())} lines).")
@@ -3999,8 +4385,9 @@ class CgCli(CliBase):
                 self.eprint(f"  no saved {result.language} solution on the server--wrote a "
                             "placeholder to start from.")
         p = cmd.get_parser()
-        p.add_argument("language", type=str, metavar="LANGUAGE",
-                       help="CodinGame language ID to switch to, e.g. 'C++', 'Python3'.")
+        p.add_argument("value", type=str, nargs="?", default=None, metavar="LANGUAGE",
+                       help="CodinGame language ID to switch to, e.g. 'C++', 'Python3'. Omit to "
+                            "print the current language.")
         p.add_argument("--force", "-f", default=False, action="store_true",
                        help="Switch even if your solution has changes the server doesn't have, "
                             "discarding them.")

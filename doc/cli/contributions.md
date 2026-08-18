@@ -91,6 +91,66 @@ Tidy them up afterwards with:
 cg contribution renormalize-tests
 ```
 
+## Title, difficulty and the publish flags
+
+```bash
+cg contribution set                          # every field and its current value
+cg contribution set title "Simple Makefiles"
+cg contribution set difficulty medium        # easy | medium | hard
+cg contribution set draft false              # true/false, yes/no, on/off, 1/0
+cg contribution set ready-for-moderation true
+cg contribution set title                    # print one value, for $(...)
+```
+
+Purely local, like everything under `data/` — nothing reaches the server until the next `push`.
+
+Each field is its own subcommand, so it documents what it accepts and the parser enforces it:
+
+```bash
+cg contribution set difficulty --help    # One of: easy, medium, hard
+cg contribution set draft --help         # Accepts true/false, yes/no, on/off, 1/0
+```
+
+`draft` and `ready-for-moderation` decide whether a push publishes: a draft stays private, and
+moderation only starts once you mark it ready. `puzzle-type` accepts only `PUZZLE_INOUT`, the one
+contribution type this tool can author.
+
+`solution-language` is in the same list, but setting it does more than write a field — see
+[changing language](#changing-language).
+
+## Topics
+
+Topics are what solvers browse by. Search the catalogue, then tag:
+
+```bash
+cg topics                        # all of them, tabular
+cg topics graph                  # search handles and labels
+cg topics -c ADVANCED            # one category
+
+cg contribution topic add graphs "Hash tables" 171
+cg contribution topic remove DFS
+cg contribution topic            # what this contribution carries
+```
+
+`add` takes a handle, a numeric id, or a display label — whichever you have in front of you. Topics
+carry a label per CodinGame UI language, so the French label works too (`Ensembles` finds `sets`).
+An unambiguous fragment is enough; anything matching more than one topic is refused, and lists the
+candidates:
+
+```
+$ cg contribution topic add graph
+'graph' matches 5 topics:
+    cryptology  (id 74)  Cryptography
+    dependency-graph  (id 171)  Dependency Graph
+    graph-theory  (id 100)  Graph theory
+    graph-traversal  (id 150)  graph traversal
+    graphs  (id 48)  Graphs
+Error: 'graph' is ambiguous--use one of the handles above, or its id.
+```
+
+The catalogue is cached per user for a week; `cg topics --refresh` refetches it. `remove` matches
+against the topics you already have, so it needs no network at all.
+
 ## Validate before you push
 
 ```bash
@@ -168,7 +228,7 @@ cg contribution discard-local    # give up on local edits, match the server exac
 ## Changing language
 
 ```bash
-cg contribution set-language C++
+cg contribution set solution-language C++
 ```
 
 **Destructive** — a contribution has one solution and no per-language memory, so this replaces it

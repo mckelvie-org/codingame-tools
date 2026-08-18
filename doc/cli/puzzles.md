@@ -99,7 +99,9 @@ your code once per validator.
 ## Switching language
 
 ```bash
-cg puzzle set-language C++
+cg puzzle set                       # the puzzle's editable fields
+cg puzzle set solution-language     # just the current language
+cg puzzle set solution-language C++
 ```
 
 CodinGame keeps your latest source per language, so this restores your previous C++ work if you had
