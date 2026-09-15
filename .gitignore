@@ -229,4 +229,6 @@ __marimo__/
 /puzzle/
 /solution.py
 /scrap/
-
+/puzzles/
+/contributions/
+/templates/

@@ -63,8 +63,8 @@ pip install codingame-tools
 cg login                          # opens a browser, saves credentials
 cg whoami
 
-# pull a puzzle into ./puzzle and make it the working puzzle
-cg puzzle import --language Python3 ./puzzle temperatures
+# pull a puzzle into puzzles/temperatures and make it the working puzzle
+cg puzzle import --language Python3 temperatures
 
 # implement a solution
 $EDITOR "$(cg puzzle where)/data/solution.py"
@@ -78,7 +78,8 @@ cg puzzle submit                  # graded submission
 ```bash
 # Create a new contribution and make it the working contribution
 # (purely local; nothing exists server-side until pushed)
-cg contribution create -t PUZZLE_INOUT --language Python3 ./contribution "My Puzzle"
+# -> contributions/my-puzzle
+cg contribution create -t PUZZLE_INOUT --language Python3 "My Puzzle"
 cd "$(cg contribution where)"
 
 $EDITOR data/statement.cgmd

@@ -152,8 +152,8 @@ def _cg(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
 def contribution_dir(tmp_path: Path) -> Path:
     """A real working directory, made by the CLI itself. `create` is purely local."""
     root = tmp_path / "c"
-    result = _cg("contribution", "create", "-t", "PUZZLE_INOUT", "--language", "Python3",
-                 str(root), "Fixture", cwd=tmp_path)
+    result = _cg("contribution", "--contribution-dir", str(root), "create",
+                 "-t", "PUZZLE_INOUT", "--language", "Python3", "Fixture", cwd=tmp_path)
     assert result.returncode == 0, result.stderr
     return root
 

@@ -70,39 +70,32 @@ class CgSettingsData(JSONWizardX):
        merged from the global then a project config.yaml's own `settings.defaultProfile`), and
        from there to "default". See `CgSettings.default_profile` for the resolved value."""
 
-    contribution_dir: str | None = None
-    """Default contribution working directory (see `codingame_tools.contribution_manager`), used
-       when one isn't given explicitly and `CG_CONTRIBUTION_DIR` isn't set. If not set, falls
-       back to `CgConfig.settings.contribution_dir` the same way `default_profile` does--only
-       once that's also unset does contribution-dir discovery move on to its cwd-based
-       heuristics. May be relative or absolute; `~` is expanded. A relative value is resolved
-       against the directory settings.json itself lives in (i.e. the owning `CgConfig.data_dir`)
-       --NOT the current working directory at the time it's consulted--so the effective directory
-       doesn't move around depending on where `cg` happens to be run from. `cg settings set
-       contribution-dir` takes care of converting a path typed relative to the CLI's own cwd into
-       this form--see `relativize_settings_dir`/`resolve_settings_dir`, and
-       `CgSettings.contribution_dir` for the resolved value."""
+    project_dir: str | None = None
+    """Where the `puzzles/` and `contributions/` trees live, overriding the project root.
 
-    puzzle_dir: str | None = None
-    """Default puzzle working directory (see `codingame_tools.puzzle_manager`), used when one
-       isn't given explicitly and `CG_PUZZLE_DIR` isn't set. Same resolution rules as
-       `contribution_dir`--see `CgSettings.puzzle_dir` for the resolved value."""
+       By default that root is the directory holding `.cg/` (the same anchor the project config
+       uses), falling back to the current directory when there is no project config. Set this when
+       the working directories belong somewhere other than beside the config -- a scratch volume,
+       say, or a tree you do not want inside the repository.
+
+       Replaced the older `contributionDir`/`puzzleDir`, which each named a single working
+       directory. That job now belongs to the *active* directory (`currentPuzzleDir`, set by
+       `cg puzzle import`/`activate`), so a standing per-kind preference had nothing left to do.
+       Same relative-path rules as the other directory settings: resolved against the directory
+       settings.json lives in, never the current working directory."""
 
     current_contribution_dir: str | None = None
     """The *active* contribution working directory--the one most recently created, imported, or
        explicitly selected with `cg contribution activate`. Cleared by `cg contribution deactivate`,
        and by `cg contribution delete` when it's the directory being deleted.
 
-       Distinct from `contribution_dir`, and takes precedence over it: `contribution_dir` is a
-       standing preference you set once ("my contributions live here"), while this is transient
-       state tracking whatever you're working on right now. Without it, configuring
-       `contribution_dir` would silently redirect every command away from a directory you had just
-       created somewhere else. Same relative-path storage rules as `contribution_dir`."""
+       This is what "which contribution am I working on" means: `cg contribution import`/`create`
+       set it, and every later command follows it. Same relative-path storage rules as
+       `project_dir`."""
 
     current_puzzle_dir: str | None = None
     """The *active* puzzle working directory--set by `cg puzzle import`, cleared by
-       `cg puzzle deactivate`/`cg puzzle delete`. See `current_contribution_dir` for why this is
-       separate from `puzzle_dir` and outranks it."""
+       `cg puzzle deactivate`/`cg puzzle delete`. See `current_contribution_dir`."""
 
     toolchain_languages: list[str] | None = None
     """Which languages this project's container toolchain image should carry, by CodinGame name
@@ -134,8 +127,7 @@ def overlay_settings_data(base: CgSettingsData, override: CgSettingsData) -> CgS
        itself gets layered on top as the final, most-refined tier."""
     return CgSettingsData(
             default_profile=override.default_profile if override.default_profile is not None else base.default_profile,
-            contribution_dir=override.contribution_dir if override.contribution_dir is not None else base.contribution_dir,
-            puzzle_dir=override.puzzle_dir if override.puzzle_dir is not None else base.puzzle_dir,
+            project_dir=override.project_dir if override.project_dir is not None else base.project_dir,
             current_contribution_dir=(
                 override.current_contribution_dir if override.current_contribution_dir is not None
                 else base.current_contribution_dir),
@@ -173,7 +165,7 @@ def relativize_settings_dir(path: Path, base_dir: Path) -> str:
     """The inverse of `resolve_settings_dir`: given a path as typed at the CLI (relative to the
        current working directory if not absolute--the natural way to type a path on a command
        line), return the string that should actually be stored in `CgSettingsData.
-       contribution_dir`/`puzzle_dir` so that `resolve_settings_dir()` reconstructs the exact
+       project_dir`/`currentPuzzleDir` so that `resolve_settings_dir()` reconstructs the exact
        same absolute location later, regardless of `cg`'s cwd at that later time.
 
        Absolute input (after `~`-expansion) is stored as-is, unchanged. Relative input is first
@@ -218,27 +210,15 @@ class CgSettings:
         return self.config.default_profile
 
     @property
-    def contribution_dir(self) -> Path | None:
-        """The configured default contribution working directory, resolved to an absolute path
-           (relative values resolved against `settings_file`'s own directory--see
-           `resolve_settings_dir`--NOT the current working directory). Resolution order: this
-           file's own `contributionDir`, then `CgConfig.contribution_dir` (itself merged from the
-           global then a project config.yaml's `settings.contributionDir`). `None` if still unset
-           after that--callers (see `codingame_tools.contribution_manager.resolver`) move on to
-           their own cwd-based discovery steps."""
-        resolved = resolve_settings_dir(self.raw_data.contribution_dir, self.settings_file.parent)
-        if resolved is not None:
-            return resolved
-        return self.config.contribution_dir
+    def project_dir(self) -> Path | None:
+        """The configured project root, resolved to an absolute path, or None if unset.
 
-    @property
-    def puzzle_dir(self) -> Path | None:
-        """The configured default puzzle working directory, resolved to an absolute path (same
-           rules as `contribution_dir`). See `codingame_tools.puzzle_manager.resolver`."""
-        resolved = resolve_settings_dir(self.raw_data.puzzle_dir, self.settings_file.parent)
+           `None` means "work it out": the directory holding `.cg/`, else the current directory --
+           see `codingame_tools.puzzle_manager.resolver.default_puzzles_dir`."""
+        resolved = resolve_settings_dir(self.raw_data.project_dir, self.settings_file.parent)
         if resolved is not None:
             return resolved
-        return self.config.puzzle_dir
+        return self.config.project_dir
 
     @property
     def current_contribution_dir(self) -> Path | None:
@@ -291,8 +271,7 @@ class CgSettings:
         return {
             "settingsFile": str(self.settings_file),
             "defaultProfile": self.default_profile,
-            "contributionDir": str(self.contribution_dir) if self.contribution_dir is not None else None,
-            "puzzleDir": str(self.puzzle_dir) if self.puzzle_dir is not None else None,
+            "projectDir": str(self.project_dir) if self.project_dir is not None else None,
             "rawSettings": self.raw_data.to_dict(),
         }
 

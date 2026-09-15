@@ -50,6 +50,16 @@ def main(argv: list[str] | None = None) -> None:
 
     puzzle_dir = args.puzzle_dir if args.puzzle_dir is not None else infer_puzzle_dir(args.target_file)
     manager = CgPuzzleManager(puzzle_dir, cast(CgClient, None))
+    # An interactive puzzle has no local run at all: the referee is the other half of the
+    # conversation, and the downloaded test case is its world configuration rather than the stdin
+    # the solution reads. Feeding it in would start the solution on data it cannot parse and stall
+    # it at the first read, which looks like a debugger fault rather than an unsupported puzzle.
+    if manager.is_interactive():
+        raise SystemExit(
+                f"{puzzle_dir} is an interactive puzzle: your solution trades moves with a referee "
+                "turn by turn, and only CodinGame has the referee. There is nothing to step "
+                "through locally--use `cg puzzle play-server` or `cg puzzle submit`."
+            )
     matching = [tc for tc in list_downloaded_test_cases(manager.tests_dir) if tc.index == args.test_index]
     if not matching:
         raise SystemExit(f"No downloaded test case with index {args.test_index} under {manager.tests_dir}.")

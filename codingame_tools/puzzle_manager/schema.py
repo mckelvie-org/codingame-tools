@@ -100,11 +100,39 @@ class CgPuzzleServerData(JSONWizardX):
     extra_data: CatchAll = field(default_factory=dict)
 
     puzzle_type: str | None = None
-    """The puzzle's contribution type (e.g. "PUZZLE_INOUT"--currently the only type this package
-       supports at all, so always that value in practice today), as of when this was last (re)
-       written. Purely informational, same caching spirit as `title`/`puzzle_pretty_id`. `None`
-       for a cache file written before this field existed--not re-backfilled automatically; run
-       `cg puzzle repair` (after deleting `.meta/`) to populate it."""
+    """The puzzle's contribution type (e.g. "PUZZLE_INOUT", "PUZZLE_OPTI"), as of when this was
+       last (re)written. `None` both for a puzzle CodinGame itself provides--which was never a
+       community contribution, so has no type--and for a cache file written before this field
+       existed. Not re-backfilled automatically; run `cg puzzle repair` to populate it.
+
+       Prefer `mode` for deciding what a puzzle supports: it distinguishes the kinds even for
+       official puzzles, where this is always `None`."""
+
+    mode: str | None = None
+    """How the puzzle is played: `"OPTIMIZATION"` for an optimization puzzle, `None` for a plain
+       read-input/print-output one (the server omits the field rather than sending a value).
+
+       Cached so that local commands know what they can offer without a network round trip. An
+       optimization puzzle is scored by a referee running alongside the solution, so its test
+       cases carry inputs but **empty** expected outputs, and comparing captured output against
+       them is meaningless."""
+
+    interactive: bool | None = None
+    """Whether the solution holds a turn-by-turn conversation with a referee, rather than reading
+       one fixed input and printing one answer.
+
+       True when the stub generator contains `gameloop`: the solution reads a turn's state, writes
+       its move, and the referee computes the next turn's state from that move. Nothing local can
+       run such a puzzle, because the referee is the other half of the conversation and only
+       CodinGame has it -- and the downloaded test case is not even a stdin transcript, it is the
+       referee's *world configuration*, in a format the solution never reads. Measured 2026-08-16:
+       "Code vs Zombies" hands the referee human positions with no ids, while the stub reads an id
+       per human; "Mars Lander" leads with two physics-configuration lines the stub never reads.
+
+       Independent of `mode`. "Travelling Salesman" is an optimization puzzle that is *not*
+       interactive -- one input, one answer -- so it runs and debugs locally even though it cannot
+       be scored. "Mars Lander" is interactive but not an optimization puzzle. `None` for a cache
+       written before this field existed; run `cg puzzle repair` to populate it."""
 
     difficulty: str | None = None
     """The puzzle's difficulty level (`CgTestSessionPuzzle.level`/`CgLastActivityPuzzle.level`,

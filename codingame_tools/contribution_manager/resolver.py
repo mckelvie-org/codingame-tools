@@ -7,6 +7,8 @@
 from __future__ import annotations
 
 import os
+import re
+import unicodedata
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,7 +20,9 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CG_CONTRIBUTION_DIR_ENV_VAR",
-    "DEFAULT_CONTRIBUTION_SUBDIR_NAME",
+    "CONTRIBUTIONS_SUBDIR_NAME",
+    "contribution_dir_name",
+    "default_contributions_dir",
     "CgContributionDirNotFoundError",
     "CgContributionDirInferenceError",
     "find_contribution_dir",
@@ -31,7 +35,11 @@ CG_CONTRIBUTION_DIR_ENV_VAR = "CG_CONTRIBUTION_DIR"
    `--contribution-dir` CLI flag (parsing/wiring that flag is the CLI layer's job--this module
    just accepts the resolved `explicit` value)."""
 
-DEFAULT_CONTRIBUTION_SUBDIR_NAME = "contribution"
+CONTRIBUTIONS_SUBDIR_NAME = "contributions"
+"""Name of the directory under the project root that holds one subdirectory per contribution.
+
+   `cg contribution create`/`import` create `<project>/contributions/<slug>/`, the slug derived
+   from the contribution's title--see `contribution_dir_name`."""
 """Name of the subdirectory of the current directory checked as a last-resort discovery step."""
 
 
@@ -43,9 +51,11 @@ class CgContributionDirNotFoundError(Exception):
 
     def __init__(self) -> None:
         super().__init__(
-                "No contribution working directory found (checked the current directory and "
-                "\"./contribution\" for a contribution.json). Pass an explicit directory, set "
-                f"{CG_CONTRIBUTION_DIR_ENV_VAR}, or run `cg settings set contribution-dir DIR`."
+                "No contribution working directory found: none is active, and this directory "
+                "holds no contribution.json. Run `cg contribution create TITLE` or `cg "
+                "contribution import HANDLE` to make one, `cg contribution activate DIR` to "
+                "select one you already have, pass --contribution-dir, or set "
+                f"{CG_CONTRIBUTION_DIR_ENV_VAR}."
             )
 
 
@@ -85,14 +95,11 @@ def find_contribution_dir(
         return Path(env_value).expanduser().resolve()
     if settings is not None and settings.current_contribution_dir is not None:
         return settings.current_contribution_dir
-    if settings is not None and settings.contribution_dir is not None:
-        return settings.contribution_dir
     start = Path(start_dir).resolve() if start_dir is not None else Path.cwd()
+    # The current directory itself and only itself--see the puzzle resolver for why it is guarded
+    # on the identity file rather than taken at face value.
     if (start / CONTRIBUTION_IDENTITY_FILE_NAME).is_file():
         return start
-    default_subdir = start / DEFAULT_CONTRIBUTION_SUBDIR_NAME
-    if (default_subdir / CONTRIBUTION_IDENTITY_FILE_NAME).is_file():
-        return default_subdir
     return None
 
 
@@ -157,3 +164,39 @@ def infer_contribution_dir(target_file: Path | str) -> Path:
         raise CgContributionDirInferenceError(
                 f"{root} has no {CONTRIBUTION_IDENTITY_FILE_NAME}--not a contribution working directory.")
     return root
+
+
+_SLUG_STRIP_RE = re.compile(r"[^a-z0-9]+")
+
+
+def contribution_dir_name(title: str) -> str:
+    """A path-friendly directory name for a contribution title.
+
+       Lowercased, runs of anything that is not a letter or digit collapsed to a single hyphen,
+       and trimmed. `"Simple Makefiles"` becomes `simple-makefiles`.
+
+       Deliberately ASCII-only and conservative: this becomes a directory name on whatever
+       filesystem the author uses, and a title may contain quotes, slashes or emoji. A title that
+       reduces to nothing (all punctuation, or non-Latin script) falls back to `contribution`,
+       which is a name rather than an error -- the directory can be renamed, and refusing to
+       create one over a title's spelling would be worse.
+
+       Not kept in step with the title afterwards: renaming a contribution does not move its
+       directory, since the path may already be in scripts, editors and shells."""
+    # Decompose first so accented Latin letters keep their base form: without this "Ünïcödé"
+    # loses every vowel and becomes "n-c-d" rather than "unicode".
+    decomposed = unicodedata.normalize("NFKD", title.strip().casefold())
+    folded = "".join(c for c in decomposed if not unicodedata.combining(c))
+    slug = _SLUG_STRIP_RE.sub("-", folded).strip("-")
+    return slug or "contribution"
+
+
+def default_contributions_dir(settings: CgSettings | None = None, *,
+                              start_dir: Path | str | None = None) -> Path:
+    """Where `cg contribution create`/`import` create working directories:
+       `<project root>/contributions/`.
+
+       Shares `project_root` with the puzzle side so both trees hang off the same anchor."""
+    from ..puzzle_manager.resolver import project_root
+
+    return project_root(settings, start_dir=start_dir) / CONTRIBUTIONS_SUBDIR_NAME

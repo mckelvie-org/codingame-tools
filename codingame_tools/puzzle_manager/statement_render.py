@@ -98,6 +98,17 @@ def _classify(tag: str, classes: list[str]) -> str | None:
     if (tag == "span" and "question-statement" in classes) \
             or (tag == "div" and any(c.startswith("question-statement-") for c in classes)):
         return "text"
+    # A second markup flavour, used by at least some official puzzles ("Onboarding"): sections are
+    # `statement-<section>-content` rather than `question-statement-<section>`. Without this the
+    # parser emitted the section headers and dropped every word of the body -- `cg puzzle
+    # description` printed nothing but "The Goal" and "Rules".
+    if tag == "div" and any(c.startswith("statement-")
+                            and (c.endswith("-content") or c.endswith("-text")) for c in classes):
+        return "text"
+    # The protocol block: `<div class="blk"><div class="text">...`, which is where this flavour puts
+    # the input/output description -- the part a solver most needs and the part that was missing.
+    if tag == "div" and classes == ["text"]:
+        return "text"
     if tag == "pre" and "question-statement-example-in" in classes:
         return "example_input"
     if tag == "pre" and "question-statement-example-out" in classes:

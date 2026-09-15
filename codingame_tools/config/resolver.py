@@ -234,7 +234,7 @@ class CgConfig:
        `data_dir` (and thus `config_file`/`config_dir`) reflect only the single config file that
        `find_config_file()` actually resolved to--never merged across files, since `data_dir`
        determines where *this* config's own settings.json lives. `settings` (and the
-       `default_profile`/`contribution_dir`/`puzzle_dir` properties built on it) is different:
+       `default_profile`/`project_dir` properties built on it) is different:
        it's overlaid with the global (per-user) config file's own `settings` whenever a separate
        project-local config file is the one that resolved--see `settings` below."""
 
@@ -286,7 +286,7 @@ class CgConfig:
 
            This is NOT the final resolved value--`codingame_tools.settings.CgSettings` layers
            settings.json on top of this as the most-refined tier. See `default_profile`/
-           `contribution_dir`/`puzzle_dir` below for this config-level tier's own resolved
+           `project_dir` below for this config-level tier's own resolved
            values (i.e. as if settings.json didn't exist)."""
         global_file = default_global_config_file()
         if self.config_file == global_file or not global_file.is_file():
@@ -304,20 +304,37 @@ class CgConfig:
         return value if value is not None else DEFAULT_PROFILE_NAME
 
     @property
-    def contribution_dir(self) -> Path | None:
-        """The configured default contribution working directory (see `settings` above for the
-           global/project config merge), resolved to an absolute path--a relative value is
-           resolved against `data_dir` (where this config's own settings.json lives), NOT the
-           current working directory--or `None` if neither config file sets it. See
-           `CgSettings.contribution_dir` for the settings.json override that takes precedence
-           over this one, and the further cwd-based discovery that follows if even that's unset."""
-        return resolve_settings_dir(self.settings.contribution_dir, self.data_dir)
+    def template_path(self) -> list[Path]:
+        """Configured solution-template search path, resolved to absolute directories in order.
+
+           Empty when unset. Each entry is resolved against `config_dir` -- the directory holding
+           this config file -- exactly as `data_dir` is, so every relative path in the file means
+           the same thing. A `~` is expanded and an absolute entry is used as given. One string may
+           hold several directories separated the way `PATH` is, and a YAML list is accepted too,
+           so neither habit is wrong."""
+        raw = self.raw_data.template_path
+        if raw is None:
+            return []
+        parts = [raw] if isinstance(raw, str) else list(raw)
+        root = self.config_dir
+        resolved: list[Path] = []
+        for part in parts:
+            for piece in str(part).split(os.pathsep):
+                if not piece.strip():
+                    continue
+                entry = Path(piece).expanduser()
+                resolved.append(entry if entry.is_absolute() else (root / entry).resolve())
+        return resolved
 
     @property
-    def puzzle_dir(self) -> Path | None:
-        """The configured default puzzle working directory. Same resolution chain as
-           `contribution_dir`--see `CgSettings.puzzle_dir`."""
-        return resolve_settings_dir(self.settings.puzzle_dir, self.data_dir)
+    def project_dir(self) -> Path | None:
+        """The configured project root -- where the `puzzles/` and `contributions/` trees live --
+           resolved to an absolute path, or `None` if no config file sets one.
+
+           A relative value resolves against `data_dir` (where this config's settings.json lives),
+           never the current working directory. `None` means the root is worked out instead: the
+           directory holding `.cg/`, else the current directory."""
+        return resolve_settings_dir(self.settings.project_dir, self.data_dir)
 
     @property
     def toolchain_languages(self) -> list[str] | None:
@@ -339,15 +356,14 @@ class CgConfig:
     def to_dump_dict(self) -> JsonDict:
         """Assemble a JSON-friendly summary for e.g. `cg config dump`: resolved values at the top
            level (`"settings"` nested the same way `CgConfigData.settings` itself is, holding the
-           global+project merge--`default_profile`/`contribution_dir`/`puzzle_dir` above), plus
+           global+project merge--`default_profile`/`project_dir` above), plus
            the raw (unresolved) config content--this file alone, not merged--under `"rawConfig"`."""
         return {
             "configFile": str(self.config_file),
             "dataDir": str(self.data_dir),
             "settings": {
                 "defaultProfile": self.default_profile,
-                "contributionDir": str(self.contribution_dir) if self.contribution_dir is not None else None,
-                "puzzleDir": str(self.puzzle_dir) if self.puzzle_dir is not None else None,
+                "projectDir": str(self.project_dir) if self.project_dir is not None else None,
             },
             "rawConfig": self.raw_data.to_dict(),
         }

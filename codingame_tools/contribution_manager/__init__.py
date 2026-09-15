@@ -67,9 +67,11 @@ from .manager import (
 )
 from .resolver import (
     CG_CONTRIBUTION_DIR_ENV_VAR,
-    DEFAULT_CONTRIBUTION_SUBDIR_NAME,
+    CONTRIBUTIONS_SUBDIR_NAME,
     CgContributionDirInferenceError,
     CgContributionDirNotFoundError,
+    contribution_dir_name,
+    default_contributions_dir,
     find_contribution_dir,
     infer_contribution_dir,
     resolve_contribution_dir,
@@ -158,7 +160,9 @@ __all__ = [
     "resolve_contribution_dir",
     "infer_contribution_dir",
     "CG_CONTRIBUTION_DIR_ENV_VAR",
-    "DEFAULT_CONTRIBUTION_SUBDIR_NAME",
+    "CONTRIBUTIONS_SUBDIR_NAME",
+    "contribution_dir_name",
+    "default_contributions_dir",
     "TESTS_SUBDIR_NAME",
     "TEST_META_FILE_NAME",
     "LOCAL_SUBDIR_NAME",

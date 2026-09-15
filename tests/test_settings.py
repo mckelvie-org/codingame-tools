@@ -80,39 +80,38 @@ def test_write_settings_creates_parent_dirs(tmp_path: Path) -> None:
     assert CgSettingsData.load(target).default_profile == "x"
 
 
-def test_contribution_dir_falls_back_to_config_when_settings_unset(tmp_path: Path) -> None:
+def test_project_dir_falls_back_to_config_when_settings_unset(tmp_path: Path) -> None:
     config_file = tmp_path / ".cg" / "config" / "config.yaml"
     config_file.parent.mkdir(parents=True)
-    raw_data = CgConfigData(settings=CgSettingsData(contribution_dir="from-config"))
+    raw_data = CgConfigData(settings=CgSettingsData(project_dir="from-config"))
     raw_data.save_yaml(config_file)
     config = CgConfig(config_file=config_file, raw_data=raw_data)
     settings = resolve_settings(config)
 
     # relative to data_dir (where settings.json lives), not cwd
-    assert settings.contribution_dir == config.data_dir / "from-config"
+    assert settings.project_dir == config.data_dir / "from-config"
 
 
-def test_contribution_dir_settings_override_wins_over_config(tmp_path: Path) -> None:
+def test_project_dir_settings_override_wins_over_config(tmp_path: Path) -> None:
     config_file = tmp_path / ".cg" / "config" / "config.yaml"
     config_file.parent.mkdir(parents=True)
-    raw_data = CgConfigData(settings=CgSettingsData(contribution_dir="from-config"))
+    raw_data = CgConfigData(settings=CgSettingsData(project_dir="from-config"))
     raw_data.save_yaml(config_file)
     config = CgConfig(config_file=config_file, raw_data=raw_data)
     settings = CgSettings(
         settings_file=config.data_dir / SETTINGS_FILE_NAME,
-        raw_data=CgSettingsData(contribution_dir="from-settings"),
+        raw_data=CgSettingsData(project_dir="from-settings"),
         config=config,
     )
 
     # relative to settings_file's own directory (== config.data_dir), not cwd
-    assert settings.contribution_dir == config.data_dir / "from-settings"
+    assert settings.project_dir == config.data_dir / "from-settings"
 
 
-def test_contribution_dir_none_when_unset_anywhere(tmp_path: Path) -> None:
+def test_project_dir_none_when_unset_anywhere(tmp_path: Path) -> None:
     config = _make_config(tmp_path)
     settings = resolve_settings(config)
-    assert settings.contribution_dir is None
-    assert settings.puzzle_dir is None
+    assert settings.project_dir is None
 
 
 # --- resolve_settings_dir / relativize_settings_dir -----------------------------------------

@@ -38,7 +38,7 @@ def _settings_with_contribution_dir(value: str | None, tmp_path: Path) -> CgSett
     config = CgConfig(config_file=tmp_path / "config.yaml", raw_data=CgConfigData())
     return CgSettings(
             settings_file=tmp_path / "settings.json",
-            raw_data=CgSettingsData(contribution_dir=value),
+            raw_data=CgSettingsData(current_contribution_dir=value),
             config=config,
         )
 
@@ -59,50 +59,35 @@ def test_explicit_overrides_env_var(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert find_contribution_dir(explicit) == explicit.resolve()
 
 
-def test_settings_used_when_no_explicit_or_env(tmp_path: Path) -> None:
-    settings = _settings_with_contribution_dir(str(tmp_path / "from-settings"), tmp_path)
-    assert find_contribution_dir(settings=settings) == (tmp_path / "from-settings").resolve()
-
-
-def test_env_overrides_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(CG_CONTRIBUTION_DIR_ENV_VAR, str(tmp_path / "from-env"))
-    settings = _settings_with_contribution_dir(str(tmp_path / "from-settings"), tmp_path)
-    assert find_contribution_dir(settings=settings) == (tmp_path / "from-env").resolve()
-
-
-def test_cwd_used_when_it_contains_manifest(tmp_path: Path) -> None:
+def test_cwd_used_when_it_holds_the_identity_file(tmp_path: Path) -> None:
+    """The last step, and the only one that looks at where you are standing: this directory, and
+       only this directory. No walk upward and no conventional subdirectory."""
     (tmp_path / CONTRIBUTION_IDENTITY_FILE_NAME).write_text("{}")
-    assert find_contribution_dir(start_dir=tmp_path) == tmp_path
+
+    assert find_contribution_dir(start_dir=tmp_path) == tmp_path.resolve()
 
 
-def test_contribution_subdir_used_when_it_contains_manifest(tmp_path: Path) -> None:
-    sub = tmp_path / "contribution"
-    sub.mkdir()
-    (sub / CONTRIBUTION_IDENTITY_FILE_NAME).write_text("{}")
-    assert find_contribution_dir(start_dir=tmp_path) == sub
+def test_cwd_is_not_used_when_it_holds_no_identity_file(tmp_path: Path) -> None:
+    """Guarded rather than taken at face value, so running a command from somewhere unrelated
+       reports "no working directory" instead of failing further in with a confusing complaint
+       about this directory's missing data/."""
+    assert find_contribution_dir(start_dir=tmp_path) is None
 
 
-def test_cwd_preferred_over_contribution_subdir(tmp_path: Path) -> None:
-    (tmp_path / CONTRIBUTION_IDENTITY_FILE_NAME).write_text("{}")
-    sub = tmp_path / "contribution"
-    sub.mkdir()
-    (sub / CONTRIBUTION_IDENTITY_FILE_NAME).write_text("{}")
-    assert find_contribution_dir(start_dir=tmp_path) == tmp_path
+def test_a_nested_working_directory_is_not_found_from_its_parent(tmp_path: Path) -> None:
+    """No searching: a puzzle under `puzzles/<name>/` is found by being active, not by being
+       nearby. Otherwise a project root holding several would have to pick one."""
+    nested = tmp_path / "puzzles" / "something"
+    nested.mkdir(parents=True)
+    (nested / CONTRIBUTION_IDENTITY_FILE_NAME).write_text("{}")
+
+    assert find_contribution_dir(start_dir=tmp_path) is None
 
 
 def test_returns_none_when_nothing_found(tmp_path: Path) -> None:
     empty = tmp_path / "empty"
     empty.mkdir()
     assert find_contribution_dir(start_dir=empty) is None
-
-
-def test_settings_with_no_override_falls_through_to_cwd_check(tmp_path: Path) -> None:
-    (tmp_path / CONTRIBUTION_IDENTITY_FILE_NAME).write_text("{}")
-    settings = _settings_with_contribution_dir(None, tmp_path)
-    assert find_contribution_dir(settings=settings, start_dir=tmp_path) == tmp_path
-
-
-# --- resolve_contribution_dir -----------------------------------------------------------------
 
 
 def test_resolve_raises_not_found_without_allow_default(tmp_path: Path) -> None:

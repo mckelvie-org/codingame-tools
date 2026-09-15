@@ -106,6 +106,13 @@ from .schema import (
     CgPuzzleServerData,
     CgPuzzleSolutionSnapshot,
 )
+from .solution_template import (
+    CG_URL_TOKEN,
+    expand_template,
+    puzzle_ide_url,
+    render_puzzle_details,
+)
+from .statement_render import parse_statement_html
 from .test_cases_dir import (
     TESTS_SUBDIR_NAME,
     CgPuzzleDownloadedTestCase,
@@ -128,15 +135,41 @@ __all__ = [
     "CgPuzzleLocalTestResult",
     "CgPuzzleLocalTestFailedError",
     "CgPuzzleRemoteTestResult",
+    "DEFAULT_IMPORT_LANGUAGE",
+    "CgPuzzleResetResult",
     "CgPuzzleStatus",
     "CgPuzzleManager",
 ]
 
-_SUPPORTED_CONTRIBUTION_TYPE = "PUZZLE_INOUT"
+SUPPORTED_CONTRIBUTION_TYPES = ("PUZZLE_INOUT", "PUZZLE_OPTI")
+"""Puzzle kinds that can be imported into a working directory.
 
-_DEFAULT_IMPORT_LANGUAGE: CgSolutionLanguage = "Python3"
-"""Language for a placeholder solution when a puzzle has never been attempted and the
-   caller didn't ask for a particular one."""
+   PUZZLE_INOUT is the classic read-input/print-output puzzle. PUZZLE_OPTI is an optimization
+   puzzle: a referee runs alongside the solution and scores it, so it can be played and submitted
+   through the server but not scored locally--see `OPTIMIZATION_MODE`."""
+
+GAMELOOP_STUB_KEYWORD = "gameloop"
+"""The stub-generator construct marking a puzzle as a turn-by-turn conversation with a referee."""
+
+
+def stub_is_interactive(stub_generator: str | None) -> bool:
+    """Whether a stub generator describes a turn-by-turn puzzle.
+
+       `gameloop` wraps the reads that repeat every turn. Matched as a whole word so that a
+       variable or comment merely containing the text does not count."""
+    return bool(stub_generator) and GAMELOOP_STUB_KEYWORD in (stub_generator or "").split()
+
+
+OPTIMIZATION_MODE = "OPTIMIZATION"
+"""`CgTestSessionQuestionDetails.mode` for an optimization puzzle.
+
+   The dependable signal for what a working directory supports: unlike the contribution type, it
+   is reported for official puzzles too."""
+
+DEFAULT_IMPORT_LANGUAGE: CgSolutionLanguage = "Python3"
+"""Language a puzzle is imported in when it has never been attempted and no language was asked
+   for. Public because `cg puzzle import` needs it to pick the default template: without
+   `--language`, the extension to look for is this one's."""
 
 _PUZZLE_DATA_FILE_NAME = "puzzle-data.json"
 _PUZZLE_SERVER_DATA_FILE_NAME = "puzzle-server-data.json"
@@ -166,6 +199,27 @@ class CgPuzzleDiscardResult:
 
 
 @dataclass(frozen=True)
+class CgPuzzleResetResult:
+    """The outcome of `CgPuzzleManager.reset_solution()`."""
+
+    language: CgSolutionLanguage
+    """The language the regenerated solution was written for."""
+
+    previous_language: CgSolutionLanguage
+    """What it was before--the same value unless a different one was asked for."""
+
+    code: str
+    """The new contents of the solution file."""
+
+    from_template: bool
+    """True when a caller-supplied template produced `code`, False for the built-in placeholder."""
+
+    discarded: bool
+    """True when the replaced solution held something recoverable from neither the server nor this
+       client's own snapshot--i.e. real work was thrown away."""
+
+
+@dataclass(frozen=True)
 class CgPuzzleSetLanguageResult:
     """The outcome of `CgPuzzleManager.set_language()`."""
 
@@ -184,6 +238,11 @@ class CgPuzzleSetLanguageResult:
        a generated placeholder. Worth surfacing--the difference is invisible in the file itself,
        and "your old solution is back" and "here's an empty starting point" are very different
        things to be told."""
+
+    from_template: bool = False
+    """True when `code` was seeded from a caller-supplied template rather than the built-in
+       one-line placeholder. Only meaningful when `from_server` is False -- a template never
+       displaces real saved work."""
 
 
 @dataclass(frozen=True)
@@ -576,6 +635,19 @@ class CgPuzzleManager:
 
     # --- puzzle reference resolution -------------------------------------------------------
 
+    @staticmethod
+    async def resolve_puzzle_pretty_id(client: CgClient, puzzle_ref: str) -> str:
+        """Resolve a puzzle reference to its pretty id, without a working directory.
+
+           `cg puzzle import` names its destination after the puzzle, so it has to know which
+           puzzle it is *before* it can decide where to put it -- and a manager cannot be built
+           without a directory. Static for exactly that reason.
+
+        Raises:
+            CgPuzzleManagerError: if the reference matches no puzzle.
+        """
+        return await CgPuzzleManager(Path(), client)._resolve_puzzle_ref(puzzle_ref)
+
     async def _resolve_puzzle_ref(self, puzzle_ref: str) -> str:
         """Resolve a general puzzle reference to a real pretty ID, trying each of four
            strategies in order and returning the first that matches:
@@ -637,8 +709,8 @@ class CgPuzzleManager:
     async def import_(
                 self,
                 puzzle_ref: str,
-                *,
                 language: CgSolutionLanguage | None = None,
+                template: str | None = None,
             ) -> CgPuzzleData:
         """Build this working directory from an existing puzzle: resolves `puzzle_ref` to a real
            pretty ID (see `_resolve_puzzle_ref`--a numeric ID, a pretty ID, an exact title match,
@@ -650,7 +722,7 @@ class CgPuzzleManager:
 
            - **`language=None`** (the default): the codingamer's existing saved answer, in whatever
              language they last used (`CgTestSessionQuestion.answer`), or a placeholder in
-             `_DEFAULT_IMPORT_LANGUAGE` if this puzzle has never been attempted at all.
+             `DEFAULT_IMPORT_LANGUAGE` if this puzzle has never been attempted at all.
            - **`language` given**: that language, seeded with the codingamer's most recent saved
              code *for it* (CodinGame keeps one per language--see
              `CgTestSessionService.get_previous_code_by_language_id`), or a placeholder if they've
@@ -700,42 +772,48 @@ class CgPuzzleManager:
         # and failing closed here would block importing every official puzzle on the site.
         contribution_type = (
                 question.contribution.contribution_type if question.contribution is not None else None)
-        if contribution_type is not None and contribution_type != _SUPPORTED_CONTRIBUTION_TYPE:
+        if contribution_type is not None and contribution_type not in SUPPORTED_CONTRIBUTION_TYPES:
             raise CgPuzzleManagerError(
                     f"Puzzle {puzzle_pretty_id!r} is a {contribution_type!r} puzzle--only "
-                    f"{_SUPPORTED_CONTRIBUTION_TYPE!r} puzzles are supported so far."
+                    f"{' and '.join(SUPPORTED_CONTRIBUTION_TYPES)} puzzles are supported so far."
                 )
 
         answer = session.current_question.answer
         # `answer` itself can be non-None (an empty placeholder object) even with no solution
         # ever submitted--`code`/`programming_language_id` are the actual "has a real answer"
         # signal; see CgTestSessionAnswer's docstring.
+        # `solution_code = None` means "nothing saved server-side"--the case a template seeds.
+        solution_code: str | None
         if language is not None:
             # An explicit language means "start in this one", not merely "use it if there's nothing
             # saved"--so fetch the codingamer's own most recent code for it, exactly as
             # `set_language()` would. Without this, asking for a language you'd previously written
             # a solution in would silently discard that solution in favor of a placeholder.
             solution_language = language
-            saved = await self.client.services.test_session.get_previous_code_by_language_id(
+            solution_code = await self.client.services.test_session.get_previous_code_by_language_id(
                     test_session_handle, language)
-            solution_code = saved if saved is not None else _placeholder_solution(
-                    language, question.title, puzzle_pretty_id)
         elif answer is not None and answer.code is not None and answer.programming_language_id is not None:
             solution_language = answer.programming_language_id
             solution_code = answer.code
         else:
-            solution_language = _DEFAULT_IMPORT_LANGUAGE
-            solution_code = _placeholder_solution(
-                    solution_language, question.title, puzzle_pretty_id)
+            solution_language = DEFAULT_IMPORT_LANGUAGE
+            solution_code = None
 
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.meta_dir.mkdir(parents=True, exist_ok=True)
-        self._write_solution(solution_code, solution_language)
         (self.meta_dir / STATEMENT_FILE_NAME).write_text(
                 server_text_to_file(question.statement), encoding="utf-8")
         (self.meta_dir / STUB_GENERATOR_FILE_NAME).write_text(
                 server_text_to_file(question.stub_generator), encoding="utf-8")
         await download_test_cases(self.client, question.test_cases, self.tests_dir)
+        # Written after the test cases, not before: a template's ${PUZZLE_DETAILS} renders the
+        # first one as a worked example, so it has to exist on disk first.
+        if solution_code is None:
+            solution_code = self._seed_solution(
+                    solution_language, question.title, puzzle_pretty_id,
+                    template_text=template, statement_html=question.statement,
+                    interactive=stub_is_interactive(question.stub_generator))
+        self._write_solution(solution_code, solution_language)
         _write_meta_gitignore(self.puzzle_dir)
 
         CgPuzzleIdentity(
@@ -745,6 +823,7 @@ class CgPuzzleManager:
         CgPuzzleServerData(
                 test_session_handle=test_session_handle, title=question.title,
                 puzzle_pretty_id=puzzle_pretty_id, puzzle_type=contribution_type,
+                mode=question.mode, interactive=stub_is_interactive(question.stub_generator),
                 difficulty=session.puzzle.level,
             ).save(self.server_data_file)
         puzzle_data = CgPuzzleData(solution_language=solution_language)
@@ -752,6 +831,40 @@ class CgPuzzleManager:
 
         _align_solution_file_name(self.puzzle_dir, solution_language)
         return puzzle_data
+
+    def _seed_solution(self, language: CgSolutionLanguage, title: str, puzzle_pretty_id: str, *,
+                       template_text: str | None, statement_html: str | None,
+                       interactive: bool = False) -> str:
+        """The starting contents for a solution the codingamer has never written.
+
+           A template, if one was supplied, with `${PUZZLE_DETAILS}` rendered from the statement
+           and the first downloaded test case; otherwise the one-line placeholder.
+
+           Only reached when nothing is saved server-side: real code always wins over a template,
+           since seeding over an existing solution would destroy work."""
+        if template_text is None:
+            return _placeholder_solution(language, title, puzzle_pretty_id)
+        example_input, example_output = self._first_test_case_text()
+        details = render_puzzle_details(
+                parse_statement_html(statement_html or ""), title=title,
+                example_input=example_input, example_output=example_output,
+                interactive=interactive)
+        return expand_template(template_text, details,
+                               variables={CG_URL_TOKEN: puzzle_ide_url(puzzle_pretty_id)})
+
+    def _first_test_case_text(self) -> tuple[str | None, str | None]:
+        """The first downloaded test case's input and expected output, or `(None, None)`.
+
+           "First" is the lowest index, matching what the puzzle presents as its example."""
+        cases = sorted(list_downloaded_test_cases(self.tests_dir), key=lambda c: c.index)
+        if not cases:
+            return None, None
+        first = cases[0]
+        try:
+            return (first.input_file.read_text(encoding="utf-8"),
+                    first.output_file.read_text(encoding="utf-8"))
+        except OSError:
+            return None, None
 
     # --- repair ----------------------------------------------------------------------------------
 
@@ -829,6 +942,8 @@ class CgPuzzleManager:
                 puzzle_type=(
                         question.contribution.contribution_type
                         if question.contribution is not None else None),
+                mode=question.mode,
+                interactive=stub_is_interactive(question.stub_generator),
                 difficulty=session.puzzle.level,
             )
         server_data.save(self.server_data_file)
@@ -917,7 +1032,7 @@ class CgPuzzleManager:
             return None
         return CgPuzzleSolutionSnapshot.load(self.solution_snapshot_file)
 
-    async def _solution_is_safe_to_replace(
+    async def solution_is_safe_to_replace(
                 self, server_data: CgPuzzleServerData, language: CgSolutionLanguage,
             ) -> bool:
         """Whether `data/solution.src` can be overwritten without losing anything.
@@ -950,6 +1065,7 @@ class CgPuzzleManager:
                 language: CgSolutionLanguage,
                 *,
                 force: bool = False,
+                template: str | None = None,
             ) -> CgPuzzleSetLanguageResult:
         """Switch this working directory to a different language, restoring the codingamer's own
            most recent code for it.
@@ -974,6 +1090,11 @@ class CgPuzzleManager:
         Args:
             language: CodinGame language ID to switch to, e.g. "C++" (see `CgSolutionLanguage`).
             force:    Switch even when local edits would be lost.
+            template: Contents of a template file to seed the new language's solution from, with
+                      `${PUZZLE_DETAILS}` expanded--see `codingame_tools.puzzle_manager.
+                      solution_template`. Ignored when the server has code saved for the target
+                      language, which is restored instead: a template never displaces your own
+                      work, exactly as in `import_()`.
 
         Returns:
             A `CgPuzzleSetLanguageResult`--check `from_server` to tell "your old solution is back"
@@ -998,7 +1119,7 @@ class CgPuzzleManager:
                 )
 
         test_session = self.client.services.test_session
-        if not force and not await self._solution_is_safe_to_replace(server_data, previous_language):
+        if not force and not await self.solution_is_safe_to_replace(server_data, previous_language):
             raise CgPuzzleManagerError(
                     f"{self.solution_file} has {previous_language!r} changes the server doesn't "
                     "have--switching would discard them. Submit them first (`cg puzzle submit`), "
@@ -1008,15 +1129,95 @@ class CgPuzzleManager:
         saved_new = await test_session.get_previous_code_by_language_id(
                 server_data.test_session_handle, language)
         from_server = saved_new is not None
-        code = saved_new if saved_new is not None else _placeholder_solution(
-                language, server_data.title or "", server_data.puzzle_pretty_id or "")
+        from_template = not from_server and template is not None
+        code = saved_new if saved_new is not None else self._seed_solution(
+                language, server_data.title or "", server_data.puzzle_pretty_id or "",
+                template_text=template,
+                # Read from `.meta/`, not from a live session: everything the rendering needs is
+                # already on disk from the import, so switching language stays a single call.
+                statement_html=self.load_statement_html(),
+                interactive=self.is_interactive())
 
         self._write_solution(code, language)
         dataclasses.replace(puzzle_data, solution_language=language).save(self.puzzle_data_file)
         _align_solution_file_name(self.puzzle_dir, language)
         return CgPuzzleSetLanguageResult(
                 language=language, previous_language=previous_language,
-                code=code, from_server=from_server,
+                code=code, from_server=from_server, from_template=from_template,
+            )
+
+    async def reset_solution(
+                self,
+                *,
+                language: CgSolutionLanguage | None = None,
+                template: str | None = None,
+                force: bool = False,
+            ) -> CgPuzzleResetResult:
+        """Throw the current solution away and write a fresh one from a template.
+
+           The counterpart to `set_language()`, and deliberately not the same thing: that one
+           *restores* whatever the server has saved for a language, so switching back and forth
+           never loses code. This one always regenerates, which is the point -- it is how you get
+           back to a clean starting point after an experiment went nowhere, or pick up a template
+           you wrote after the puzzle was imported.
+
+           Because it never restores, it is the one command here that can destroy work with no
+           copy anywhere. `force` is required when that is the case; see
+           `solution_is_safe_to_replace`, which decides it, and which the CLI consults first so it
+           can describe what would be lost before asking.
+
+        Args:
+            language: Language to regenerate for. Defaults to the current one; giving a different
+                      one switches, renaming the solution file to match.
+            template: Contents of a template file, with `${PUZZLE_DETAILS}` expanded--see
+                      `codingame_tools.puzzle_manager.solution_template`. Without one, the
+                      built-in one-line placeholder is written.
+            force:    Proceed even when the current solution would be lost.
+
+        Returns:
+            What was written--see `CgPuzzleResetResult`.
+
+        Raises:
+            FileNotFoundError: if this working directory has never been imported.
+            CgPuzzleManagerError: if `.meta/` is missing, if `language` is one this client does not
+                                   know, or if work would be lost and `force` is False.
+        """
+        server_data = self.load_server_data()
+        if server_data is None:
+            raise CgPuzzleManagerError(
+                    f"{self.meta_dir} is missing or incomplete--run `cg puzzle repair` first.")
+        puzzle_data = self.load_puzzle_data()
+        if puzzle_data is None:
+            raise FileNotFoundError(
+                    f"{self.puzzle_data_file} does not exist--this working directory is in an "
+                    "inconsistent state.")
+        previous_language = puzzle_data.solution_language
+        target = language if language is not None else previous_language
+        if target not in list_language_cg_ids():
+            raise CgPuzzleManagerError(
+                    f"{target!r} isn't a language this client knows. Known languages: "
+                    f"{', '.join(list_language_cg_ids())}."
+                )
+
+        safe = await self.solution_is_safe_to_replace(server_data, previous_language)
+        if not safe and not force:
+            raise CgPuzzleManagerError(
+                    f"{self.solution_file} holds work that is neither saved on the server nor "
+                    "what this client last wrote--resetting would discard it. Submit it first, or "
+                    "pass --force."
+                )
+
+        code = self._seed_solution(
+                target, server_data.title or "", server_data.puzzle_pretty_id or "",
+                template_text=template, statement_html=self.load_statement_html(),
+                interactive=self.is_interactive())
+        self._write_solution(code, target)
+        if target != previous_language:
+            dataclasses.replace(puzzle_data, solution_language=target).save(self.puzzle_data_file)
+        _align_solution_file_name(self.puzzle_dir, target)
+        return CgPuzzleResetResult(
+                language=target, previous_language=previous_language, code=code,
+                from_template=template is not None, discarded=not safe,
             )
 
     async def discard_local(self) -> CgPuzzleDiscardResult:
@@ -1195,12 +1396,19 @@ class CgPuzzleManager:
            result as it comes in, rather than waiting for the whole batch--see `play_local()`),
            this is the piece that used to be done implicitly inside `play_local()`.
 
+           Every local-play path goes through here -- `play_local()` and callers driving
+           `play_local_one()` in their own loop alike -- which is why the optimization-puzzle
+           refusal lives here rather than in either of them.
+
         Raises:
             FileNotFoundError: if this working directory has never been imported, or has no
                                 downloaded test cases at all (run `cg puzzle repair` first).
             CgPuzzleManagerError: if `test_indices` contains an index with no downloaded test
-                                   case.
+                                   case, or if this is an optimization puzzle, which cannot be
+                                   scored locally--see `_refuse_local_scoring_for_optimization`.
         """
+        self._refuse_local_run_for_interactive()
+        self._refuse_local_scoring_for_optimization()
         identity = self.load_identity()
         if identity is None:
             raise FileNotFoundError(
@@ -1378,6 +1586,58 @@ class CgPuzzleManager:
         language = get_language(puzzle_data.solution_language)
         ctx = self.language_context(puzzle_data.solution_language)
         return await language.build(ctx, profile=profile, timeout=timeout)
+
+    def is_optimization_puzzle(self) -> bool:
+        """Whether this is an optimization puzzle, from `.meta/puzzle-server-data.json`'s cached
+           `mode`. No network access.
+
+           `False` for a working directory imported before `mode` was cached; `cg puzzle repair`
+           populates it."""
+        server_data = self.load_server_data()
+        return server_data is not None and server_data.mode == OPTIMIZATION_MODE
+
+    def is_interactive(self) -> bool:
+        """Whether this puzzle is a turn-by-turn conversation with a referee, from
+           `.meta/puzzle-server-data.json`'s cached `interactive`. No network access.
+
+           `False` for a working directory imported before this was cached; `cg puzzle repair`
+           populates it."""
+        server_data = self.load_server_data()
+        return server_data is not None and server_data.interactive is True
+
+    def _refuse_local_run_for_interactive(self) -> None:
+        """Stop anything that runs the solution locally on an interactive puzzle.
+
+           The referee is the other half of the conversation and only CodinGame has it, so there
+           is no local execution to be had -- and the downloaded test case is the referee's world
+           configuration, not a stdin transcript, so feeding it to the solution produces nonsense
+           rather than a short run."""
+        if self.is_interactive():
+            raise CgPuzzleManagerError(
+                    f"{self.puzzle_dir} is an interactive puzzle: your solution trades moves with "
+                    "a referee turn by turn, and only CodinGame has the referee. The downloaded "
+                    "test cases are its world configuration, not the input your solution reads, so "
+                    "there is nothing to run or step through locally. Use `cg puzzle play-server` "
+                    "to run it on CodinGame's servers, or `cg puzzle submit` for a graded run."
+                )
+
+    def _refuse_local_scoring_for_optimization(self) -> None:
+        """Stop local pass/fail scoring on an optimization puzzle, where it cannot mean anything.
+
+           An optimization puzzle is scored by a referee that runs alongside the solution, so its
+           downloaded test cases carry real inputs and **empty** expected outputs. Comparing
+           against those does not merely fail to help, it inverts: a genuine answer never matches
+           the empty file and is reported as a failure, while a solution that prints nothing at
+           all passes every test."""
+        if self.is_optimization_puzzle():
+            raise CgPuzzleManagerError(
+                    f"{self.puzzle_dir} is an optimization puzzle, which has no expected output to "
+                    "compare against--it is scored by a referee running alongside your solution. "
+                    "Local pass/fail would be meaningless (an empty solution would 'pass' every "
+                    "test). Use `cg puzzle play-server` to run it on CodinGame's servers, or "
+                    "`cg puzzle submit` for a graded run. Debugging still works: `cg puzzle "
+                    "select-test N`, then F5."
+                )
 
     async def play_local_one(
                 self,

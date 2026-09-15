@@ -2,6 +2,270 @@
 
 ## {{UNRELEASED}}
 
+- **Fixed: `--config` selected a project's settings but not its working directories.** The project
+  root -- where `puzzles/` and `contributions/` are created -- was derived from the current
+  directory, so pointing at another project's config read that project's settings while creating
+  working directories in whichever project you happened to be standing in. It also disagreed with
+  `cg sdk`, whose directory has always followed the resolved config.
+
+  `--config` now selects a whole project: settings, data directory, `.cg/sdk/`, and the working-
+  directory trees all follow it. An explicit `projectDir` still wins, and with no config in play the
+  nearest ancestor holding `.cg/` is used as before.
+
+- **Fixed: `cg puzzle import PUZZLE` ignored the template unless `--language` was given.** The
+  extension for the default `solution.<ext>` lookup was computed only when `--language` was
+  present, so the usual invocation asked for "no extension" and matched nothing. Every plain
+  `cg puzzle import` on a never-attempted puzzle fell back to the one-line placeholder while a
+  usable template sat in the search path -- silently, since a missing default template is
+  legitimately not an error. Without `--language` the extension is now the one for
+  `DEFAULT_IMPORT_LANGUAGE`, which is the language such an import actually lands in.
+
+- **New `${CG_URL}` template token**, expanding to the puzzle's CodinGame IDE link
+  (`https://www.codingame.com/ide/puzzle/<pretty-id>`), so the statement, leaderboard and Submit
+  button are one click from the file you are editing. Works wherever `${PUZZLE_DETAILS}` does --
+  `cg puzzle import`, `reset` and `set solution-language`.
+
+  Built from the client's own base URL rather than a second copy of the host. Single-line variables
+  like this are substituted on the template alone, before `${PUZZLE_DETAILS}` is expanded, so a
+  statement that happens to contain `${CG_URL}` is left exactly as the puzzle wrote it.
+
+- **New `templatePath` config setting**, so a solution-template search path can be set once in
+  `.cg/config/config.yaml` instead of passed to every command:
+
+  ```yaml
+  templatePath: ../../templates    # or a "PATH"-separated string, or a YAML list
+  ```
+
+  Read by `cg puzzle import`, `cg puzzle reset` and `cg puzzle set solution-language`.
+  `--template-path` extends it rather than replacing it, and is searched first, so a one-off
+  directory can be added without losing the configured defaults.
+
+  Relative entries resolve against the directory holding the config file, exactly as `dataDir`
+  does, so every relative path in the file means the same thing. From `<project>/.cg/config/`, the
+  project's own `templates/` is therefore `../../templates`. A configured entry that does not exist
+  is reported on stderr rather than silently contributing nothing.
+
+- **New `cg puzzle reset`:** throw the current solution away and write a fresh one, with the same
+  `--language`/`--template`/`--template-path` options as `cg puzzle import` (`${PUZZLE_DETAILS}`
+  included). For getting back to a clean start after an experiment went nowhere, or picking up a
+  template written after the puzzle was imported.
+
+  The counterpart to `cg puzzle set solution-language`, and deliberately not the same: that one
+  *restores* whatever CodinGame has saved for a language, while this always regenerates -- so
+  resetting to a language you have a solution in does not bring it back.
+
+  That makes it the only command here that can destroy work with no copy anywhere, so it confirms
+  first, showing the file, its length, and what it is about to be replaced with. There is no prompt
+  when nothing would be lost: the solution is untouched since cg wrote it, or matches what the
+  server has. `--force` skips the prompt and is required when stdin/stdout are not a terminal.
+
+- **`cg puzzle set solution-language` takes `--template`/`--template-path` too**, on the same terms
+  as `cg puzzle import`: switching language is the other moment a solution file is created from
+  nothing, so honouring templates in one and not the other was an arbitrary split.
+
+  The default `solution.<ext>` lookup uses the language being switched **to**, not the one being
+  left -- otherwise a directory of per-language templates would seed a Rust file from `solution.py`,
+  silently, since a template is only text. Your own saved code for the target language still wins:
+  a template never displaces work. The command now says which of the three happened -- restored from
+  the server, seeded from a named template file, or the built-in placeholder.
+
+- **`activate` takes a bare name.** `cg puzzle activate temperatures` and `cg contribution
+  activate simple-makefiles` look the name up under the project's `puzzles/`/`contributions/`, so
+  switching works from anywhere without spelling out where the tree lives. Anything containing a
+  path separator is still a path relative to the current directory, and no argument still means the
+  current directory.
+
+  A bare name is never *also* tried as a relative path: one spelling, one meaning, so which
+  directory you get never depends on where you were standing. When a bare name misses but a
+  directory of that name sits in the current directory, the error suggests `./name`.
+
+- **BREAKING: working directories are now named after what they hold.** `cg puzzle import` and
+  `cg contribution import`/`create` no longer take a directory; they compute one under the project
+  root:
+
+  | was | now |
+  | --- | --- |
+  | `cg puzzle import ./puzzle temperatures` | `cg puzzle import temperatures` -> `puzzles/temperatures` |
+  | `cg contribution import ./dir <handle>` | `cg contribution import <handle>` -> `contributions/<slug>` |
+  | `cg contribution create ./dir "My Puzzle"` | `cg contribution create "My Puzzle"` -> `contributions/my-puzzle` |
+
+  A puzzle is named by its pretty id, which is already a unique slug. A contribution is named from
+  its title, lowercased with runs of punctuation collapsed to hyphens and accents folded, so
+  "Café Noir" becomes `cafe-noir`. The directory does not follow a later rename -- the path is
+  already in your shell history and your editor by then. `--puzzle-dir`/`--contribution-dir` still
+  override, and **TITLE is now required** for `create`, since it is what names the directory.
+
+  The project root is the directory holding `.cg/`, falling back to the current directory. That
+  anchor is what stops a `cg puzzle import` run from a subdirectory creating a second `puzzles/`
+  tree there.
+
+  A consequence worth knowing: the destination is only known *after* the puzzle reference or
+  contribution handle resolves against the server, so a reference that matches nothing now creates
+  no directory at all.
+
+- **BREAKING: `puzzleDir` and `contributionDir` settings replaced by `projectDir`.** They each named
+  *the* working directory, which is the job the active directory (`currentPuzzleDir`, set by
+  `import` and `activate`) now does. One `projectDir` names where the trees live instead, and covers
+  both kinds. `cg settings set project-dir` replaces the two per-kind commands; existing
+  `puzzleDir`/`contributionDir` values are ignored, not migrated, and `cg puzzle activate DIR`
+  is the way to keep using a directory that lived elsewhere.
+
+- **Directory discovery is four steps and does no searching:** `--puzzle-dir` -> `CG_PUZZLE_DIR` ->
+  the active directory -> the current directory, if it is itself a working directory. The `./puzzle`
+  and `./contribution` conventions are gone.
+
+  Step 4 checks that one directory and no other -- not its parents, not a `puzzles/` beneath it. The
+  active directory outranks it, so with one set, `cd` changes nothing.
+
+  The only walk left in the tool is finding `.cg/` to locate the project root, plus
+  `infer_puzzle_dir`, which walks up from a file you pointed at (VS Code's `${file}`) to find the
+  directory it belongs to -- resolving an explicit input rather than guessing.
+
+- **`cg puzzle import --template`: seed a new solution from your own file.** Most solutions start
+  the same way -- the same imports, the same scaffold -- and that was retyped for every puzzle.
+
+  ```bash
+  cg puzzle import -t solution.py --template-path ~/cg-templates ./puzzle temperatures
+  cg puzzle import --template-path ~/cg-templates ./puzzle temperatures   # picks solution.<ext>
+  ```
+
+  `--template-path` is a search path (`PATH`-separated, and repeatable). A `--template` holding a
+  path separator is used as given; a bare filename is looked up in the search path; with no
+  `--template`, `solution.<ext>` for the solution language is, so a directory of per-language
+  templates needs no flag. Naming a template that does not exist is an error, while the default
+  lookup finding nothing simply falls back to the placeholder -- a typo should stop, a missing
+  default should not.
+
+  Inside the template, `${PUZZLE_DETAILS}` expands to a plain-text rendering of the puzzle -- goal,
+  rules, input/output descriptions, constraints, and the first test case as a worked example --
+  indented to match the token. Sequences that would *end* a block comment are defused first, so a
+  statement containing `*/` cannot close the comment halfway through the description. Nothing else
+  is substituted: a template is source code, so `$` and `{}` in it survive untouched.
+
+  **A template never overwrites your own code**: if CodinGame has a solution saved for that puzzle
+  and language, it is imported and the template ignored. For an interactive puzzle the worked
+  example is replaced by a note, since its stored test case is the referee's configuration rather
+  than the input the program reads.
+
+- **Fixed: `cg puzzle description` printed section headings and no text** for a whole class of
+  puzzles. The statement parser knew one HTML flavour (`question-statement-*`) but not the other
+  (`statement-<section>-content`, plus the `blk`/`text` protocol block that carries the input and
+  output description). "Code vs Zombies" parsed to 14 headings and **zero** words of body; it now
+  yields 11 text blocks, including Game Input. Also fixes what `${PUZZLE_DETAILS}` can render.
+
+- **`cg sdk`: the beginnings of local support for interactive contributions.** An interactive
+  puzzle is played by a *referee* -- a Java program that reads a solution's move, advances the game
+  and writes the next turn's state back. CodinGame's SDK is how an author writes one, and its game
+  runner is how a game is played locally, viewer included. This is the first piece: getting the
+  toolchain in place.
+
+  `cg sdk install` resolves it into `.cg/sdk/`:
+
+    - checks for a JDK 17 or newer (the SDK compiles at 17) and reports what to install if absent;
+    - downloads a portable Maven if the system has none, verified against Apache's published
+      SHA-512 -- it fetches and then executes a binary, so an unchecked download would be a
+      straightforward way to run someone else's code;
+    - resolves `com.codingame.gameengine:core` and `:runner` and their transitive dependencies into
+      a **project-local** Maven repository, so a shared `~/.m2` is neither depended on nor altered;
+    - records what it found in `.cg/sdk/sdk.json`, so later commands need no re-detection;
+    - warns if `.cg/` is not gitignored, since everything it writes is bulky, machine-specific and
+      reproducible.
+
+  `cg sdk status` reports the install and notices if any resolved jar has since gone missing.
+
+  The toolchain is **shared per project** and reached through a classpath rather than copied: it is
+  identical for every game. A game's own files -- referee, viewer, assets, generated config --
+  belong to one contribution and will live in that contribution's `.meta/`.
+
+  The published SDK documentation still shows version 3.4.1; Maven Central is at 4.5.0, which is
+  what this pins.
+
+- **`cg puzzle play-server` works on interactive puzzles**, reporting the game turn by turn and the
+  referee's score instead of a pass/fail:
+
+  ```
+  [DONE] test 1 (Simple) -- 9 turns, score 10
+    turn 9/9
+      Standard Error Stream:
+        > Playing move (7893, 4305)
+      Standard Output Stream:
+        > 7893 4305
+      Game information:
+        You held off the wave of zombies and scored 10 points.
+  ```
+
+  Laid out as CodinGame's own console is: each stream under its own heading, per turn, all shown
+  by default. `cg puzzle play-server` now shows what a run printed whichever puzzle it is and
+  whether or not the test passed -- its `--show-stdout` opt-in is gone, replaced by flags that
+  suppress instead: `--summary` for the verdict alone, and `--no-stdout`/`--no-stderr` to drop one
+  stream and keep the other. (`cg puzzle play` and `cg contribution play`, which run locally,
+  keep `--show-stdout` unchanged.)
+
+  The **first frame is the game's setup**, before the solution has moved, so turns are numbered from
+  the second -- which makes `turn 9/9` here the same turn the web IDE calls 9/9. Frames the referee
+  produced without reading anything from the solution (`keyframe: false`, in games where it acts
+  several times per move of yours) are flagged `(no input read)` but still numbered; that flag is
+  where single-stepping does not pause. Standard error is coloured red as the IDE colours it.
+
+  `TestSession/play` returns **two different response shapes**, and only one was modelled. A
+  standard puzzle reports `output` and `comparison`; an interactive one reports `frames`, `scores`,
+  `metadata` and `gameId`, and none of the former -- so every interactive response failed to parse
+  outright with "missing required fields". Both are now understood, distinguished by
+  `CgPlayResult.is_interactive`.
+
+  The whole game arrives in one response, already played out and scored. There is nothing to poll,
+  and single-stepping is presentation over data cg already has.
+
+  `cg --json puzzle play-server` prints the response itself instead of a rendering of it -- every
+  frame in full, the referee's per-turn `view`, and anything CodinGame sends that this client does
+  not model yet.
+
+  CodinGame's console colours (`¤RED¤...§RED§`) are rendered as terminal colour rather than shown
+  as literal markers, in the referee's narration and in whatever the solution printed -- the IDE
+  console colours both. A colour name cg does not know loses its markers and keeps its text. The
+  styling is applied as explicit spans rather than by building Rich markup, so a solution that
+  prints `[bold]` has it shown rather than interpreted.
+
+  New `CgPlayFrame` models a turn: the referee's narration, the solution's `stdout` (its move) and
+  `stderr` (its debug output) kept apart per turn rather than interleaved as in the standard shape,
+  the viewer state, and any error. A failure is reported on the frame it happened on, so a run that
+  crashed on turn 1 says so rather than reporting a bare error. `CgPlayResult.score` reads
+  `metadata.score` -- the number the puzzle is ranked on -- not the normalized per-player `scores`.
+
+- **Optimization puzzles (`PUZZLE_OPTI`) can be imported and worked on.** `cg puzzle import` used to
+  refuse any puzzle that was not `PUZZLE_INOUT`, which blocked all of them.
+
+  These are scored by a referee running alongside your solution rather than by comparing output to
+  a fixed expected answer, so import, debugging, `cg puzzle play-server` and `cg puzzle submit` all
+  work, while **local scoring cannot**. Their downloaded test cases carry real inputs and *empty*
+  expected outputs, so comparing against them inverts: measured against the live "Travelling
+  Salesman" before the guard, a correct solution scored **0/5**, and one printing nothing would have
+  passed all five. `cg puzzle play` now refuses with an explanation instead.
+
+  Detection keys on the new `mode` field rather than the contribution type, because a puzzle
+  CodinGame provides itself has no contribution at all -- so an *official* optimization puzzle would
+  otherwise go unguarded. `mode` is cached in `.meta/puzzle-server-data.json`, so local commands
+  need no network call; run `cg puzzle repair` to populate it in a directory imported earlier.
+
+- **Fixed: interactive puzzles reported nonsense from `cg puzzle play`.** A puzzle whose stub
+  generator contains `gameloop` trades moves with a referee turn by turn -- the solution reads a
+  turn's state, writes a move, and the referee computes the next state from it. Only CodinGame has
+  the referee, and the downloaded test case is its *world configuration*, not the stdin the solution
+  reads: "Code vs Zombies" supplies human positions with no ids while the stub reads an id per
+  human, and "Mars Lander" leads with two physics-configuration lines the stub never reads.
+
+  This was not new with optimization puzzles. **Mars Lander episodes 2 and 3 are ordinary puzzles**
+  that cg has always imported, and local play against their empty expected outputs has always been
+  meaningless. `play` and debugging now both refuse and say why.
+
+  Independent of the optimization mode, and deliberately so: "Travelling Salesman" is an
+  optimization puzzle that is not interactive, so it still runs and debugs locally -- it just cannot
+  be scored there.
+
+- **Fixed: an optimization puzzle's progress record failed to parse.** `CgLastActivityPuzzle`
+  required `xpPoints`, which these puzzles omit entirely -- they are ranked on a leaderboard rather
+  than paid in XP. It is now optional, and `cg puzzle import` gets past it.
+
 - **Edit a contribution's metadata and topics from the CLI**, instead of hand-editing
   `data/contribution-data.json`.
 

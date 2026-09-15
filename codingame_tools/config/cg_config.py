@@ -48,6 +48,17 @@ class CgConfigData(JSONWizardX):
        the single config file that discovery actually resolved to (see
        `codingame_tools.config.resolver.find_config_file`) is consulted for it."""
 
+    template_path: str | list[str] | None = None
+    """Search path for solution templates, used by `cg puzzle import`/`reset`/`set
+       solution-language` when `--template-path` is not given (and extended by it when it is).
+
+       Either one string, which may hold several directories separated the way `PATH` is, or a
+       YAML list of them. Searched in order.
+
+       Each entry is resolved against the directory holding this config file, the same as
+       `dataDir` above -- so from `<project>/.cg/config/config.yaml`, `../../templates` means
+       `<project>/templates`. One rule for every relative path in the file."""
+
     settings: CgSettingsData = field(default_factory=CgSettingsData)
     """Settings overridable from this config file--identical shape to settings.json's own
        `CgSettingsData` (`defaultProfile`/`contributionDir`/`puzzleDir`). Unlike settings.json,

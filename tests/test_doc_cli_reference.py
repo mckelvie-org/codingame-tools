@@ -72,8 +72,11 @@ def test_generated_pages_contain_no_terminal_escapes() -> None:
 # redirect, comment, or the end of the line.
 _INVOCATION_RE = re.compile(r"(?<![\w`])cg((?: +[a-z0-9][a-z0-9-]*)+)")
 
-# Words that follow `cg` in prose but aren't commands (placeholders, or a group named mid-sentence).
-_PLACEHOLDERS = {"command", "options", "subcommand"}
+# Words that follow `cg` in prose but aren't commands (placeholders, or a group named
+# mid-sentence). "wrote"/"has"/"is" catch sentences like "untouched since cg wrote it" -- the
+# regex cannot tell a verb from a subcommand, and rewording every such sentence to dodge it would
+# be the tail wagging the dog.
+_PLACEHOLDERS = {"command", "options", "subcommand", "wrote", "has", "is", "was", "will", "would"}
 
 
 def _hand_written_pages() -> list[Path]:

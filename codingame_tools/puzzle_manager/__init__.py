@@ -22,6 +22,7 @@ from __future__ import annotations
 from ..client.common.protocol.report import CgSubmissionReport
 from .manager import (
     DATA_SUBDIR_NAME,
+    DEFAULT_IMPORT_LANGUAGE,
     META_SUBDIR_NAME,
     SOLUTION_FILE_STEM,
     STATEMENT_FILE_NAME,
@@ -41,11 +42,13 @@ from .manager import (
 )
 from .resolver import (
     CG_PUZZLE_DIR_ENV_VAR,
-    DEFAULT_PUZZLE_SUBDIR_NAME,
+    PUZZLES_SUBDIR_NAME,
     CgPuzzleDirInferenceError,
     CgPuzzleDirNotFoundError,
+    default_puzzles_dir,
     find_puzzle_dir,
     infer_puzzle_dir,
+    project_root,
     resolve_puzzle_dir,
 )
 from .schema import (
@@ -58,6 +61,7 @@ from .schema import (
 from .statement_render import CgStatementBlock, parse_statement_html
 
 __all__ = [
+    "DEFAULT_IMPORT_LANGUAGE",
     "CgPuzzleManager",
     "CgPuzzleManagerError",
     "CgPuzzleDiscardResult",
@@ -89,5 +93,7 @@ __all__ = [
     "resolve_puzzle_dir",
     "infer_puzzle_dir",
     "CG_PUZZLE_DIR_ENV_VAR",
-    "DEFAULT_PUZZLE_SUBDIR_NAME",
+    "PUZZLES_SUBDIR_NAME",
+    "default_puzzles_dir",
+    "project_root",
 ]

@@ -6,6 +6,7 @@ These are pure/local tests--no network--so they run under the default `pdm run t
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -251,13 +252,13 @@ def test_settings_falls_back_to_global_config_settings_field_by_field(
     global_config.parent.mkdir(parents=True)
     CgConfigData(settings=CgSettingsData(default_profile="sammck")).save_yaml(global_config)
     project_config = _write_project_config(tmp_path)
-    CgConfigData(settings=CgSettingsData(contribution_dir="myrepo")).save_yaml(project_config)
+    CgConfigData(settings=CgSettingsData(project_dir="myrepo")).save_yaml(project_config)
 
     resolved = CgConfig(config_file=project_config, raw_data=CgConfigData.load_yaml(project_config))
 
     assert resolved.default_profile == "sammck"  # from the global file, not masked
     # from the project file--relative to data_dir (where settings.json lives), not cwd
-    assert resolved.contribution_dir == resolved.data_dir / "myrepo"
+    assert resolved.project_dir == resolved.data_dir / "myrepo"
 
 
 def test_project_settings_field_overrides_global_settings_field(
@@ -281,34 +282,33 @@ def test_settings_is_unaffected_by_a_nonexistent_global_config(tmp_path: Path, f
     resolved = CgConfig(config_file=project_config, raw_data=CgConfigData.load_yaml(project_config))
 
     assert resolved.default_profile == "only-project"
-    assert resolved.contribution_dir is None
-    assert resolved.puzzle_dir is None
+    assert resolved.project_dir is None
 
 
-def test_contribution_dir_resolves_relative_to_data_dir_not_cwd(
+def test_project_dir_resolves_relative_to_data_dir_not_cwd(
             tmp_path: Path, fake_global_root: Path, monkeypatch: pytest.MonkeyPatch,
         ) -> None:
-    """Regression test: a relative contributionDir must resolve against data_dir (where
+    """Regression test: a relative projectDir must resolve against data_dir (where
        settings.json lives), not whatever the current working directory happens to be--otherwise
        the effective directory moves around depending on where `cg` is run from."""
     project_config = _write_project_config(tmp_path)
-    CgConfigData(settings=CgSettingsData(contribution_dir="myrepo")).save_yaml(project_config)
+    CgConfigData(settings=CgSettingsData(project_dir="myrepo")).save_yaml(project_config)
     resolved = CgConfig(config_file=project_config, raw_data=CgConfigData.load_yaml(project_config))
     elsewhere = tmp_path / "some" / "other" / "cwd"
     elsewhere.mkdir(parents=True)
     monkeypatch.chdir(elsewhere)
 
-    assert resolved.contribution_dir == resolved.data_dir / "myrepo"
-    assert resolved.contribution_dir != elsewhere / "myrepo"
+    assert resolved.project_dir == resolved.data_dir / "myrepo"
+    assert resolved.project_dir != elsewhere / "myrepo"
 
 
-def test_contribution_dir_absolute_override_used_as_is(tmp_path: Path, fake_global_root: Path) -> None:
+def test_project_dir_absolute_override_used_as_is(tmp_path: Path, fake_global_root: Path) -> None:
     absolute = tmp_path / "elsewhere"
     project_config = _write_project_config(tmp_path)
-    CgConfigData(settings=CgSettingsData(contribution_dir=str(absolute))).save_yaml(project_config)
+    CgConfigData(settings=CgSettingsData(project_dir=str(absolute))).save_yaml(project_config)
     resolved = CgConfig(config_file=project_config, raw_data=CgConfigData.load_yaml(project_config))
 
-    assert resolved.contribution_dir == absolute
+    assert resolved.project_dir == absolute
 
 
 def test_settings_for_the_global_config_itself_is_not_overlaid_on_itself(
@@ -359,25 +359,23 @@ def test_cg_config_to_dump_dict_has_resolved_values_and_raw_config(tmp_path: Pat
 
 
 def test_cg_config_to_dump_dict_nests_resolved_settings(tmp_path: Path, fake_global_root: Path) -> None:
-    """defaultProfile/contributionDir/puzzleDir must be nested under "settings" in the dump--
+    """defaultProfile/projectDir/projectDir must be nested under "settings" in the dump--
        matching CgConfigData.settings's own nested shape--not flattened onto the config object
        directly (that's where they lived before the config/settings merge redesign)."""
     global_config = fake_global_root / "config" / CONFIG_FILE_NAME
     global_config.parent.mkdir(parents=True)
     CgConfigData(settings=CgSettingsData(default_profile="sammck")).save_yaml(global_config)
     project_config = _write_project_config(tmp_path)
-    CgConfigData(settings=CgSettingsData(contribution_dir="myrepo")).save_yaml(project_config)
+    CgConfigData(settings=CgSettingsData(project_dir="myrepo")).save_yaml(project_config)
     resolved = CgConfig(config_file=project_config, raw_data=CgConfigData.load_yaml(project_config))
 
     d = resolved.to_dump_dict()
 
     assert "defaultProfile" not in d
-    assert "contributionDir" not in d
-    assert "puzzleDir" not in d
+    assert "projectDir" not in d
     assert d["settings"] == {
         "defaultProfile": "sammck",
-        "contributionDir": str(resolved.data_dir / "myrepo"),
-        "puzzleDir": None,
+        "projectDir": str(resolved.data_dir / "myrepo"),
     }
 
 
@@ -385,3 +383,68 @@ def test_cg_config_data_omits_unset_fields_from_to_dict(tmp_path: Path) -> None:
     """Regression test for a JSONWizardX bug where Meta.skip_defaults was silently ignored."""
     assert CgConfigData().to_dict() == {}
     assert CgConfigData(data_dir="../data").to_dict() == {"dataDir": "../data"}
+
+
+# --- templatePath --------------------------------------------------------------------------------
+
+
+def _config_with_template_path(tmp_path: Path, value: object) -> CgConfig:
+    config_file = tmp_path / ".cg" / "config" / CONFIG_FILE_NAME
+    config_file.parent.mkdir(parents=True, exist_ok=True)
+    return CgConfig(config_file=config_file,
+                    raw_data=CgConfigData.from_dict({"templatePath": value}))
+
+
+def test_template_path_is_relative_to_the_config_file_like_data_dir(tmp_path: Path) -> None:
+    """One rule for every relative path in config.yaml. From `<project>/.cg/config/config.yaml`,
+       reaching the project's own `templates/` therefore takes `../../templates`."""
+    config = _config_with_template_path(tmp_path, "../../templates")
+
+    assert config.template_path == [tmp_path / "templates"]
+
+
+def test_a_bare_name_stays_inside_the_config_directory(tmp_path: Path) -> None:
+    """The corollary, and the easy mistake: `templates` is `.cg/config/templates`, not the
+       project's."""
+    config = _config_with_template_path(tmp_path, "templates")
+
+    assert config.template_path == [tmp_path / ".cg" / "config" / "templates"]
+
+
+def test_template_path_accepts_a_yaml_list(tmp_path: Path) -> None:
+    config = _config_with_template_path(tmp_path, ["../../a", "../../b"])
+
+    assert config.template_path == [tmp_path / "a", tmp_path / "b"]
+
+
+def test_template_path_accepts_path_separated_entries(tmp_path: Path) -> None:
+    config = _config_with_template_path(tmp_path, f"../../a{os.pathsep}../../b")
+
+    assert config.template_path == [tmp_path / "a", tmp_path / "b"]
+
+
+def test_template_path_keeps_absolute_entries(tmp_path: Path) -> None:
+    absolute = tmp_path / "somewhere" / "else"
+    config = _config_with_template_path(tmp_path, str(absolute))
+
+    assert config.template_path == [absolute]
+
+
+def test_template_path_is_empty_when_unset(tmp_path: Path) -> None:
+    config_file = tmp_path / ".cg" / "config" / CONFIG_FILE_NAME
+    config_file.parent.mkdir(parents=True)
+
+    assert CgConfig(config_file=config_file, raw_data=CgConfigData()).template_path == []
+
+
+def test_template_path_ignores_project_dir(tmp_path: Path) -> None:
+    """Unlike the puzzles/ and contributions/ trees, the template path does not follow projectDir:
+       it is a config-file path, resolved like every other one in the file."""
+    config_file = tmp_path / ".cg" / "config" / CONFIG_FILE_NAME
+    config_file.parent.mkdir(parents=True)
+    raw = CgConfigData.from_dict({
+            "templatePath": "../../templates",
+            "settings": {"projectDir": str(tmp_path / "elsewhere")},
+        })
+
+    assert CgConfig(config_file=config_file, raw_data=raw).template_path == [tmp_path / "templates"]

@@ -8,8 +8,8 @@ overwrite.
 ## Two ways to start
 
 ```bash
-cg contribution create ./my-puzzle "My Puzzle"   # brand new, purely local
-cg contribution import ./my-puzzle <handle>      # existing server-side contribution
+cg contribution create "My Puzzle"   # brand new, purely local
+cg contribution import <handle>      # existing server-side contribution
 ```
 
 `create` makes **no network call** and creates nothing server-side. Nothing exists remotely until
@@ -23,7 +23,9 @@ integer, print it back" puzzle. The pieces agree with each other until you repla
 > **`data/cover.png` is a garish "UNDER CONSTRUCTION" placeholder.** `push` uploads whatever is in
 > that file, so replace it before you publish. New contributions are private drafts until then.
 
-Both commands take the directory first, and both make it the
+Both create `contributions/<name>` under the project root — the directory holding `.cg/`, or the
+current one if there is none — with the name derived from the title (`"Simple Makefiles"` becomes
+`simple-makefiles`). `--contribution-dir` overrides it. Both make the new directory the
 [active contribution](../concepts/profiles.md#active-working-directories), so later commands find it
 wherever you run them from.
 

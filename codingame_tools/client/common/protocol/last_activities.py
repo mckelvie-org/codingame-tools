@@ -135,9 +135,6 @@ class CgLastActivityPuzzle(JSONWizardX):
     validator_score: int
     """Score achieved against the puzzle's validators, e.g. 100 for a fully-solved puzzle."""
 
-    xp_points: int
-    """XP points awarded for solving this puzzle."""
-
     puzzle_type: str = Alias("type")
     """The puzzle's own type discriminator, e.g. "CODE", "SOLO". Only observed via
        getLastActivities so far ("CODE"); findProgressByIds additionally returned "SOLO"."""
@@ -145,7 +142,15 @@ class CgLastActivityPuzzle(JSONWizardX):
     _creation_time: CgEpochMillis = Alias("creationTime")
     """When the puzzle was created."""
 
+    # `extra_data` stays the first field with a default--see the note in CgTopic. `xp_points`
+    # below it for that reason, not because it is any less fundamental.
     extra_data: CatchAll = field(default_factory=dict)
+
+    xp_points: int | None = None
+    """XP points awarded for solving this puzzle, or `None` for a puzzle that awards none.
+
+       Omitted entirely (not `null`) for an optimization puzzle, which is ranked on a leaderboard
+       rather than paid in XP--confirmed live 2026-08-16 against "Travelling Salesman"."""
 
     contributor: CgLastActivityContributor | None = None
     """The codingamer who authored this puzzle, or `None` for a puzzle CodinGame provides itself.

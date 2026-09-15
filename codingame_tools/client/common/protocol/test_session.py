@@ -13,6 +13,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+# JsonList is imported for its name alone: dataclass_wizard resolves JsonDict's
+# forward references against this module's globals, and JsonDict is defined in terms
+# of JsonList.
+from json_data_types import JsonDict, JsonList  # noqa: F401
+
 from ....common.dataclass_wizard_x import Alias, CatchAll, JSONWizardX
 from .contribution import CgHtml, CgStubGenerator
 from .last_activities import CgLastActivityContributor
@@ -154,6 +159,17 @@ class CgTestSessionQuestionDetails(JSONWizardX):
        observed so far."""
 
     extra_data: CatchAll = field(default_factory=dict)
+
+    mode: str | None = None
+    """How the puzzle is played, when it is not a plain read-input/print-output puzzle.
+
+       `"OPTIMIZATION"` for an optimization puzzle (PUZZLE_OPTI), where a referee runs alongside
+       the solution and scores it rather than comparing its output to a fixed expected answer.
+       Absent entirely for a standard in/out puzzle -- confirmed live 2026-08-16 against
+       "Travelling Salesman" (present) and "Temperatures" (absent).
+
+       More dependable than `contribution.contribution_type` for telling the kinds apart, because
+       `contribution` is omitted for puzzles CodinGame itself provides while `mode` is not."""
 
     contributor: CgLastActivityContributor | None = None
     """The codingamer who authored this puzzle, or `None` for a puzzle CodinGame itself provides.
@@ -403,10 +419,56 @@ class CgPlayComparison(JSONWizardX):
 
 
 @dataclass
-class CgPlayResult(JSONWizardX):
-    """The complete response to TestSession/play."""
+class CgPlayFrame(JSONWizardX):
+    """One turn of an interactive puzzle's run, as returned in `CgPlayResult.frames`.
 
-    output: str
+       The server returns the whole trace in a single response -- every turn, already played out.
+       The web IDE's timeline, playback and single-stepping are presentation on top of this list;
+       nothing is streamed or polled."""
+
+    extra_data: CatchAll = field(default_factory=dict)
+
+    game_information: str | None = None
+    """The referee's own narration for this turn, shown in the IDE's console. Carries the result
+       text at the end of a run (e.g. "You held off the wave of zombies and scored 10 points."),
+       and may embed colour markers of the form `¤RED¤...§RED§`."""
+
+    stdout: str | None = None
+    """What the solution wrote this turn -- its move. Absent on a turn where it wrote nothing."""
+
+    stderr: str | None = None
+    """What the solution wrote to stderr this turn: its own debug output, which CodinGame keeps
+       per turn rather than lumping together."""
+
+    view: str | None = None
+    """The referee's serialized world state for this turn, in the puzzle-specific format its
+       browser viewer renders. Opaque here -- cg does not draw the game."""
+
+    keyframe: bool | None = None
+    """Whether this frame can be seeked to directly, rather than only reached by replaying from
+       the previous one."""
+
+    error: CgPlayError | None = None
+    """Present when the solution failed on this turn -- a crash, or a timeout waiting for its
+       move. The run stops here."""
+
+
+@dataclass
+class CgPlayResult(JSONWizardX):
+    """The complete response to TestSession/play.
+
+       Two shapes, depending on the puzzle. A standard in/out puzzle reports `output` and
+       `comparison`: one run, one answer, compared against the expected output. An **interactive**
+       puzzle (a `gameloop` stub -- see `CgTestSessionQuestionDetails.stub_generator`) reports
+       `frames`, `scores` and `metadata` instead, and none of `output`/`comparison`: there is no
+       single expected answer, only a turn-by-turn game the referee scored.
+
+       Every field is therefore optional, and which ones arrive is decided by the puzzle rather
+       than by the request. `is_interactive` distinguishes them."""
+
+    extra_data: CatchAll = field(default_factory=dict)
+
+    output: str | None = None
     """Combined stdout+stderr produced by running the code, interleaved into a single stream
        exactly as shown in the IDE's console output pane--confirmed empirically (code that
        wrote to stderr in a loop, then a single stdout line, produced an `output` containing
@@ -416,24 +478,52 @@ class CgPlayResult(JSONWizardX):
        `comparison`, by contrast, is computed from genuine stdout only--also confirmed
        empirically (the same test's `comparison.expected` correctly reflected comparing just
        the one real stdout line against the puzzle's expected output, unaffected by the
-       interleaved stderr noise in `output`)."""
+       interleaved stderr noise in `output`).
 
-    comparison: CgPlayComparison
+       Absent for an interactive puzzle, which reports per-turn output in `frames` instead."""
+
+    comparison: CgPlayComparison | None = None
     """Comparison of the code's actual stdout (not `output`, which also includes stderr)
-       against the test case's expected output."""
+       against the test case's expected output.
 
-    extra_data: CatchAll = field(default_factory=dict)
+       Absent for an interactive puzzle, which has no single expected answer to compare against."""
 
     error: CgPlayError | None = None
     """Present if the code failed to compile/parse or raised an uncaught exception. `comparison`
        is still present alongside it in that case (with `success: False`, and `expected` set but
-       `found` absent)."""
+       `found` absent). An interactive puzzle reports the failure on the frame it happened on
+       instead--see `CgPlayFrame.error`."""
+
+    frames: list[CgPlayFrame] = field(default_factory=list)
+    """Every turn of an interactive puzzle's run, in order. Empty for a standard puzzle."""
+
+    game_id: int | None = None
+    """Server-side id of the played game, for an interactive puzzle."""
+
+    scores: list[float] = field(default_factory=list)
+    """Per-player scores for an interactive puzzle. One entry for a solo puzzle."""
+
+    metadata: JsonDict = field(default_factory=dict)
+    """Referee-reported result data for an interactive puzzle. Carries `score` for an
+       optimization puzzle--the number that actually matters there, since there is no pass/fail."""
+
+    @property
+    def is_interactive(self) -> bool:
+        """Whether this is an interactive puzzle's turn-by-turn result rather than a single
+           compared answer."""
+        return bool(self.frames)
+
+    @property
+    def score(self) -> float | None:
+        """The referee's score for an interactive run, or None if it reported none."""
+        value = self.metadata.get("score")
+        return float(value) if isinstance(value, (int, float)) else None
 
 
 __all__ = [
     "CgAvailableLanguage", "CgHtml", "CgLastActivityContributor",
     "CgMultipleLanguagesTestParams", "CgPlayComparison", "CgPlayError", "CgPlayRequest",
-    "CgPlayResult", "CgPlayStackFrame", "CgSolutionLanguage", "CgStubGenerator",
+    "CgPlayFrame", "CgPlayResult", "CgPlayStackFrame", "CgSolutionLanguage", "CgStubGenerator",
     "CgSubmitRequest", "CgTestSession", "CgTestSessionAnswer", "CgTestSessionContribution",
     "CgTestSessionPuzzle", "CgTestSessionQuestion", "CgTestSessionQuestionDetails",
     "CgTestSessionQuestionSummary", "CgTestSessionTestCase",

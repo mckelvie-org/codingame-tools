@@ -59,12 +59,12 @@ Both managers look for a working directory rather than taking one as an argument
 those defaults are per-profile settings:
 
 ```bash
-cg settings set puzzle-dir ~/cg/puzzle
-cg settings set contribution-dir ~/cg/contribution
+cg settings set project-dir ~/cg
 ```
 
-Without a setting, resolution falls back to the current directory, and then to `./puzzle` or
-`./contribution`. `cg puzzle where` and `cg contribution where` answer "which directory would this
+`projectDir` names where the `puzzles/` and `contributions/` trees live; without it, that is the
+directory holding `.cg/`, or the current one. `cg puzzle where` and `cg contribution where` answer
+"which directory would this
 command actually use", which is usually faster than reasoning about it. They print **only** the
 resolved path, so they compose: `cd "$(cg puzzle where)"`.
 
@@ -99,11 +99,17 @@ a config file pinning it would defeat `activate`/`deactivate` entirely.
 
 Most specific first, for both puzzles and contributions:
 
-1. `--puzzle-dir` / `--contribution-dir`, or the directory argument to `import`/`create`
+1. `--puzzle-dir` / `--contribution-dir`
 2. `CG_PUZZLE_DIR` / `CG_CONTRIBUTION_DIR`
 3. the **active** directory (above)
-4. the configured default (`cg settings set puzzle-dir`, or `config.yaml`)
-5. the current directory, if it holds a `puzzle.json` / `contribution.json`
-6. `./puzzle` / `./contribution`, if it holds one
+4. the current directory, if it is itself a working directory
 
-Steps 1–4 are taken at face value; 5–6 only match when the identity file is actually there.
+That's the whole list — no searching. Step 4 checks that one directory: not its parents, not a
+`puzzles/` beneath it. So `cd puzzles/temperatures && cg puzzle play` works when nothing is active,
+while the same command one directory up does not. The active directory outranks where you are
+standing, so if one is set, `cd` changes nothing; `cg puzzle activate .` switches to the one you're
+in.
+
+`import` and `create` don't take a directory: they compute one from the puzzle's pretty id or the
+contribution's title, under the project root — the directory holding `.cg/`, or the current one if
+there is none. `--puzzle-dir`/`--contribution-dir` override that.

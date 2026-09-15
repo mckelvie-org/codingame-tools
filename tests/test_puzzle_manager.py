@@ -57,6 +57,7 @@ def _make_test_session(
             test_session_handle: str = "session-handle-1",
             statement: str = "<p>statement</p>",
             stub_generator: str = "read a:int",
+            mode: str | None = None,
         ) -> CgTestSession:
     contributor = CgLastActivityContributor(user_id=1, pseudo="someone", public_handle="contributor-handle")
     # contribution_type=None models a puzzle CodinGame provides itself, which omits both
@@ -75,6 +76,7 @@ def _make_test_session(
                     CgTestSessionTestCase(index=2, input_binary_id=3, output_binary_id=4, label="Test 2"),
                 ],
             question_type="MULTIPLE_LANGUAGES",
+            mode=mode,
         )
     current_question = CgTestSessionQuestion(last_submission_id=1, question=question, answer=answer)
     puzzle = CgTestSessionPuzzle(
@@ -373,7 +375,7 @@ async def test_import_treats_empty_placeholder_answer_object_as_no_real_answer(t
 
 
 async def test_import_refuses_unsupported_contribution_type(tmp_path: Path) -> None:
-    session = _make_test_session(contribution_type="PUZZLE_OPTI")
+    session = _make_test_session(contribution_type="CLASHOFCODE")
     client, _, _, _ = _make_fake_client(session)
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
 
@@ -1224,12 +1226,122 @@ async def test_import_accepts_an_official_puzzle_with_no_contribution(tmp_path: 
 
 async def test_import_still_refuses_a_known_unsupported_contribution_type(tmp_path: Path) -> None:
     """Absence is tolerated; a type that's present and unsupported is still rejected."""
-    session = _make_test_session(contribution_type="PUZZLE_OPTI")
+    session = _make_test_session(contribution_type="CLASHOFCODE")
     client, _, _, _ = _make_fake_client(session)
     manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
 
     with pytest.raises(CgPuzzleManagerError):
         await manager.import_("literary-alfabet-soupe")
+
+
+async def test_import_accepts_an_optimization_puzzle(tmp_path: Path) -> None:
+    """PUZZLE_OPTI can be imported, played on the server and submitted--only local scoring is
+       impossible--so refusing the import outright would block all three."""
+    session = _make_test_session(contribution_type="PUZZLE_OPTI", mode="OPTIMIZATION")
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+
+    await manager.import_("travelling-salesman")
+
+    server_data = manager.load_server_data()
+    assert server_data is not None
+    assert server_data.puzzle_type == "PUZZLE_OPTI"
+    assert server_data.mode == "OPTIMIZATION", "cached so local commands need no network call"
+    assert manager.is_optimization_puzzle()
+
+
+async def test_local_play_is_refused_for_an_optimization_puzzle(tmp_path: Path) -> None:
+    """An optimization puzzle's test cases carry real inputs and EMPTY expected outputs, because a
+       referee scores the run. Comparing against those inverts: a genuine answer never matches the
+       empty file and is reported failed, while a solution printing nothing passes every test.
+       Measured against the live puzzle before this guard existed: `cg puzzle play` said 0/5."""
+    session = _make_test_session(contribution_type="PUZZLE_OPTI", mode="OPTIMIZATION")
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("travelling-salesman")
+
+    with pytest.raises(CgPuzzleManagerError, match="optimization puzzle"):
+        manager.resolve_play_local_test_cases()
+
+
+async def test_an_official_optimization_puzzle_is_still_guarded(tmp_path: Path) -> None:
+    """A puzzle CodinGame provides itself has no contribution at all, so its contribution type is
+       None however it plays. Keying the guard on that type would leave every *official*
+       optimization puzzle silently unguarded -- reporting 0/N against empty expected outputs --
+       which is why `mode` is the signal: the server reports it either way."""
+    session = _make_test_session(contribution_type=None, mode="OPTIMIZATION")
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("some-official-optim")
+
+    server_data = manager.load_server_data()
+    assert server_data is not None
+    assert server_data.puzzle_type is None, "official puzzles carry no contribution type"
+    assert manager.is_optimization_puzzle(), "must be detected from mode, not from the type"
+    with pytest.raises(CgPuzzleManagerError, match="optimization puzzle"):
+        manager.resolve_play_local_test_cases()
+
+
+async def test_local_play_is_refused_for_an_interactive_puzzle(tmp_path: Path) -> None:
+    """A `gameloop` stub means the solution trades moves with a referee turn by turn. The
+       downloaded test case is the referee's world configuration, not the stdin the solution
+       reads--"Code vs Zombies" hands it human positions with no ids while the stub reads an id
+       per human--so feeding it in produces nonsense rather than a short run."""
+    session = _make_test_session(
+            stub_generator="gameloop\nread x:int y:int\nwrite 0 0", mode="OPTIMIZATION")
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("code-vs-zombies")
+
+    assert manager.is_interactive()
+    with pytest.raises(CgPuzzleManagerError, match="interactive puzzle"):
+        manager.resolve_play_local_test_cases()
+
+
+async def test_an_interactive_puzzle_that_is_not_an_optimization_puzzle_is_still_refused(
+            tmp_path: Path) -> None:
+    """The two properties are independent, and this combination already existed before
+       optimization puzzles could be imported at all: "Mars Lander" is an ordinary puzzle
+       (`mode` absent) whose stub is a gameloop, so local play was silently producing garbage
+       against an empty expected output. Keying only on the optimization mode would leave it
+       broken."""
+    session = _make_test_session(
+            stub_generator="read surfaceN:int\ngameloop\nread X:int Y:int\nwrite 0 3")
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("mars-lander-episode-2")
+
+    server_data = manager.load_server_data()
+    assert server_data is not None
+    assert server_data.mode is None, "not an optimization puzzle"
+    assert manager.is_interactive()
+    with pytest.raises(CgPuzzleManagerError, match="interactive puzzle"):
+        manager.resolve_play_local_test_cases()
+
+
+async def test_a_one_shot_optimization_puzzle_is_not_interactive(tmp_path: Path) -> None:
+    """"Travelling Salesman" reads one input and prints one answer, so it runs and debugs locally
+       even though it cannot be scored there. Conflating the two properties would take that away."""
+    session = _make_test_session(
+            stub_generator="read N:int\nloop N read X:int Y:int\nwrite 0 2 1 3",
+            mode="OPTIMIZATION")
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("travelling-salesman")
+
+    assert manager.is_optimization_puzzle()
+    assert not manager.is_interactive(), "one input, one answer--nothing turn-based about it"
+
+
+async def test_a_standard_puzzle_still_plays_locally(tmp_path: Path) -> None:
+    """The guard must key on the mode, not merely on having been touched by this change."""
+    session = _make_test_session()
+    client, _, _, _ = _make_fake_client(session)
+    manager = CgPuzzleManager(tmp_path, client)  # type: ignore[arg-type]
+    await manager.import_("literary-alfabet-soupe")
+
+    assert not manager.is_optimization_puzzle()
+    assert manager.resolve_play_local_test_cases(), "a standard puzzle must still resolve its tests"
 
 
 # --- import --language / set_language ------------------------------------------------------------
@@ -1428,3 +1540,84 @@ async def test_set_language_rejects_switching_to_the_current_language(tmp_path: 
 
     with pytest.raises(CgPuzzleManagerError, match="already using"):
         await manager.set_language("Python3")
+
+
+# --- reset ---------------------------------------------------------------------------------------
+#
+# `reset` is the one command here that can destroy work with no copy anywhere: `set_language`
+# restores whatever the server has for the target language, and `discard_local` takes the server's
+# copy, but `reset` always regenerates. So the safety predicate is the whole point of it.
+
+
+async def test_reset_writes_the_placeholder_by_default(tmp_path: Path) -> None:
+    manager, _ = await _imported(tmp_path, previous_code={"Python3": "print('py')\n"})
+
+    result = await manager.reset_solution()
+
+    assert not result.from_template
+    assert not result.discarded, "the imported solution came from the server, so nothing was lost"
+    assert "TODO" in manager.load_solution()
+
+
+async def test_reset_writes_a_template_when_given_one(tmp_path: Path) -> None:
+    manager, _ = await _imported(tmp_path, previous_code={"Python3": "print('py')\n"})
+
+    result = await manager.reset_solution(template='"""\n${PUZZLE_DETAILS}\n"""\nimport sys\n')
+
+    assert result.from_template
+    solution = manager.load_solution()
+    assert "import sys" in solution
+    assert "${PUZZLE_DETAILS}" not in solution, "the token must have been expanded"
+
+
+async def test_reset_refuses_when_work_would_be_lost(tmp_path: Path) -> None:
+    """Neither on the server nor what cg last wrote means there is no other copy anywhere."""
+    manager, _ = await _imported(tmp_path, previous_code={"Python3": "print('py')\n"})
+    manager.solution_file.write_text("print('my unsaved edit')\n")
+
+    with pytest.raises(CgPuzzleManagerError, match="discard"):
+        await manager.reset_solution()
+
+    assert manager.load_solution() == "print('my unsaved edit')"  # untouched
+
+
+async def test_reset_force_discards_and_says_so(tmp_path: Path) -> None:
+    manager, _ = await _imported(tmp_path, previous_code={"Python3": "print('py')\n"})
+    manager.solution_file.write_text("print('my unsaved edit')\n")
+
+    result = await manager.reset_solution(force=True)
+
+    assert result.discarded, "callers report this; silently losing work would be worse"
+    assert "my unsaved edit" not in manager.load_solution()
+
+
+async def test_reset_does_not_prompt_for_code_the_server_already_has(tmp_path: Path) -> None:
+    """Editing and then submitting leaves the file differing from cg's snapshot but recoverable,
+       so resetting it is not destructive and must not demand --force."""
+    manager, _ = await _imported(tmp_path, previous_code={"Python3": "print('py')\n"})
+    manager.solution_file.write_text("print('py')\n")
+
+    result = await manager.reset_solution()
+
+    assert not result.discarded
+
+
+async def test_reset_can_switch_language(tmp_path: Path) -> None:
+    """Unlike set_language, it never restores the target language's saved code--the point of reset
+       is a clean start, so a C++ solution sitting on the server must not come back."""
+    manager, _ = await _imported(tmp_path, previous_code={
+            "Python3": "print('py')\n", "C++": "int main(){ return 42; }\n"})
+
+    result = await manager.reset_solution(language="C++")
+
+    assert (result.previous_language, result.language) == ("Python3", "C++")
+    assert "return 42" not in manager.load_solution()
+    puzzle_data = manager.load_puzzle_data()
+    assert puzzle_data is not None and puzzle_data.solution_language == "C++"
+
+
+async def test_reset_rejects_an_unknown_language(tmp_path: Path) -> None:
+    manager, _ = await _imported(tmp_path, previous_code={"Python3": "print('py')\n"})
+
+    with pytest.raises(CgPuzzleManagerError, match="isn't a language"):
+        await manager.reset_solution(language="Klingon")

@@ -6,6 +6,8 @@ import argparse
 import difflib
 import json
 import logging
+import os
+import re
 import subprocess
 import sys
 import textwrap
@@ -17,8 +19,9 @@ from typing import Any, cast
 
 import aiohttp
 from argparse_wizard import CliBase, CliCommand, CliError, CliExit, OptCmdFunc, cli_command
-from json_data_types import JsonData, JsonList
+from json_data_types import JsonData, JsonDict, JsonList
 from rich.console import Console
+from rich.text import Text
 
 from ..client.client import CgClient
 from ..client.common.protocol.codingamer import CgCodingamePointsStats, CgXpThreshold
@@ -28,7 +31,12 @@ from ..client.common.protocol.contribution import (
     CgPersonalContribution,
     CgTopic,
 )
-from ..client.common.protocol.test_session import CgMultipleLanguagesTestParams, CgPlayRequest, CgSubmitRequest
+from ..client.common.protocol.test_session import (
+    CgMultipleLanguagesTestParams,
+    CgPlayRequest,
+    CgPlayResult,
+    CgSubmitRequest,
+)
 from ..client.common.protocol.user import CgUserProperties
 from ..client.common.raw_client import CgAuthenticationError, CgDownloadFileResult, compute_content_hash
 from ..common.timestamps import parse_timestamp
@@ -58,6 +66,8 @@ from ..contribution_manager import (
     CgContributionView,
     CgMergeStartStatus,
     CgRebaseStatus,
+    contribution_dir_name,
+    default_contributions_dir,
     find_contribution_dir,
     redact_commit_contribution,
     renormalize_test_case_dirs,
@@ -104,13 +114,37 @@ from ..language import (
     tag_image,
 )
 from ..puzzle_manager import (
+    DEFAULT_IMPORT_LANGUAGE,
     PUZZLE_IDENTITY_FILE_NAME,
     CgPuzzleManager,
     CgPuzzleManagerError,
     CgPuzzleStatus,
+    default_puzzles_dir,
     find_puzzle_dir,
     parse_statement_html,
     resolve_puzzle_dir,
+)
+from ..puzzle_manager.solution_template import (
+    CgTemplateError,
+    parse_search_path,
+    resolve_template,
+)
+from ..sdk import (
+    BUNDLED_MAVEN_VERSION,
+    DEFAULT_SDK_VERSION,
+    MINIMUM_JAVA_VERSION,
+    SDK_GROUP_ID,
+    CgSdkError,
+    CgSdkInstall,
+    find_java,
+    find_maven,
+    install_maven,
+    is_git_ignored,
+    load_manifest,
+    manifest_path,
+    resolve_sdk_classpath,
+    sdk_dir,
+    utc_now_iso,
 )
 from ..settings import CgSettings, relativize_settings_dir, resolve_settings
 from ..topics import (
@@ -132,6 +166,123 @@ def _isoformat_z(dt: datetime) -> str:
        equally standard (RFC 3339/ISO 8601's "Zulu time" designator for UTC), "Z" is just the
        more common convention."""
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+# CodinGame colours console text as `¤COLOUR¤text§COLOUR§`: an opening marker in one delimiter, a
+# closing marker naming the same colour in the other. It appears in a referee's narration and in
+# anything a solution writes itself, since the IDE console renders both.
+_REFEREE_SPAN = re.compile(r"¤([A-Z]+)¤(.*?)§\1§", re.DOTALL)
+_REFEREE_STRAY_MARKER = re.compile(r"[¤§][A-Z]+[¤§]")
+
+_REFEREE_STYLES = {
+    "RED": "red", "GREEN": "green", "BLUE": "blue", "YELLOW": "yellow",
+    "MAGENTA": "magenta", "CYAN": "cyan", "WHITE": "white", "BLACK": "bright_black",
+    "GRAY": "bright_black", "GREY": "bright_black",
+}
+"""CodinGame colour names mapped to terminal styles. An unlisted colour still has its markers
+   removed and its text kept, so a name added later degrades to plain text rather than leaking
+   markup."""
+
+
+def _strip_referee_markup(text: str) -> str:
+    """Referee text with its colour markers removed and the text they wrapped kept."""
+    return _REFEREE_STRAY_MARKER.sub("", _REFEREE_SPAN.sub(lambda m: m.group(2), text))
+
+
+def _referee_text(text: str, *, base_style: str = "") -> Text:
+    """Referee text as styled terminal output, its colour markers applied rather than shown.
+
+       Built as a `Text` with explicit spans rather than as Rich markup, because this carries
+       arbitrary program output: a solution that printed `[bold]` would otherwise have it
+       interpreted as markup instead of shown."""
+    out = Text(style=base_style)
+    position = 0
+    for match in _REFEREE_SPAN.finditer(text):
+        out.append(_strip_referee_markup(text[position:match.start()]))
+        out.append(_strip_referee_markup(match.group(2)),
+                   style=_REFEREE_STYLES.get(match.group(1), ""))
+        position = match.end()
+    out.append(_strip_referee_markup(text[position:]))
+    return out
+
+
+def _play_result_failed(result: CgPlayResult) -> bool:
+    """Whether a play result counts as a failure, for either response shape.
+
+       An interactive run fails when some frame carries an error; a standard one when the answer
+       did not match. Shared so `--json` reports the same verdict, and the same exit status, as
+       the rendered output."""
+    if result.is_interactive:
+        return any(frame.error is not None for frame in result.frames)
+    return result.error is not None or result.comparison is None or not result.comparison.success
+
+
+def _print_interactive_result(console: Console, item: Any, result: CgPlayResult, *,
+                              summary: bool = False, show_stdout: bool = True,
+                              show_stderr: bool = True) -> bool:
+    """Print an interactive puzzle's turn-by-turn trace. Returns whether the run failed.
+
+       Laid out as CodinGame's own console does: per turn, each stream under its own heading, with
+       stderr coloured red the way the IDE colours it. The server plays the whole game and returns
+       every frame in one response, so this renders a trace that already exists -- the web IDE's
+       playback controls are presentation on the same data.
+
+       The first frame is the initial state, before the solution has moved, so turns are numbered
+       from the second -- which is what makes `turn 9/9` here the same turn the IDE calls 9/9.
+
+       Every frame after the setup is numbered, which is what the IDE was observed doing: a
+       ten-frame run showed `9/9` as its last turn.
+
+       `keyframe: false` marks a frame the referee produced without reading anything from the
+       solution, in a game where it acts several times per move of yours. Such a frame is flagged
+       but still numbered, because whether the IDE counts these or hides them has not been
+       established -- every frame of both puzzles measured so far is a keyframe, so the two rules
+       are indistinguishable on the available evidence. What `keyframe` is known to affect is
+       stepping: single-stepping pauses only at keyframes. Numbering every frame reproduces the
+       one numbering actually observed and assumes nothing further."""
+    frames = result.frames
+    turns = max(len(frames) - 1, 0)
+    failed_index = next((i for i, f in enumerate(frames) if f.error is not None), None)
+    label = f"test {item.index} ({item.label})"
+
+    def turn_label(index: int) -> str:
+        if index == 0:
+            return "start"
+        suffix = " (no input read)" if frames[index].keyframe is False else ""
+        return f"turn {index}/{turns}{suffix}"
+
+    if failed_index is not None:
+        console.print(f"[FAIL] {label} -- failed at {turn_label(failed_index)}",
+                      style="bold blue", markup=False)
+    else:
+        score = result.score
+        scored = "" if score is None else f", score {score:g}"
+        console.print(f"[DONE] {label} -- {turns} turns{scored}", style="bold blue", markup=False)
+
+    for index, frame in enumerate(frames):
+        sections: list[tuple[str, str, str, bool]] = []
+        if not summary and show_stderr and frame.stderr:
+            # Red is the IDE's own convention for stderr, not markup in the text.
+            sections.append(("Standard Error Stream:", frame.stderr, "red", True))
+        if not summary and show_stdout and frame.stdout:
+            sections.append(("Standard Output Stream:", frame.stdout, "", True))
+        if frame.game_information and _strip_referee_markup(frame.game_information).strip():
+            sections.append(("Game information:", frame.game_information, "", False))
+        if not sections and frame.error is None:
+            continue
+
+        console.print(f"  {turn_label(index)}", style="bold blue", markup=False)
+        for heading, body, base_style, prefixed in sections:
+            console.print(Text("    " + heading, style="bold"))
+            for line in body.splitlines():
+                if not prefixed and not _strip_referee_markup(line).strip():
+                    continue
+                lead = "      > " if prefixed else "      "
+                console.print(Text(lead, style=base_style)
+                              + _referee_text(line, base_style=base_style))
+        if frame.error is not None:
+            console.print(Text("    ERROR: ", style="bold red") + _referee_text(frame.error.message))
+    return failed_index is not None
+
 
 def _print_captured_output(text: str) -> None:
     """Print a test run's captured stdout verbatim (no extra blank line if it already ends with
@@ -205,14 +356,22 @@ def default_config_template(default_data_dir: str) -> str:
 # as-is. Currently defaults to (uncomment to pin explicitly):
 #dataDir: {default_data_dir}
 
+# Search path for solution templates, used by `cg puzzle import`/`reset`/`set solution-language`
+# when --template-path is not given (and extended by it when it is). Relative entries are resolved
+# against this file's own directory, the same as dataDir above--so from .cg/config/, the project's
+# own templates/ is "../../templates". Either one string, "PATH"-separated, or a list.
+#templatePath: ../../templates
+#templatePath:
+#  - ../../templates
+#  - ~/cg-templates
+
 # Settings, identical in shape to the app-writable settings.json (see `cg settings dump`), but
 # hand-edited here rather than set via `cg settings set`. If both a global (per-user) and a
 # project-local config.yaml exist, each field below is resolved independently--base to most
 # refined: the global file's settings, then the project file's own, then settings.json.
 #settings:
 #  defaultProfile: my-profile-name
-#  contributionDir: /path/to/my/contribution
-#  puzzleDir: /path/to/my/puzzle
+#  projectDir: /path/to/my/project
 """
 
 CONTRIBUTION_SET_FIELDS: dict[str, Callable[[CgContributionView], object]] = {
@@ -252,6 +411,39 @@ def _format_field_value(value: object) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     return str(value)
+
+
+def _template_extension_for(language: str | None) -> str | None:
+    """File extension the default `solution.<ext>` template lookup should use.
+
+       `language` is `--language`, which is usually absent. Without it an import lands in
+       `DEFAULT_IMPORT_LANGUAGE` -- unless the server has saved code, in which case the template is
+       ignored anyway -- so that is the extension to look for.
+
+       `None` only for a language cg knows no extension for, where there is no `solution.<ext>`
+       to look for anyway. Its own function because getting this wrong is invisible: returning
+       None unconditionally made the default lookup find nothing, so every plain `cg puzzle import
+       PUZZLE` quietly used the one-line placeholder while a usable template sat in the search
+       path."""
+    return get_language(language or DEFAULT_IMPORT_LANGUAGE).extension
+
+
+def _resolve_working_dir_argument(raw: str | None, parent: Path) -> Path:
+    """Resolve an `activate` argument the same way a template name is resolved.
+
+       Nothing given means the current directory, so `cd` into a working directory and run
+       `activate` with no argument. A value holding a path separator is a path, resolved against
+       the current directory. A bare name is looked up under `parent` -- `puzzles/` or
+       `contributions/` -- so `cg puzzle activate temperatures` works from anywhere in the project
+       without spelling out where the tree lives.
+
+       A bare name is never also tried as a relative path: one spelling, one meaning. The caller's
+       error message points at `./name` for the case where that is what was wanted."""
+    if raw is None:
+        return Path.cwd()
+    if "/" in raw or (os.altsep is not None and os.altsep in raw) or os.sep in raw:
+        return Path(raw).expanduser().resolve()
+    return (parent / raw).resolve()
 
 
 def _print_topic_table(topics: list[CgTopic], *, show_all_labels: bool = False) -> None:
@@ -494,6 +686,23 @@ class CgCli(CliBase):
         setattr(settings.raw_data, attribute, None)
         settings.save()
         return current
+
+    def resolve_template_search_path(self) -> list[Path]:
+        """The template search path: `--template-path` entries first, then `templatePath` from
+           config.yaml.
+
+           The flag extends the configured path rather than replacing it, so a one-off directory
+           can be added without losing the defaults you set up -- and, because it comes first, it
+           still wins when both hold a template of the same name.
+
+           A configured directory that does not exist is reported once, on stderr: it was named
+           deliberately, so silently searching nothing is the wrong kind of quiet."""
+        explicit = parse_search_path(self.args.template_path)
+        configured = resolve_config(self.args.config, allow_default=True).template_path
+        for directory in configured:
+            if not directory.is_dir():
+                self.eprint(f"  warning: configured templatePath entry does not exist: {directory}")
+        return explicit + configured
 
     def resolve_default_settings(self) -> CgSettings:
         """Best-effort settings resolution: honors -c/--config, but--unlike `get_settings()`--
@@ -2456,7 +2665,19 @@ class CgCli(CliBase):
     async def cmd_contribution__import(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             contribution_id: str = self.args.contribution_id
-            directory: Path = Path(self.args.directory).expanduser().resolve()
+            client = await self.get_client()
+            # Fetched once here rather than inside import_(): the destination is named after the
+            # contribution's title, which only the server knows. import_() takes the record back
+            # so nothing is fetched twice.
+            contribution = await client.services.contribution.find_contribution(contribution_id)
+            explicit_dir: Path | None = self.args.contribution_dir
+            if explicit_dir is not None:
+                directory = Path(explicit_dir).expanduser().resolve()
+            else:
+                settings = self.resolve_default_settings()
+                name = contribution_dir_name(contribution.last_version.data.title
+                                             if contribution.last_version is not None else "")
+                directory = default_contributions_dir(settings) / name
             if directory.exists():
                 # Not an outright refusal: a directory whose contribution.json already tracks
                 # this exact contribution is a legitimate repair target (e.g. an outer project
@@ -2475,9 +2696,8 @@ class CgCli(CliBase):
                             "contribution repair`); import into an unrelated existing directory "
                             "by editing it directly, or remove the directory first."
                         )
-            client = await self.get_client()
             manager = CgContributionManager(directory, client)
-            working = await manager.import_(contribution_id)
+            working = await manager.import_(contribution_id, contribution=contribution)
             await self.set_current_working_dir("contribution", directory)
             self.eprint(f"Imported contribution {contribution_id!r} into {directory}")
             self.eprint(f"  title: {working.data.title!r}")
@@ -2485,13 +2705,6 @@ class CgCli(CliBase):
             self.eprint("  (now the active contribution--`cg contribution where` prints it, "
                         "`cg contribution deactivate` clears it)")
         p = cmd.get_parser()
-        p.add_argument("directory", type=Path, metavar="DIRECTORY",
-                       help="New directory to create the working directory in, or an existing "
-                            "one whose contribution.json already tracks CONTRIBUTION-ID (to "
-                            "repair a missing git-dir--see also `cg contribution repair`). Always "
-                            "first, matching `cg contribution create` and `cg puzzle import`. "
-                            "Becomes the active contribution directory (see `cg contribution "
-                            "activate`).")
         p.add_argument("contribution_id", type=str, metavar="CONTRIBUTION-ID",
                        help="Opaque contribution ID string (see `cg api contribution find-contribution`).")
         return handler
@@ -2525,8 +2738,13 @@ class CgCli(CliBase):
                  "DIRECTORY must not already exist. Ignores --contribution-dir.")
     async def cmd_contribution__create(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
-            directory: Path = Path(self.args.directory).expanduser().resolve()
-            title: str | None = self.args.title
+            title: str = self.args.title
+            explicit_dir: Path | None = self.args.contribution_dir
+            if explicit_dir is not None:
+                directory = Path(explicit_dir).expanduser().resolve()
+            else:
+                directory = (default_contributions_dir(self.resolve_default_settings())
+                             / contribution_dir_name(title))
             puzzle_type: str = self.args.puzzle_type
             language: str = self.args.language
             if directory.exists():
@@ -2535,8 +2753,6 @@ class CgCli(CliBase):
                         "creates a new working directory; remove it first, or use `cg "
                         "contribution import` if a contribution already exists server-side."
                     )
-            if title is None:
-                title = f"Example puzzle {directory.name}"
             client = await self.get_client()
             manager = CgContributionManager(directory, client)
             working = await manager.create(title=title, puzzle_type=puzzle_type, language=language)
@@ -2551,11 +2767,10 @@ class CgCli(CliBase):
             self.eprint("  (now the active contribution--`cg contribution where` prints it, "
                         "`cg contribution deactivate` clears it)")
         p = cmd.get_parser()
-        p.add_argument("directory", type=Path, metavar="DIRECTORY",
-                       help="New directory to create the working directory in. Must not already exist.")
-        p.add_argument("title", type=str, nargs="?", default=None, metavar="TITLE",
-                       help="Title for the new contribution. Defaults to 'Example puzzle <DIRECTORY's last path "
-                            "component>'.")
+        p.add_argument("title", type=str, metavar="TITLE",
+                       help="The contribution's title. Also names its working directory: "
+                            "\"Simple Makefiles\" creates contributions/simple-makefiles. Pass "
+                            "--contribution-dir to place it somewhere else.")
         p.add_argument("--puzzle-type", "-t", type=str, default="PUZZLE_INOUT", metavar="PUZZLE-TYPE",
                        help="The type of the contribution. Defaults to 'PUZZLE_INOUT'.")
         p.add_argument("--language", "-l", type=str, default="Python3", metavar="LANGUAGE",
@@ -2956,17 +3171,25 @@ class CgCli(CliBase):
                  "contribution-dir`); `cg contribution deactivate` clears it.")
     async def cmd_contribution__activate(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
-            directory = Path(self.args.directory).expanduser().resolve()
+            raw: str | None = self.args.directory
+            parent = default_contributions_dir(self.resolve_default_settings())
+            directory = _resolve_working_dir_argument(raw, parent)
             if not (directory / CONTRIBUTION_IDENTITY_FILE_NAME).is_file():
+                hint = ""
+                if raw is not None and "/" not in raw and (Path.cwd() / raw).is_dir():
+                    hint = f" Did you mean `./{raw}`? A bare name is looked up under {parent}."
                 raise CliError(
-                        f"{directory} is not a contribution working directory (no {CONTRIBUTION_IDENTITY_FILE_NAME}). "
-                        "Use `cg contribution import DIRECTORY CONTRIBUTION-ID` to create one.")
+                        f"{directory} is not a contribution working directory (no "
+                        f"{CONTRIBUTION_IDENTITY_FILE_NAME}).{hint or ' Use `cg contribution import CONTRIBUTION-ID` to create one.'}")
             await self.set_current_working_dir("contribution", directory)
             self.eprint(f"Active contribution directory set to {directory}")
         p = cmd.get_parser()
-        p.add_argument("directory", type=Path, nargs="?", default=Path.cwd(), metavar="DIRECTORY",
-                       help="The contribution working directory to activate. Defaults to the current "
-                            "directory, so `cd` into one and run this with no arguments.")
+        p.add_argument("directory", type=str, nargs="?", default=None, metavar="DIRECTORY",
+                       help="The contribution working directory to activate. A bare name is looked "
+                            "up under the project's contributions/ directory, so `cg contribution "
+                            "activate simple-makefiles` works from anywhere; anything containing a "
+                            "path separator is a path, relative to the current directory. Omit it "
+                            "to activate the current directory.")
         return handler
 
     @cli_command("Clear the active contribution, so `cg contribution` commands fall back to the "
@@ -3029,8 +3252,9 @@ class CgCli(CliBase):
             found = find_contribution_dir(contribution_dir, settings=self.resolve_default_settings())
             if found is None:
                 raise CliError(
-                        "No contribution working directory found. Run "
-                        "`cg contribution import DIRECTORY CONTRIBUTION-ID` to create one.")
+                        "No contribution working directory found. Run `cg contribution create "
+                        "TITLE` or `cg contribution import CONTRIBUTION-ID` to make one, or `cg "
+                        "contribution activate DIR` to select one you already have.")
             # stdout carries the resolved path and nothing else, so this composes:
             #     $EDITOR "$(cg contribution where)/data/solution.src"
             # Anything explanatory goes to stderr, and "not found" is a non-zero exit rather than a
@@ -3709,6 +3933,100 @@ class CgCli(CliBase):
         parser.add_argument("git_args", nargs="*")
         return handler
 
+    @cli_command("Commands for the CodinGame SDK--the Java toolkit for writing a contribution's "
+                 "referee and viewer, and for playing a game locally. An interactive puzzle is run "
+                 "by a referee that trades moves with the solution, which is why one cannot be "
+                 "tested locally without it. The toolchain is shared by every contribution in a "
+                 "project and installed once, under .cg/sdk/.")
+    async def cmd_sdk(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        return None  # No handler for the parent command; subcommands handle themselves.
+
+    @cli_command("Install the SDK toolchain for this project, under .cg/sdk/: a Maven repository "
+                 "holding the SDK and its dependencies, and--if the system has none--a portable "
+                 "Maven. Needs a JDK 17 or newer, which it reports rather than installs. Shared by "
+                 "every contribution beneath the project, reached through a classpath rather than "
+                 "copied, so this is run once and not per contribution. Everything it writes is "
+                 "reproducible and machine-specific, so .cg/ belongs in .gitignore; this warns if "
+                 "it isn't.")
+    async def cmd_sdk__install(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            version: str = self.args.sdk_version
+            root = sdk_dir(resolve_config(self.args.config, allow_default=True))
+            root.mkdir(parents=True, exist_ok=True)
+
+            java = find_java()
+            if java is None:
+                raise CliError(
+                        f"no JDK {MINIMUM_JAVA_VERSION} or newer found. The SDK compiles at Java "
+                        f"{MINIMUM_JAVA_VERSION}, so a referee cannot be built without one. "
+                        "Install one (macOS: `brew install openjdk@21`; Debian/Ubuntu: "
+                        "`apt install openjdk-21-jdk`), or set JAVA_HOME to an existing install.")
+            java_executable, java_ver = java
+            java_home = java_executable.parent.parent
+            self.eprint(f"  java    {java_ver}  ({java_executable})")
+
+            mvn = find_maven(root)
+            bundled = False
+            if mvn is None:
+                self.eprint(f"  maven   not found--downloading {BUNDLED_MAVEN_VERSION}")
+                try:
+                    mvn = install_maven(root)
+                except CgSdkError as e:
+                    raise CliError(str(e)) from e
+                bundled = True
+            else:
+                bundled = root in mvn.parents
+            self.eprint(f"  maven   {mvn}{' (downloaded here)' if bundled else ''}")
+
+            self.eprint(f"  sdk     resolving {SDK_GROUP_ID}:{version}--this may take a minute")
+            try:
+                classpath = resolve_sdk_classpath(
+                        root, mvn, version=version, java_home=java_home)
+            except CgSdkError as e:
+                raise CliError(str(e)) from e
+
+            CgSdkInstall(
+                    sdk_version=version, java_home=str(java_home), java_version=java_ver,
+                    maven_path=str(mvn), maven_bundled=bundled, classpath=classpath,
+                    installed_at=utc_now_iso(),
+                ).save(manifest_path(root))
+            self.eprint(f"  sdk     {len(classpath)} jars resolved into {root / 'm2'}")
+            self.eprint(f"Installed into {root}.")
+
+            ignored = is_git_ignored(root)
+            if ignored is False:
+                self.eprint(f"  WARNING: {root} is not gitignored. It holds a downloaded "
+                            "toolchain--reproducible, machine-specific and large--so add "
+                            "`/.cg/` to .gitignore.")
+        p = cmd.get_parser()
+        p.add_argument("--sdk-version", type=str, default=DEFAULT_SDK_VERSION, metavar="VERSION",
+                       help=f"SDK version to resolve. Defaults to {DEFAULT_SDK_VERSION}.")
+        return handler
+
+    @cli_command("Report the project's SDK toolchain: what `cg sdk install` resolved, and whether "
+                 "it is still there. Purely local, no network. With --json, renders as JSON.")
+    async def cmd_sdk__status(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            root = sdk_dir(resolve_config(self.args.config, allow_default=True))
+            manifest = load_manifest(root)
+            if self.args.json:
+                print(json.dumps(manifest.to_dict() if manifest is not None else None,
+                                 indent=2, sort_keys=True))
+                return
+            print(f"{'SDK directory:':<22}{root}")
+            if manifest is None:
+                print(f"{'Installed:':<22}no--run `cg sdk install`")
+                return
+            missing = [entry for entry in manifest.classpath if not Path(entry).is_file()]
+            print(f"{'Installed:':<22}yes ({manifest.installed_at})")
+            print(f"{'SDK version:':<22}{manifest.sdk_version}")
+            print(f"{'Java:':<22}{manifest.java_version} ({manifest.java_home})")
+            print(f"{'Maven:':<22}{manifest.maven_path}"
+                  f"{' (downloaded here)' if manifest.maven_bundled else ''}")
+            print(f"{'Classpath jars:':<22}{len(manifest.classpath)}"
+                  f"{f'--{len(missing)} MISSING, reinstall' if missing else ''}")
+        return handler
+
     @cli_command("Solve an existing CodinGame puzzle in a local working directory: import it, edit "
                  "one file, run its test cases locally, and submit. Currently supports classic "
                  "PUZZLE_INOUT puzzles.")
@@ -3731,10 +4049,32 @@ class CgCli(CliBase):
         async def handler() -> None:
             puzzle_ref: str = self.args.puzzle_ref
             language: str | None = self.args.language
-            resolved_dir = Path(self.args.directory).expanduser().resolve()
+            settings = self.resolve_default_settings()
             client = await self.get_client()
+            # Resolved before any network call: a mistyped --template should fail immediately,
+            # not after importing a puzzle and then declining to seed it.
+            search_path = self.resolve_template_search_path()
+            extension = _template_extension_for(language)
+            try:
+                template_file = resolve_template(
+                        self.args.template, search_path, extension=extension)
+            except CgTemplateError as e:
+                raise CliError(str(e)) from e
+            template_text = (template_file.read_text(encoding="utf-8")
+                             if template_file is not None else None)
+
+            # The destination is named after the puzzle, and the puzzle's pretty id is only known
+            # once the reference has been resolved against the server--so resolve first, then
+            # place. A reference that resolves to nothing therefore creates no directory at all.
+            explicit_dir: Path | None = self.args.puzzle_dir
+            if explicit_dir is not None:
+                resolved_dir = Path(explicit_dir).expanduser().resolve()
+            else:
+                pretty_id = await CgPuzzleManager.resolve_puzzle_pretty_id(client, puzzle_ref)
+                resolved_dir = default_puzzles_dir(settings) / pretty_id
             manager = CgPuzzleManager(resolved_dir, client)
-            puzzle_data = await manager.import_(puzzle_ref, language=language)
+            puzzle_data = await manager.import_(
+                    puzzle_ref, language=language, template=template_text)
             server_data = manager.load_server_data()
             assert server_data is not None
             await self.set_current_working_dir("puzzle", resolved_dir)
@@ -3744,10 +4084,6 @@ class CgCli(CliBase):
             self.eprint("  (now the active puzzle--`cg puzzle where` prints it, "
                         "`cg puzzle deactivate` clears it)")
         p = cmd.get_parser()
-        p.add_argument("directory", type=Path, metavar="DIRECTORY",
-                       help="Directory to build the working directory in. Required and always "
-                            "first, matching `cg contribution import`/`create`. Becomes the active "
-                            "puzzle directory (see `cg puzzle activate`).")
         p.add_argument("puzzle_ref", type=str, metavar="PUZZLE",
                        help="A puzzle reference: numeric puzzle ID, pretty ID (displayed title, "
                             "lowercased with spaces replaced by hyphens, e.g. "
@@ -3758,6 +4094,104 @@ class CgCli(CliBase):
                             "for that language, or writes a placeholder if you've never used it "
                             "here. Omit to use whichever language you last used for this puzzle "
                             "(or Python3 if you've never attempted it at all).")
+        p.add_argument("--template", "-t", type=str, default=None, metavar="TEMPLATE",
+                       help="Seed the solution from this template file instead of the one-line "
+                            "placeholder. Ignored when the puzzle already has your code on the "
+                            "server--that always wins. A path (anything containing a separator) is "
+                            "used as given; a bare filename is looked up in --template-path. "
+                            "Inside the file, ${PUZZLE_DETAILS} expands to a plain-text rendering "
+                            "of the puzzle--goal, input, output, constraints, and the first test "
+                            "case as a worked example--with block-comment terminators defused so "
+                            "it can be pasted into a docstring or /* */ comment.")
+        p.add_argument("--template-path", type=str, action="append", default=None, metavar="DIRS",
+                       help="Where to look for templates named by --template, and--when "
+                            "--template is not given--for a default `solution.<ext>` matching the "
+                            "solution language. Several directories may be given "
+                            f"{os.pathsep!r}-separated, and the option may be repeated; they are "
+                            "searched in order.")
+        return handler
+
+    @cli_command("Throw the current solution away and write a fresh one from a template. The "
+                 "counterpart to `cg puzzle set solution-language`, and deliberately not the same "
+                 "thing: that restores whatever CodinGame has saved for a language, while this "
+                 "always regenerates--which is how you get back to a clean start after an "
+                 "experiment went nowhere, or pick up a template you wrote after importing. Takes "
+                 "the same --language/--template/--template-path options as `cg puzzle import`, "
+                 "including ${PUZZLE_DETAILS}. Prompts before discarding a solution that is "
+                 "neither saved on the server nor untouched since cg wrote it; --force skips the "
+                 "prompt and is required when stdin/stdout are not a terminal.")
+    async def cmd_puzzle__reset(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+        async def handler() -> None:
+            language: str | None = self.args.language
+            force: bool = self.args.force
+            resolved_dir = resolve_puzzle_dir(
+                    self.args.puzzle_dir, settings=self.resolve_default_settings())
+            client = await self.get_client()
+            manager = CgPuzzleManager(resolved_dir, client)
+            server_data = manager.load_server_data()
+            puzzle_data = manager.load_puzzle_data()
+            if server_data is None or puzzle_data is None:
+                raise CliError(
+                        f"{resolved_dir} is not a fully imported puzzle working directory. Run "
+                        "`cg puzzle repair` first.")
+            target = language or puzzle_data.solution_language
+
+            # Resolved before anything is written, and against the *target* language, so a bad
+            # --template fails while the existing solution is still on disk.
+            try:
+                template_file = resolve_template(
+                        self.args.template, self.resolve_template_search_path(),
+                        extension=get_language(target).extension)
+            except CgTemplateError as e:
+                raise CliError(str(e)) from e
+            template_text = (template_file.read_text(encoding="utf-8")
+                             if template_file is not None else None)
+
+            if not force and not await manager.solution_is_safe_to_replace(
+                        server_data, puzzle_data.solution_language):
+                if not (sys.stdin.isatty() and sys.stdout.isatty()):
+                    raise CliError(
+                            "Refusing to reset without confirmation: stdin/stdout aren't a "
+                            "terminal. Pass --force to proceed non-interactively.")
+                lines = len(manager.solution_file.read_text(encoding="utf-8").splitlines())
+                print("About to discard this solution and write a fresh one. It is neither saved "
+                      "on CodinGame nor untouched since cg wrote it, so there is no other copy:")
+                print(f"  file:     {manager.solution_file} ({lines} lines)")
+                print(f"  language: {puzzle_data.solution_language}"
+                      + (f" -> {target}" if target != puzzle_data.solution_language else ""))
+                print(f"  new from: {template_file if template_file is not None else 'built-in placeholder'}")
+                reply = input("Type RESET (all caps) to confirm, or anything else to cancel: ")
+                if reply != "RESET":
+                    raise CliError("Confirmation did not match--aborted, nothing was changed.")
+
+            try:
+                result = await manager.reset_solution(
+                        language=language, template=template_text, force=True)
+            except CgPuzzleManagerError as e:
+                raise CliError(str(e)) from e
+            source = f"from {template_file}" if result.from_template else "from the placeholder"
+            if result.language != result.previous_language:
+                self.eprint(f"{resolved_dir}: {result.previous_language!r} -> {result.language!r}")
+            self.eprint(f"  {manager.solution_file} rewritten {source} "
+                        f"({len(result.code.splitlines())} lines).")
+            if result.discarded:
+                self.eprint("  the previous solution was discarded and is not recoverable.")
+        p = cmd.get_parser()
+        p.add_argument("--language", "-l", type=str, default=None, metavar="LANGUAGE",
+                       help="Regenerate for this language instead of the current one, renaming "
+                            "the solution file to match. Unlike `cg puzzle set solution-language`, "
+                            "this never restores code saved on the server.")
+        p.add_argument("--template", "-t", type=str, default=None, metavar="TEMPLATE",
+                       help="Template file to write instead of the one-line placeholder. A path is "
+                            "used as given; a bare filename is looked up in --template-path. "
+                            "${PUZZLE_DETAILS} expands as it does for `cg puzzle import`.")
+        p.add_argument("--template-path", type=str, action="append", default=None, metavar="DIRS",
+                       help="Where to look for a template named by --template, and--when it is not "
+                            f"given--for a default `solution.<ext>`. {os.pathsep!r}-separated and "
+                            "repeatable; searched in order.")
+        p.add_argument("--force", "-f", default=False, action="store_true",
+                       help="Skip the confirmation prompt. Required when stdin/stdout are not a "
+                            "terminal.")
         return handler
 
     @cli_command("Rebuild .meta/ -- the test-session handle and the cached statement and "
@@ -3811,12 +4245,18 @@ class CgCli(CliBase):
                  "language. Prefer `cg puzzle play`, which runs locally with no network access and "
                  "no side effects. With no TEST-INDEX, runs every downloaded test case; give one "
                  "or more 1-based indices to run only those. Exits non-zero if any test fails. "
-                 "Captured stdout is printed only for failing tests, unless --show-stdout.")
+                 "Shows what the run printed, pass or fail. For an interactive puzzle, reports the "
+                 "game turn by turn and the referee's score instead of a pass/fail, laid out as "
+                 "CodinGame's own console is--each turn's standard error, standard output and "
+                 "referee narration under their own headings, with the colours it applies. Pass "
+                 "--summary for just the result and the narration, or --no-stdout/--no-stderr to "
+                 "drop one stream and keep the other. With --json, prints the whole result per "
+                 "test case--every frame, plus anything this client does not model yet--rather "
+                 "than the rendered trace.")
     async def cmd_puzzle__play_server(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             puzzle_dir: Path | None = self.args.puzzle_dir
             test_indices: list[int] = self.args.test_indices
-            show_stdout: bool = self.args.show_stdout
             resolved_dir = resolve_puzzle_dir(puzzle_dir, settings=self.resolve_default_settings())
             client = await self.get_client(require_credentials=True)
             manager = CgPuzzleManager(resolved_dir, client)
@@ -3827,11 +4267,35 @@ class CgCli(CliBase):
             indices = manager.resolve_play_indices(test_indices or None)
             any_failed = False
             passed_count = 0
+            use_json: bool = self.args.json
+            json_results: list[JsonDict] = []
             stderr_console = Console(stderr=True, highlight=False)
             for index in indices:
                 item = await manager.play_one(index)
                 result = item.result
-                failed = result.error is not None or not result.comparison.success
+                if use_json:
+                    # The whole result, verbatim--including an interactive run's every frame, and
+                    # anything the server sent that this client does not model yet (which
+                    # round-trips through `extra_data`). This is the view for finding out what a
+                    # response actually contains.
+                    json_results.append({
+                        "index": item.index, "label": item.label, "result": result.to_dict()})
+                    any_failed = any_failed or _play_result_failed(result)
+                    passed_count += 0 if _play_result_failed(result) else 1
+                    continue
+                if result.is_interactive:
+                    # An interactive puzzle has no expected answer to compare against--the referee
+                    # played the game out and scored it, and the whole trace came back in one
+                    # response. Report that, rather than a pass/fail that would mean nothing.
+                    failed = _print_interactive_result(
+                            stderr_console, item, result, summary=self.args.summary,
+                            show_stdout=not self.args.no_stdout,
+                            show_stderr=not self.args.no_stderr)
+                    any_failed = any_failed or failed
+                    passed_count += 0 if failed else 1
+                    continue
+                failed = result.error is not None or (
+                        result.comparison is None or not result.comparison.success)
                 any_failed = any_failed or failed
                 passed_count += 0 if failed else 1
                 status = "FAIL" if failed else "PASS"
@@ -3839,14 +4303,17 @@ class CgCli(CliBase):
                 if failed:
                     if result.error is not None:
                         self.eprint(f"  ERROR: {result.error.message}")
-                    if result.comparison.expected is not None and result.comparison.found is not None:
+                    if (result.comparison is not None and result.comparison.expected is not None
+                            and result.comparison.found is not None):
                         self.show_diff(result.comparison.expected, result.comparison.found)
-                    if result.output:
-                        stderr_console.print("--- output ---", style="bold blue", markup=False)
-                        _print_captured_output(result.output)
-                elif show_stdout:
+                if result.output and not self.args.summary:
+                    # Shown whether or not the test passed: what the solution actually printed is
+                    # the thing you came to see, and the IDE shows it either way.
+                    stderr_console.print("--- output ---", style="bold blue", markup=False)
                     _print_captured_output(result.output)
-            if len(indices) > 1:
+            if use_json:
+                print(json.dumps(json_results, indent=2, sort_keys=True))
+            elif len(indices) > 1:
                 stderr_console.print(f"{passed_count}/{len(indices)} passed", style="bold blue", markup=False)
             if any_failed:
                 raise CliExit(1)
@@ -3854,9 +4321,22 @@ class CgCli(CliBase):
         p.add_argument("test_indices", type=int, nargs="*", metavar="TEST-INDEX",
                        help="1-based test case index/indices to run against. With none "
                             "given, runs every downloaded test case.")
-        p.add_argument("--show-stdout", default=False, action="store_true",
-                       help="Print captured stdout even for a passing test. Always printed for "
-                            "a failing/errored test regardless.")
+        p.add_argument("--summary", default=False, action="store_true",
+                       help="Show just the verdict, without what the run printed: for an "
+                            "interactive puzzle, the result and the referee's narration with no "
+                            "per-turn streams; for a standard one, no captured output. Useful for "
+                            "a long game, or a batch where only pass/fail matters.")
+        p.add_argument("--no-stdout", default=False, action="store_true",
+                       help="Interactive puzzles only: drop each turn's standard output--your "
+                            "solution's moves--while keeping its standard error and the referee's "
+                            "narration. Useful when your own debug output already reports the "
+                            "move. A standard puzzle's streams arrive already interleaved in one "
+                            "field, so only --summary applies there.")
+        p.add_argument("--no-stderr", default=False, action="store_true",
+                       help="Interactive puzzles only: drop each turn's standard error--your "
+                            "solution's debug output--while keeping its moves and the referee's "
+                            "narration. Useful for a chatty solution. Same caveat as --no-stdout "
+                            "for a standard puzzle.")
         return handler
 
     @cli_command("Run your solution against the puzzle's downloaded test cases entirely locally, "
@@ -4376,11 +4856,26 @@ class CgCli(CliBase):
                     toolchain_dir=self.resolve_toolchain_dir(),
                     toolchain_languages=self.resolve_toolchain_languages(),
                     toolchain_image=self.resolve_toolchain_image())
-            result = await manager.set_language(language, force=self.args.force)
+            # Resolved against the *target* language's extension, so `--template-path DIR` with a
+            # per-language DIR/solution.<ext> picks the right one for the language being switched
+            # to rather than the one being left.
+            try:
+                template_file = resolve_template(
+                        self.args.template, self.resolve_template_search_path(),
+                        extension=get_language(language).extension)
+            except CgTemplateError as e:
+                raise CliError(str(e)) from e
+            template_text = (template_file.read_text(encoding="utf-8")
+                             if template_file is not None else None)
+            result = await manager.set_language(language, force=self.args.force,
+                                                template=template_text)
             self.eprint(f"{resolved_dir}: {result.previous_language!r} -> {result.language!r}")
             if result.from_server:
                 self.eprint(f"  restored your saved {result.language} solution "
                             f"({len(result.code.splitlines())} lines).")
+            elif result.from_template:
+                self.eprint(f"  no saved {result.language} solution on the server--seeded from "
+                            f"{template_file} ({len(result.code.splitlines())} lines).")
             else:
                 self.eprint(f"  no saved {result.language} solution on the server--wrote a "
                             "placeholder to start from.")
@@ -4391,6 +4886,17 @@ class CgCli(CliBase):
         p.add_argument("--force", "-f", default=False, action="store_true",
                        help="Switch even if your solution has changes the server doesn't have, "
                             "discarding them.")
+        p.add_argument("--template", "-t", type=str, default=None, metavar="TEMPLATE",
+                       help="Seed the new language's solution from this template file instead of "
+                            "the one-line placeholder, exactly as `cg puzzle import` does--"
+                            "including ${PUZZLE_DETAILS}. Ignored when CodinGame already has your "
+                            "code for the target language, which is restored instead. A path is "
+                            "used as given; a bare filename is looked up in --template-path.")
+        p.add_argument("--template-path", type=str, action="append", default=None, metavar="DIRS",
+                       help="Where to look for templates named by --template, and--when --template "
+                            "is not given--for a default `solution.<ext>` matching the language "
+                            f"being switched to. {os.pathsep!r}-separated and repeatable; searched "
+                            "in order.")
         return handler
 
     @cli_command("Make DIRECTORY the active puzzle, so later `cg puzzle` commands use it without "
@@ -4399,17 +4905,25 @@ class CgCli(CliBase):
                  "(`cg settings set puzzle-dir`); `cg puzzle deactivate` clears it.")
     async def cmd_puzzle__activate(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
-            directory = Path(self.args.directory).expanduser().resolve()
+            raw: str | None = self.args.directory
+            parent = default_puzzles_dir(self.resolve_default_settings())
+            directory = _resolve_working_dir_argument(raw, parent)
             if not (directory / PUZZLE_IDENTITY_FILE_NAME).is_file():
+                hint = ""
+                if raw is not None and "/" not in raw and (Path.cwd() / raw).is_dir():
+                    hint = f" Did you mean `./{raw}`? A bare name is looked up under {parent}."
                 raise CliError(
-                        f"{directory} is not a puzzle working directory (no {PUZZLE_IDENTITY_FILE_NAME}). "
-                        "Use `cg puzzle import DIRECTORY PUZZLE` to create one.")
+                        f"{directory} is not a puzzle working directory (no "
+                        f"{PUZZLE_IDENTITY_FILE_NAME}).{hint or ' Use `cg puzzle import PUZZLE` to create one.'}")
             await self.set_current_working_dir("puzzle", directory)
             self.eprint(f"Active puzzle directory set to {directory}")
         p = cmd.get_parser()
-        p.add_argument("directory", type=Path, nargs="?", default=Path.cwd(), metavar="DIRECTORY",
-                       help="The puzzle working directory to activate. Defaults to the current "
-                            "directory, so `cd` into one and run this with no arguments.")
+        p.add_argument("directory", type=str, nargs="?", default=None, metavar="DIRECTORY",
+                       help="The puzzle working directory to activate. A bare name is looked up "
+                            "under the project's puzzles/ directory, so `cg puzzle activate "
+                            "temperatures` works from anywhere; anything containing a path "
+                            "separator is a path, relative to the current directory. Omit it to "
+                            "activate the current directory.")
         return handler
 
     @cli_command("Clear the active puzzle, so `cg puzzle` commands fall back to the configured "
@@ -4463,8 +4977,8 @@ class CgCli(CliBase):
             found = find_puzzle_dir(puzzle_dir, settings=self.resolve_default_settings())
             if found is None:
                 raise CliError(
-                        "No puzzle working directory found. Run "
-                        "`cg puzzle import DIRECTORY PUZZLE` to create one.")
+                        "No puzzle working directory found. Run `cg puzzle import PUZZLE` to "
+                        "create one, or `cg puzzle activate DIR` to select one you already have.")
             # stdout carries the resolved path and nothing else, so this composes:
             #     $EDITOR "$(cg puzzle where)/data/solution.src"
             # Anything explanatory goes to stderr, and "not found" is a non-zero exit rather than a
@@ -4618,40 +5132,23 @@ class CgCli(CliBase):
                             "and shown resolved by `cg config dump`/`cg settings dump`.")
         return handler
 
-    @cli_command("Set the default contribution working directory.")
-    async def cmd_settings__set__contribution_dir(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+    @cli_command("Set the project directory--where the puzzles/ and contributions/ trees live.")
+    async def cmd_settings__set__project_dir(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
-            contribution_dir: Path = self.args.contribution_dir
+            project_dir: Path = self.args.project_dir
             settings = await self.get_settings()
-            value = relativize_settings_dir(contribution_dir, settings.settings_file.parent)
-            settings.raw_data.contribution_dir = value
+            value = relativize_settings_dir(project_dir, settings.settings_file.parent)
+            settings.raw_data.project_dir = value
             settings.save()
-            self.eprint(f"contributionDir set to {value!r} in {settings.settings_file}")
+            self.eprint(f"projectDir set to {value!r} in {settings.settings_file}")
         p = cmd.get_parser()
-        p.add_argument("contribution_dir", type=Path, metavar="DIR",
-                       help="Directory to use as the default contribution working directory--used "
-                            "whenever --contribution-dir isn't given and CG_CONTRIBUTION_DIR isn't "
-                            "set (see `cg contribution import`/`cg contribution push`). If given as "
-                            "a relative path, it's resolved against the current directory right now "
-                            "and stored relative to settings.json's own directory--so the effective "
-                            "directory doesn't move around depending on where `cg` is later run from.")
-        return handler
-
-    @cli_command("Set the default puzzle working directory.")
-    async def cmd_settings__set__puzzle_dir(self, cmd: CliCommand[Self]) -> OptCmdFunc:
-        async def handler() -> None:
-            puzzle_dir: Path = self.args.puzzle_dir
-            settings = await self.get_settings()
-            value = relativize_settings_dir(puzzle_dir, settings.settings_file.parent)
-            settings.raw_data.puzzle_dir = value
-            settings.save()
-            self.eprint(f"puzzleDir set to {value!r} in {settings.settings_file}")
-        p = cmd.get_parser()
-        p.add_argument("puzzle_dir", type=Path, metavar="DIR",
-                       help="Directory to use as the default puzzle working directory--used "
-                            "whenever --puzzle-dir isn't given and CG_PUZZLE_DIR isn't set (see "
-                            "`cg puzzle import`/`cg puzzle submit`). Same relative-path handling as "
-                            "`cg settings set contribution-dir`--see its help for details.")
+        p.add_argument("project_dir", type=Path, metavar="DIR",
+                       help="Directory to create puzzles/ and contributions/ under. Without this, "
+                            "the project root is the directory holding .cg/, falling back to the "
+                            "current directory. If given as a relative path, it is resolved "
+                            "against the current directory now and stored relative to "
+                            "settings.json's own directory--so the effective location does not "
+                            "move around depending on where `cg` is later run from.")
         return handler
 
     @cli_command("Delete a settings.json value.")
@@ -4670,27 +5167,15 @@ class CgCli(CliBase):
                 )
         return handler
 
-    @cli_command("Delete (unset) the default contribution working directory override.")
-    async def cmd_settings__delete__contribution_dir(self, cmd: CliCommand[Self]) -> OptCmdFunc:
+    @cli_command("Delete (unset) the project directory override.")
+    async def cmd_settings__delete__project_dir(self, cmd: CliCommand[Self]) -> OptCmdFunc:
         async def handler() -> None:
             settings = await self.get_settings()
-            settings.raw_data.contribution_dir = None
+            settings.raw_data.project_dir = None
             settings.save()
             self.eprint(
-                    f"contributionDir unset in {settings.settings_file} "
-                    f"(now falls back to config.yaml's settings.contributionDir, if any)."
-                )
-        return handler
-
-    @cli_command("Delete (unset) the default puzzle working directory override.")
-    async def cmd_settings__delete__puzzle_dir(self, cmd: CliCommand[Self]) -> OptCmdFunc:
-        async def handler() -> None:
-            settings = await self.get_settings()
-            settings.raw_data.puzzle_dir = None
-            settings.save()
-            self.eprint(
-                    f"puzzleDir unset in {settings.settings_file} "
-                    f"(now falls back to config.yaml's settings.puzzleDir, if any)."
+                    f"projectDir unset in {settings.settings_file} "
+                    "(the project root is now the directory holding .cg/, else the current one)."
                 )
         return handler
 
