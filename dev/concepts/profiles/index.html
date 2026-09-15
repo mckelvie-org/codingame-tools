@@ -4269,6 +4269,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -5824,11 +5852,11 @@ expect, <code>cg config dump</code> shows you what actually won.</p>
 <h2 id="default-working-directories">Default working directories<a class="headerlink" href="#default-working-directories" title="Permanent link">&para;</a></h2>
 <p>Both managers look for a working directory rather than taking one as an argument every time, and
 those defaults are per-profile settings:</p>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>settings<span class="w"> </span><span class="nb">set</span><span class="w"> </span>puzzle-dir<span class="w"> </span>~/cg/puzzle
-cg<span class="w"> </span>settings<span class="w"> </span><span class="nb">set</span><span class="w"> </span>contribution-dir<span class="w"> </span>~/cg/contribution
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>settings<span class="w"> </span><span class="nb">set</span><span class="w"> </span>project-dir<span class="w"> </span>~/cg
 </code></pre></div>
-<p>Without a setting, resolution falls back to the current directory, and then to <code>./puzzle</code> or
-<code>./contribution</code>. <code>cg puzzle where</code> and <code>cg contribution where</code> answer "which directory would this
+<p><code>projectDir</code> names where the <code>puzzles/</code> and <code>contributions/</code> trees live; without it, that is the
+directory holding <code>.cg/</code>, or the current one. <code>cg puzzle where</code> and <code>cg contribution where</code> answer
+"which directory would this
 command actually use", which is usually faster than reasoning about it. They print <strong>only</strong> the
 resolved path, so they compose: <code>cd "$(cg puzzle where)"</code>.</p>
 <h2 id="active-working-directories">Active working directories<a class="headerlink" href="#active-working-directories" title="Permanent link">&para;</a></h2>
@@ -5853,14 +5881,19 @@ a config file pinning it would defeat <code>activate</code>/<code>deactivate</co
 <h2 id="full-resolution-order">Full resolution order<a class="headerlink" href="#full-resolution-order" title="Permanent link">&para;</a></h2>
 <p>Most specific first, for both puzzles and contributions:</p>
 <ol>
-<li><code>--puzzle-dir</code> / <code>--contribution-dir</code>, or the directory argument to <code>import</code>/<code>create</code></li>
+<li><code>--puzzle-dir</code> / <code>--contribution-dir</code></li>
 <li><code>CG_PUZZLE_DIR</code> / <code>CG_CONTRIBUTION_DIR</code></li>
 <li>the <strong>active</strong> directory (above)</li>
-<li>the configured default (<code>cg settings set puzzle-dir</code>, or <code>config.yaml</code>)</li>
-<li>the current directory, if it holds a <code>puzzle.json</code> / <code>contribution.json</code></li>
-<li><code>./puzzle</code> / <code>./contribution</code>, if it holds one</li>
+<li>the current directory, if it is itself a working directory</li>
 </ol>
-<p>Steps 1–4 are taken at face value; 5–6 only match when the identity file is actually there.</p>
+<p>That's the whole list — no searching. Step 4 checks that one directory: not its parents, not a
+<code>puzzles/</code> beneath it. So <code>cd puzzles/temperatures &amp;&amp; cg puzzle play</code> works when nothing is active,
+while the same command one directory up does not. The active directory outranks where you are
+standing, so if one is set, <code>cd</code> changes nothing; <code>cg puzzle activate .</code> switches to the one you're
+in.</p>
+<p><code>import</code> and <code>create</code> don't take a directory: they compute one from the puzzle's pretty id or the
+contribution's title, under the project root — the directory holding <code>.cg/</code>, or the current one if
+there is none. <code>--puzzle-dir</code>/<code>--contribution-dir</code> override that.</p>
 
 
 

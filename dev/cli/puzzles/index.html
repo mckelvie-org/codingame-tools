@@ -458,6 +458,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Importing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-from-your-own-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting from your own template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -469,6 +486,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Finding your way around">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-over" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting over
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -476,6 +510,17 @@
     <span class="md-ellipsis">
       
         Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puzzles-that-cant-be-tested-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puzzles that can't be tested locally
       
     </span>
   </a>
@@ -4324,6 +4369,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -5754,6 +5827,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Importing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-from-your-own-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting from your own template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5765,6 +5855,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Finding your way around">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-over" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting over
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5772,6 +5879,17 @@
     <span class="md-ellipsis">
       
         Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puzzles-that-cant-be-tested-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puzzles that can't be tested locally
       
     </span>
   </a>
@@ -5868,21 +5986,84 @@
 <p>Pull a puzzle into a local directory, solve it in your own editor, run its tests without touching
 the network, and submit when you're happy.</p>
 <h2 id="the-loop">The loop<a class="headerlink" href="#the-loop" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span>temperatures<span class="w">          </span><span class="c1"># pull it down; becomes the active puzzle</span>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>temperatures<span class="w">                   </span><span class="c1"># -&gt; puzzles/temperatures, and makes it active</span>
 <span class="nv">$EDITOR</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="k">)</span><span class="s2">/data/solution.py&quot;</span><span class="w">   </span><span class="c1"># solve it</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w">                                  </span><span class="c1"># run every test case, locally</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>submit<span class="w">                                </span><span class="c1"># graded submission</span>
 </code></pre></div>
 <p>That's the whole thing. The rest of this page is what to do when it isn't that simple.</p>
 <h2 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span>temperatures
-cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span><span class="m">10075</span>
-cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>./puzzle<span class="w"> </span><span class="s2">&quot;Temperatures&quot;</span>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>temperatures
+cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span><span class="m">10075</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span><span class="s2">&quot;Temperatures&quot;</span>
 </code></pre></div>
-<p>The target directory comes first and is required. <code>PUZZLE</code> is resolved in this order: numeric puzzle
-ID, exact pretty ID, exact title, case-insensitive title.</p>
+<p><code>PUZZLE</code> is resolved in this order: numeric puzzle ID, exact pretty ID, exact title,
+case-insensitive title.</p>
+<p>The working directory is created at <strong><code>puzzles/&lt;pretty-id&gt;</code></strong> under the project root — the directory
+holding <code>.cg/</code>, or the current one if there is none. <code>--puzzle-dir</code> overrides it:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>--puzzle-dir<span class="w"> </span>./scratch<span class="w"> </span>import<span class="w"> </span>temperatures
+</code></pre></div>
 <p>If you've attempted the puzzle before, your saved answer is imported in whatever language you last
 used; otherwise you get a placeholder in <code>--language</code> (default Python3).</p>
+<h3 id="starting-from-your-own-template">Starting from your own template<a class="headerlink" href="#starting-from-your-own-template" title="Permanent link">&para;</a></h3>
+<p>Most solutions start the same way. <code>--template</code> seeds the solution file from one of yours instead
+of the one-line placeholder:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>--template<span class="w"> </span>./templates/solution.py<span class="w"> </span>temperatures
+cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>-t<span class="w"> </span>solution.py<span class="w"> </span>--template-path<span class="w"> </span>~/cg-templates<span class="w"> </span>temperatures
+cg<span class="w"> </span>puzzle<span class="w"> </span>import<span class="w"> </span>--template-path<span class="w"> </span>~/cg-templates<span class="w"> </span>temperatures<span class="w">   </span><span class="c1"># picks solution.&lt;ext&gt;</span>
+</code></pre></div>
+<p><code>--template-path</code> is a search path: directories separated like <code>PATH</code>, and the option may be
+repeated. Rather than passing it every time, set it once in <code>.cg/config/config.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">templatePath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../templates</span><span class="w">    </span><span class="c1"># or a &quot;PATH&quot;-separated string, or a YAML list</span>
+</code></pre></div>
+<p>Relative entries resolve against the config file's own directory, the same as <code>dataDir</code> — so from
+<code>.cg/config/</code>, the project's own <code>templates/</code> is <code>../../templates</code>. <code>--template-path</code> then <em>extends</em>
+the configured path rather than replacing it, and is searched first. A configured directory that
+doesn't exist is reported, since it was named deliberately. A <code>--template</code> containing a path separator is used as given; a bare filename is looked up
+there. With no <code>--template</code> at all, <code>solution.&lt;ext&gt;</code> for the solution language is looked up, so a
+directory of per-language templates works with no flag.</p>
+<p>Two tokens are expanded inside the template:</p>
+<table>
+<thead>
+<tr>
+<th>token</th>
+<th>expands to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>${PUZZLE_DETAILS}</code></td>
+<td>a plain-text rendering of the puzzle — goal, rules, input and output descriptions, constraints, and the first test case as a worked example — indented to match where the token sits</td>
+</tr>
+<tr>
+<td><code>${CG_URL}</code></td>
+<td>the puzzle's CodinGame IDE link, <code>https://www.codingame.com/ide/puzzle/&lt;pretty-id&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># ${CG_URL}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">${PUZZLE_DETAILS}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+</code></pre></div>
+<p>Anything that would <em>end</em> a block comment is defused first (<code>*/</code> becomes <code>* /</code>, runs of quotes are
+shortened), so a statement containing one can't close your docstring halfway through. Nothing else
+is substituted — <code>$</code> and <code>{}</code> elsewhere in your code are left alone.</p>
+<blockquote>
+<p><strong>A template never overwrites your own code.</strong> If CodinGame already has a solution saved for this
+puzzle and language, that is imported and the template is ignored.</p>
+</blockquote>
+<p>The same options work on <code>cg puzzle set solution-language</code>, which is the other moment a solution is
+created from nothing:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span><span class="nb">set</span><span class="w"> </span>solution-language<span class="w"> </span>C++<span class="w"> </span>--template-path<span class="w"> </span>~/cg-templates
+</code></pre></div>
+<p>The default lookup uses the language you're switching <strong>to</strong>, so a directory of per-language
+templates picks <code>solution.cpp</code> here. As with <code>import</code>, your own saved code for that language wins if
+CodinGame has any.</p>
+<p>For an interactive puzzle the example is omitted, with a note saying why: its stored test case is
+the referee's starting configuration, not the input your program reads.</p>
 <p>Importing makes that directory the <strong>active</strong> puzzle, so later commands find it without
 <code>--puzzle-dir</code> — see <a href="../../concepts/profiles/#active-working-directories">active working directories</a>.</p>
 <h2 id="finding-your-way-around">Finding your way around<a class="headerlink" href="#finding-your-way-around" title="Permanent link">&para;</a></h2>
@@ -5894,6 +6075,26 @@ cg<span class="w"> </span>puzzle<span class="w"> </span>description<span class="
 <span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cg<span class="w"> </span>puzzle<span class="w"> </span>where<span class="k">)</span><span class="s2">&quot;</span>
 </code></pre></div>
 <p>It exits non-zero if no working directory can be found.</p>
+<h3 id="starting-over">Starting over<a class="headerlink" href="#starting-over" title="Permanent link">&para;</a></h3>
+<p><code>reset</code> throws the current solution away and writes a fresh one, with the same
+<code>--language</code>/<code>--template</code>/<code>--template-path</code> options as <code>import</code>:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>reset<span class="w">                              </span><span class="c1"># back to the placeholder</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>reset<span class="w"> </span>--template-path<span class="w"> </span>~/cg-templates
+cg<span class="w"> </span>puzzle<span class="w"> </span>reset<span class="w"> </span>--language<span class="w"> </span>C++<span class="w">               </span><span class="c1"># and switch language</span>
+</code></pre></div>
+<p>It's the counterpart to <a href="#switching-language"><code>set solution-language</code></a>, and deliberately different:
+that one <em>restores</em> whatever CodinGame has saved, while <code>reset</code> always regenerates. That makes it
+the one command here that can destroy work with no copy anywhere, so it asks first:</p>
+<div class="highlight"><pre><span></span><code>About to discard this solution and write a fresh one. It is neither saved on CodinGame nor
+untouched since cg wrote it, so there is no other copy:
+  file:     .../data/solution.py (46 lines)
+  language: Python3
+  new from: ~/cg-templates/solution.py
+Type RESET (all caps) to confirm, or anything else to cancel:
+</code></pre></div>
+<p>No prompt when there's nothing to lose — the solution is untouched since cg wrote it, or matches
+what you've submitted. <code>--force</code> skips the prompt, and is required when stdin/stdout aren't a
+terminal.</p>
 <h2 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w">            </span><span class="c1"># every downloaded test case, entirely locally</span>
 cg<span class="w"> </span>puzzle<span class="w"> </span>play<span class="w"> </span><span class="m">3</span><span class="w">          </span><span class="c1"># just test 3</span>
@@ -5911,6 +6112,92 @@ Captured stdout is only printed for failures unless you ask for it.</p>
 server for this puzzle and language. It isn't a submission and isn't graded, but it does replace
 what CodinGame has stored. Prefer <code>cg puzzle play</code> unless you need the server's own runner.</p>
 </blockquote>
+<h2 id="puzzles-that-cant-be-tested-locally">Puzzles that can't be tested locally<a class="headerlink" href="#puzzles-that-cant-be-tested-locally" title="Permanent link">&para;</a></h2>
+<p>Two kinds of puzzle can't be run against <code>cg puzzle play</code>, for different reasons. Both are detected
+at import and refuse with an explanation rather than reporting a meaningless result.</p>
+<p><strong>Interactive puzzles</strong> (<code>gameloop</code> in the stub — Code vs Zombies, Mars Lander episodes 2 and 3)
+trade moves with a <strong>referee</strong> turn by turn: your solution reads the turn's state, writes a move,
+and the referee computes the next state from it. Only CodinGame has the referee, and the downloaded
+test case is its <em>world configuration</em> rather than the input your solution reads — Code vs Zombies
+supplies human positions with no ids, while the stub reads an id per human. So nothing local works:
+no <code>play</code>, no debugging.</p>
+<p><strong>Optimization puzzles</strong> (<code>optim</code> — Travelling Salesman) are scored by how good your answer is, not
+by matching a fixed one, so their test cases carry real inputs and <strong>empty</strong> expected outputs. A
+local pass/fail would invert: a genuine answer never matches the empty file, while a solution that
+printed nothing would pass every test.</p>
+<p>The two are independent. Travelling Salesman is an optimization puzzle that is <em>not</em> interactive —
+one input, one answer — so it runs and debugs locally perfectly well; it just can't be scored there.
+Mars Lander is interactive but not an optimization puzzle.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>play</code></th>
+<th>debug</th>
+<th><code>play-server</code></th>
+<th><code>submit</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>standard</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>optimization, one-shot</td>
+<td>no</td>
+<td><strong>yes</strong></td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>interactive</td>
+<td>no</td>
+<td>no</td>
+<td><strong>yes, turn by turn</strong></td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>puzzle<span class="w"> </span>play-server<span class="w">              </span><span class="c1"># runs it on CodinGame&#39;s servers, referee included</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>play-server<span class="w"> </span>--no-stdout<span class="w">  </span><span class="c1"># drop the moves, keep your debug output</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>play-server<span class="w"> </span>--summary<span class="w">    </span><span class="c1"># just the verdict, without what the run printed</span>
+cg<span class="w"> </span>puzzle<span class="w"> </span>submit<span class="w">                   </span><span class="c1"># graded run</span>
+</code></pre></div>
+<p>For an interactive puzzle, <code>play-server</code> reports the game turn by turn and the referee's score
+rather than a pass/fail, laid out as CodinGame's own console is:</p>
+<div class="highlight"><pre><span></span><code>[DONE] test 1 (Simple) -- 9 turns, score 10
+  start
+    Game information:
+      The dead are coming...
+  turn 9/9
+    Standard Error Stream:
+      &gt; Ash is at (7016,3827)
+      &gt; Playing move (7893, 4305)
+    Standard Output Stream:
+      &gt; 7893 4305
+    Game information:
+      You held off the wave of zombies and scored 10 points.
+</code></pre></div>
+<p>The <strong>first frame is the game's setup</strong>, before your solution has moved, so turns are numbered from
+the second — <code>turn 9/9</code> here is the turn the web IDE also calls 9/9. In a game where the referee
+acts several times per move of yours, the frames it produced without reading anything are flagged
+<code>(no input read)</code>; single-stepping in the web IDE pauses only at the others. Standard error is coloured red
+as the IDE colours it, and CodinGame's own console colours are rendered in every stream. Every
+stream is shown by default, as in the web IDE. <code>--no-stdout</code> and <code>--no-stderr</code> drop one stream and
+keep the other — useful when your solution logs its own move, making the stdout section redundant —
+and <code>--summary</code> trims to the verdict and the referee's narration.</p>
+<p>To see the response itself rather than a rendering of it:</p>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>--json<span class="w"> </span>puzzle<span class="w"> </span>play-server<span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+<p>That prints every frame in full, including the referee's <code>view</code> — its serialized world state for
+that turn, in the puzzle-specific format its browser viewer draws — and anything CodinGame sends
+that this client doesn't model yet.</p>
+<p>A run takes one request per test case, and the server plays the whole game before answering, so a
+multi-test run pauses between test cases. Frames within a test case all arrive together.</p>
 <h2 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">&para;</a></h2>
 <p>When a test fails and you want to step through it rather than add print statements:</p>
 <div class="highlight"><pre><span></span><code>cg<span class="w"> </span>vscode<span class="w"> </span>install<span class="w">         </span><span class="c1"># generates the VS Code launch entries; once per workspace</span>

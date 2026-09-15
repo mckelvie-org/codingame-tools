@@ -736,6 +736,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cg-puzzle-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg puzzle reset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cg-puzzle-repair" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4447,6 +4458,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -5880,6 +5919,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cg-puzzle-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg puzzle reset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cg-puzzle-repair" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -6131,6 +6181,10 @@
 <td>Create a puzzle working directory and pull the puzzle into it (Puzzle/generateSessionFromPuzzlePrettyId, then TestSession/startTestSession).</td>
 </tr>
 <tr>
+<td><a href="#cg-puzzle-reset"><code>cg puzzle reset</code></a></td>
+<td>Throw the current solution away and write a fresh one from a template.</td>
+</tr>
+<tr>
 <td><a href="#cg-puzzle-repair"><code>cg puzzle repair</code></a></td>
 <td>Rebuild .meta/ -- the test-session handle and the cached statement and stub-generator copies -- from puzzle.json, without touching data/.</td>
 </tr>
@@ -6219,9 +6273,10 @@
 <p><strong>Subcommands</strong></p>
 <ul>
 <li><a href="#cg-puzzle-import"><strong><code>import</code></strong></a> — Create a puzzle working directory and pull the puzzle into it (Puzzle/generateSessionFromPuzzlePrettyId, then TestSession/startTestSession). PUZZLE is resolved in this order: numeric puzzle ID; exact pretty ID, e.g. 'literary-alfabet-soupe'; exact title; case-insensitive title. If you have attempted the puzzle before, your saved answer is imported in whatever language you last used; otherwise you get a placeholder solution in --language. Makes DIRECTORY the active puzzle.</li>
+<li><a href="#cg-puzzle-reset"><strong><code>reset</code></strong></a> — Throw the current solution away and write a fresh one from a template. The counterpart to <code>cg puzzle set solution-language</code>, and deliberately not the same thing: that restores whatever CodinGame has saved for a language, while this always regenerates--which is how you get back to a clean start after an experiment went nowhere, or pick up a template you wrote after importing. Takes the same --language/--template/--template-path options as <code>cg puzzle import</code>, including ${PUZZLE_DETAILS}. Prompts before discarding a solution that is neither saved on the server nor untouched since cg wrote it; --force skips the prompt and is required when stdin/stdout are not a terminal.</li>
 <li><a href="#cg-puzzle-repair"><strong><code>repair</code></strong></a> — Rebuild .meta/ -- the test-session handle and the cached statement and stub-generator copies -- from puzzle.json, without touching data/. Use it after cloning a repo that does not carry .meta/ (it is gitignored), or if anything in the cache looks wrong. Deleting .meta/ and repairing is always safe.</li>
 <li><a href="#cg-puzzle-submit"><strong><code>submit</code></strong></a> — Submit your solution for credit (TestSession/submit): a real, permanent, graded submission, validated against the puzzle's hidden validator test cases. There is no undo. A puzzle with many heavy validators can take a while, since the server runs your code once per validator. Use <code>cg puzzle play</code> to test locally first.</li>
-<li><a href="#cg-puzzle-play-server"><strong><code>play-server</code></strong></a> — Run your solution against the puzzle's test cases on CodinGame's servers (TestSession/play) -- the IDE's "Test" button. Not a submission and not graded, but it does durably overwrite the code CodinGame has saved for this puzzle and language. Prefer <code>cg puzzle play</code>, which runs locally with no network access and no side effects. With no TEST-INDEX, runs every downloaded test case; give one or more 1-based indices to run only those. Exits non-zero if any test fails. Captured stdout is printed only for failing tests, unless --show-stdout.</li>
+<li><a href="#cg-puzzle-play-server"><strong><code>play-server</code></strong></a> — Run your solution against the puzzle's test cases on CodinGame's servers (TestSession/play) -- the IDE's "Test" button. Not a submission and not graded, but it does durably overwrite the code CodinGame has saved for this puzzle and language. Prefer <code>cg puzzle play</code>, which runs locally with no network access and no side effects. With no TEST-INDEX, runs every downloaded test case; give one or more 1-based indices to run only those. Exits non-zero if any test fails. Shows what the run printed, pass or fail. For an interactive puzzle, reports the game turn by turn and the referee's score instead of a pass/fail, laid out as CodinGame's own console is--each turn's standard error, standard output and referee narration under their own headings, with the colours it applies. Pass --summary for just the result and the narration, or --no-stdout/--no-stderr to drop one stream and keep the other. With --json, prints the whole result per test case--every frame, plus anything this client does not model yet--rather than the rendered trace.</li>
 <li><a href="#cg-puzzle-play"><strong><code>play</code></strong></a> — Run your solution against the puzzle's downloaded test cases entirely locally, with no network access at all. Output is compared exactly as CodinGame compares it, so a pass here means a pass there. Supports Python3 and C++; C++ builds and runs in a container, so no local toolchain is needed. With no TEST-INDEX, runs every test case; give one or more 1-based indices to run only those. Exits non-zero if any test fails. Captured stdout is printed only for failing tests, unless --show-stdout.</li>
 <li><a href="#cg-puzzle-description"><strong><code>description</code></strong></a> — Print the puzzle's problem statement from the local cache -- no network access. Run <code>cg puzzle import</code> or <code>cg puzzle repair</code> first if it is missing. Section headers and the example input/output are colour-highlighted on a terminal. With --json, prints the parsed [{kind, text}, ...] blocks instead.</li>
 <li><a href="#cg-puzzle-diff"><strong><code>diff</code></strong></a> — Show a unified diff between your local solution and the answer the server currently has for this puzzle.</li>
@@ -6238,16 +6293,30 @@
 </ul>
 <h2 id="cg-puzzle-import"><code>cg puzzle import</code><a class="headerlink" href="#cg-puzzle-import" title="Permanent link">&para;</a></h2>
 <p>Create a puzzle working directory and pull the puzzle into it (Puzzle/generateSessionFromPuzzlePrettyId, then TestSession/startTestSession). PUZZLE is resolved in this order: numeric puzzle ID; exact pretty ID, e.g. 'literary-alfabet-soupe'; exact title; case-insensitive title. If you have attempted the puzzle before, your saved answer is imported in whatever language you last used; otherwise you get a placeholder solution in --language. Makes DIRECTORY the active puzzle.</p>
-<div class="highlight"><pre><span></span><code>usage: cg puzzle import [-h] [--language LANGUAGE] DIRECTORY PUZZLE
+<div class="highlight"><pre><span></span><code>usage: cg puzzle import [-h] [--language LANGUAGE] [--template TEMPLATE] [--template-path DIRS]
+                        PUZZLE
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>DIRECTORY</code></strong> — Directory to build the working directory in. Required and always first, matching <code>cg contribution import</code>/<code>create</code>. Becomes the active puzzle directory (see <code>cg puzzle activate</code>).</li>
 <li><strong><code>PUZZLE</code></strong> — A puzzle reference: numeric puzzle ID, pretty ID (displayed title, lowercased with spaces replaced by hyphens, e.g. 'literary-alfabet-soupe'), exact title, or case-insensitive title--tried in that order until one resolves to a real puzzle.</li>
 </ul>
 <p><strong>Options</strong></p>
 <ul>
 <li><strong><code>-l, --language LANGUAGE</code></strong> — Language to start in, e.g. 'C++'. Restores your most recent saved code for that language, or writes a placeholder if you've never used it here. Omit to use whichever language you last used for this puzzle (or Python3 if you've never attempted it at all).</li>
+<li><strong><code>-t, --template TEMPLATE</code></strong> — Seed the solution from this template file instead of the one-line placeholder. Ignored when the puzzle already has your code on the server--that always wins. A path (anything containing a separator) is used as given; a bare filename is looked up in --template-path. Inside the file, ${PUZZLE_DETAILS} expands to a plain-text rendering of the puzzle--goal, input, output, constraints, and the first test case as a worked example--with block-comment terminators defused so it can be pasted into a docstring or /<em> </em>/ comment.</li>
+<li><strong><code>--template-path DIRS</code></strong> — Where to look for templates named by --template, and--when --template is not given--for a default <code>solution.&lt;ext&gt;</code> matching the solution language. Several directories may be given ':'-separated, and the option may be repeated; they are searched in order.</li>
+</ul>
+<h2 id="cg-puzzle-reset"><code>cg puzzle reset</code><a class="headerlink" href="#cg-puzzle-reset" title="Permanent link">&para;</a></h2>
+<p>Throw the current solution away and write a fresh one from a template. The counterpart to <code>cg puzzle set solution-language</code>, and deliberately not the same thing: that restores whatever CodinGame has saved for a language, while this always regenerates--which is how you get back to a clean start after an experiment went nowhere, or pick up a template you wrote after importing. Takes the same --language/--template/--template-path options as <code>cg puzzle import</code>, including ${PUZZLE_DETAILS}. Prompts before discarding a solution that is neither saved on the server nor untouched since cg wrote it; --force skips the prompt and is required when stdin/stdout are not a terminal.</p>
+<div class="highlight"><pre><span></span><code>usage: cg puzzle reset [-h] [--language LANGUAGE] [--template TEMPLATE] [--template-path DIRS]
+                       [--force]
+</code></pre></div>
+<p><strong>Options</strong></p>
+<ul>
+<li><strong><code>-l, --language LANGUAGE</code></strong> — Regenerate for this language instead of the current one, renaming the solution file to match. Unlike <code>cg puzzle set solution-language</code>, this never restores code saved on the server.</li>
+<li><strong><code>-t, --template TEMPLATE</code></strong> — Template file to write instead of the one-line placeholder. A path is used as given; a bare filename is looked up in --template-path. ${PUZZLE_DETAILS} expands as it does for <code>cg puzzle import</code>.</li>
+<li><strong><code>--template-path DIRS</code></strong> — Where to look for a template named by --template, and--when it is not given--for a default <code>solution.&lt;ext&gt;</code>. ':'-separated and repeatable; searched in order.</li>
+<li><strong><code>-f, --force</code></strong> — Skip the confirmation prompt. Required when stdin/stdout are not a terminal.</li>
 </ul>
 <h2 id="cg-puzzle-repair"><code>cg puzzle repair</code><a class="headerlink" href="#cg-puzzle-repair" title="Permanent link">&para;</a></h2>
 <p>Rebuild .meta/ -- the test-session handle and the cached statement and stub-generator copies -- from puzzle.json, without touching data/. Use it after cloning a repo that does not carry .meta/ (it is gitignored), or if anything in the cache looks wrong. Deleting .meta/ and repairing is always safe.</p>
@@ -6258,8 +6327,8 @@
 <div class="highlight"><pre><span></span><code>usage: cg puzzle submit [-h]
 </code></pre></div>
 <h2 id="cg-puzzle-play-server"><code>cg puzzle play-server</code><a class="headerlink" href="#cg-puzzle-play-server" title="Permanent link">&para;</a></h2>
-<p>Run your solution against the puzzle's test cases on CodinGame's servers (TestSession/play) -- the IDE's "Test" button. Not a submission and not graded, but it does durably overwrite the code CodinGame has saved for this puzzle and language. Prefer <code>cg puzzle play</code>, which runs locally with no network access and no side effects. With no TEST-INDEX, runs every downloaded test case; give one or more 1-based indices to run only those. Exits non-zero if any test fails. Captured stdout is printed only for failing tests, unless --show-stdout.</p>
-<div class="highlight"><pre><span></span><code>usage: cg puzzle play-server [-h] [--show-stdout] [TEST-INDEX ...]
+<p>Run your solution against the puzzle's test cases on CodinGame's servers (TestSession/play) -- the IDE's "Test" button. Not a submission and not graded, but it does durably overwrite the code CodinGame has saved for this puzzle and language. Prefer <code>cg puzzle play</code>, which runs locally with no network access and no side effects. With no TEST-INDEX, runs every downloaded test case; give one or more 1-based indices to run only those. Exits non-zero if any test fails. Shows what the run printed, pass or fail. For an interactive puzzle, reports the game turn by turn and the referee's score instead of a pass/fail, laid out as CodinGame's own console is--each turn's standard error, standard output and referee narration under their own headings, with the colours it applies. Pass --summary for just the result and the narration, or --no-stdout/--no-stderr to drop one stream and keep the other. With --json, prints the whole result per test case--every frame, plus anything this client does not model yet--rather than the rendered trace.</p>
+<div class="highlight"><pre><span></span><code>usage: cg puzzle play-server [-h] [--summary] [--no-stdout] [--no-stderr] [TEST-INDEX ...]
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
@@ -6267,7 +6336,9 @@
 </ul>
 <p><strong>Options</strong></p>
 <ul>
-<li><strong><code>--show-stdout</code></strong> — Print captured stdout even for a passing test. Always printed for a failing/errored test regardless.</li>
+<li><strong><code>--summary</code></strong> — Show just the verdict, without what the run printed: for an interactive puzzle, the result and the referee's narration with no per-turn streams; for a standard one, no captured output. Useful for a long game, or a batch where only pass/fail matters.</li>
+<li><strong><code>--no-stdout</code></strong> — Interactive puzzles only: drop each turn's standard output--your solution's moves--while keeping its standard error and the referee's narration. Useful when your own debug output already reports the move. A standard puzzle's streams arrive already interleaved in one field, so only --summary applies there.</li>
+<li><strong><code>--no-stderr</code></strong> — Interactive puzzles only: drop each turn's standard error--your solution's debug output--while keeping its moves and the referee's narration. Useful for a chatty solution. Same caveat as --no-stdout for a standard puzzle.</li>
 </ul>
 <h2 id="cg-puzzle-play"><code>cg puzzle play</code><a class="headerlink" href="#cg-puzzle-play" title="Permanent link">&para;</a></h2>
 <p>Run your solution against the puzzle's downloaded test cases entirely locally, with no network access at all. Output is compared exactly as CodinGame compares it, so a pass here means a pass there. Supports Python3 and C++; C++ builds and runs in a container, so no local toolchain is needed. With no TEST-INDEX, runs every test case; give one or more 1-based indices to run only those. Exits non-zero if any test fails. Captured stdout is printed only for failing tests, unless --show-stdout.</p>
@@ -6348,7 +6419,8 @@
 </ul>
 <h2 id="cg-puzzle-set-solution-language"><code>cg puzzle set solution-language</code><a class="headerlink" href="#cg-puzzle-set-solution-language" title="Permanent link">&para;</a></h2>
 <p>Show or switch the language this puzzle is solved in, restoring your own most recent code for it. With no LANGUAGE, prints the current one. CodinGame keeps your latest source per language, so anything you previously wrote in the target language comes back; a language you have never used gets a placeholder. Refuses if your solution holds work the server does not have--submit it first, or pass --force to discard it. Changes local state only; the server's language follows once you run a server-side test or submit in the new one.</p>
-<div class="highlight"><pre><span></span><code>usage: cg puzzle set solution-language [-h] [--force] [LANGUAGE]
+<div class="highlight"><pre><span></span><code>usage: cg puzzle set solution-language [-h] [--force] [--template TEMPLATE] [--template-path DIRS]
+                                       [LANGUAGE]
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
@@ -6357,6 +6429,8 @@
 <p><strong>Options</strong></p>
 <ul>
 <li><strong><code>-f, --force</code></strong> — Switch even if your solution has changes the server doesn't have, discarding them.</li>
+<li><strong><code>-t, --template TEMPLATE</code></strong> — Seed the new language's solution from this template file instead of the one-line placeholder, exactly as <code>cg puzzle import</code> does--including ${PUZZLE_DETAILS}. Ignored when CodinGame already has your code for the target language, which is restored instead. A path is used as given; a bare filename is looked up in --template-path.</li>
+<li><strong><code>--template-path DIRS</code></strong> — Where to look for templates named by --template, and--when --template is not given--for a default <code>solution.&lt;ext&gt;</code> matching the language being switched to. ':'-separated and repeatable; searched in order.</li>
 </ul>
 <h2 id="cg-puzzle-activate"><code>cg puzzle activate</code><a class="headerlink" href="#cg-puzzle-activate" title="Permanent link">&para;</a></h2>
 <p>Make DIRECTORY the active puzzle, so later <code>cg puzzle</code> commands use it without --puzzle-dir. <code>cg puzzle import</code> sets this for you, so use this to switch between working directories you already have. Outranks the configured default (<code>cg settings set puzzle-dir</code>); <code>cg puzzle deactivate</code> clears it.</p>
@@ -6364,7 +6438,7 @@
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>[DIRECTORY]</code></strong> <em>(default: <code>/home/runner/work/codingame-tools/codingame-tools</code>)</em> — The puzzle working directory to activate. Defaults to the current directory, so <code>cd</code> into one and run this with no arguments.</li>
+<li><strong><code>[DIRECTORY]</code></strong> — The puzzle working directory to activate. A bare name is looked up under the project's puzzles/ directory, so <code>cg puzzle activate temperatures</code> works from anywhere; anything containing a path separator is a path, relative to the current directory. Omit it to activate the current directory.</li>
 </ul>
 <h2 id="cg-puzzle-deactivate"><code>cg puzzle deactivate</code><a class="headerlink" href="#cg-puzzle-deactivate" title="Permanent link">&para;</a></h2>
 <p>Clear the active puzzle, so <code>cg puzzle</code> commands fall back to the configured default and the usual directory discovery. Touches no files -- only the selection.</p>

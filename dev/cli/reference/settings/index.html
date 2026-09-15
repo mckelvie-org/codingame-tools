@@ -814,21 +814,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cg-settings-set-contribution-dir" class="md-nav__link">
+  <a href="#cg-settings-set-project-dir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cg settings set contribution-dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cg-settings-set-puzzle-dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cg settings set puzzle-dir
+        cg settings set project-dir
       
     </span>
   </a>
@@ -858,21 +847,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cg-settings-delete-contribution-dir" class="md-nav__link">
+  <a href="#cg-settings-delete-project-dir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cg settings delete contribution-dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cg-settings-delete-puzzle-dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cg settings delete puzzle-dir
+        cg settings delete project-dir
       
     </span>
   </a>
@@ -4326,6 +4304,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -5781,21 +5787,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cg-settings-set-contribution-dir" class="md-nav__link">
+  <a href="#cg-settings-set-project-dir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cg settings set contribution-dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cg-settings-set-puzzle-dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cg settings set puzzle-dir
+        cg settings set project-dir
       
     </span>
   </a>
@@ -5825,21 +5820,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cg-settings-delete-contribution-dir" class="md-nav__link">
+  <a href="#cg-settings-delete-project-dir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cg settings delete contribution-dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cg-settings-delete-puzzle-dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cg settings delete puzzle-dir
+        cg settings delete project-dir
       
     </span>
   </a>
@@ -5897,12 +5881,8 @@
 <td>Set the default codingame-tools credential profile name.</td>
 </tr>
 <tr>
-<td><a href="#cg-settings-set-contribution-dir"><code>cg settings set contribution-dir</code></a></td>
-<td>Set the default contribution working directory.</td>
-</tr>
-<tr>
-<td><a href="#cg-settings-set-puzzle-dir"><code>cg settings set puzzle-dir</code></a></td>
-<td>Set the default puzzle working directory.</td>
+<td><a href="#cg-settings-set-project-dir"><code>cg settings set project-dir</code></a></td>
+<td>Set the project directory--where the puzzles/ and contributions/ trees live.</td>
 </tr>
 <tr>
 <td><a href="#cg-settings-delete"><code>cg settings delete</code></a></td>
@@ -5913,12 +5893,8 @@
 <td>Delete (unset) the default codingame-tools credential profile name override.</td>
 </tr>
 <tr>
-<td><a href="#cg-settings-delete-contribution-dir"><code>cg settings delete contribution-dir</code></a></td>
-<td>Delete (unset) the default contribution working directory override.</td>
-</tr>
-<tr>
-<td><a href="#cg-settings-delete-puzzle-dir"><code>cg settings delete puzzle-dir</code></a></td>
-<td>Delete (unset) the default puzzle working directory override.</td>
+<td><a href="#cg-settings-delete-project-dir"><code>cg settings delete project-dir</code></a></td>
+<td>Delete (unset) the project directory override.</td>
 </tr>
 </tbody>
 </table>
@@ -5943,8 +5919,7 @@
 <p><strong>Subcommands</strong></p>
 <ul>
 <li><a href="#cg-settings-set-default-profile"><strong><code>default-profile</code></strong></a> — Set the default codingame-tools credential profile name.</li>
-<li><a href="#cg-settings-set-contribution-dir"><strong><code>contribution-dir</code></strong></a> — Set the default contribution working directory.</li>
-<li><a href="#cg-settings-set-puzzle-dir"><strong><code>puzzle-dir</code></strong></a> — Set the default puzzle working directory.</li>
+<li><a href="#cg-settings-set-project-dir"><strong><code>project-dir</code></strong></a> — Set the project directory--where the puzzles/ and contributions/ trees live.</li>
 </ul>
 <h2 id="cg-settings-set-default-profile"><code>cg settings set default-profile</code><a class="headerlink" href="#cg-settings-set-default-profile" title="Permanent link">&para;</a></h2>
 <p>Set the default codingame-tools credential profile name.</p>
@@ -5954,21 +5929,13 @@
 <ul>
 <li><strong><code>PROFILE-NAME</code></strong> — The credential profile name to record as the default--used whenever --profile isn't given (see <code>cg login</code>, <code>cg api ...</code>, etc.), and shown resolved by <code>cg config dump</code>/<code>cg settings dump</code>.</li>
 </ul>
-<h2 id="cg-settings-set-contribution-dir"><code>cg settings set contribution-dir</code><a class="headerlink" href="#cg-settings-set-contribution-dir" title="Permanent link">&para;</a></h2>
-<p>Set the default contribution working directory.</p>
-<div class="highlight"><pre><span></span><code>usage: cg settings set contribution-dir [-h] DIR
+<h2 id="cg-settings-set-project-dir"><code>cg settings set project-dir</code><a class="headerlink" href="#cg-settings-set-project-dir" title="Permanent link">&para;</a></h2>
+<p>Set the project directory--where the puzzles/ and contributions/ trees live.</p>
+<div class="highlight"><pre><span></span><code>usage: cg settings set project-dir [-h] DIR
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>DIR</code></strong> — Directory to use as the default contribution working directory--used whenever --contribution-dir isn't given and CG_CONTRIBUTION_DIR isn't set (see <code>cg contribution import</code>/<code>cg contribution push</code>). If given as a relative path, it's resolved against the current directory right now and stored relative to settings.json's own directory--so the effective directory doesn't move around depending on where <code>cg</code> is later run from.</li>
-</ul>
-<h2 id="cg-settings-set-puzzle-dir"><code>cg settings set puzzle-dir</code><a class="headerlink" href="#cg-settings-set-puzzle-dir" title="Permanent link">&para;</a></h2>
-<p>Set the default puzzle working directory.</p>
-<div class="highlight"><pre><span></span><code>usage: cg settings set puzzle-dir [-h] DIR
-</code></pre></div>
-<p><strong>Arguments</strong></p>
-<ul>
-<li><strong><code>DIR</code></strong> — Directory to use as the default puzzle working directory--used whenever --puzzle-dir isn't given and CG_PUZZLE_DIR isn't set (see <code>cg puzzle import</code>/<code>cg puzzle submit</code>). Same relative-path handling as <code>cg settings set contribution-dir</code>--see its help for details.</li>
+<li><strong><code>DIR</code></strong> — Directory to create puzzles/ and contributions/ under. Without this, the project root is the directory holding .cg/, falling back to the current directory. If given as a relative path, it is resolved against the current directory now and stored relative to settings.json's own directory--so the effective location does not move around depending on where <code>cg</code> is later run from.</li>
 </ul>
 <h2 id="cg-settings-delete"><code>cg settings delete</code><a class="headerlink" href="#cg-settings-delete" title="Permanent link">&para;</a></h2>
 <p>Delete a settings.json value.</p>
@@ -5977,20 +5944,15 @@
 <p><strong>Subcommands</strong></p>
 <ul>
 <li><a href="#cg-settings-delete-default-profile"><strong><code>default-profile</code></strong></a> — Delete (unset) the default codingame-tools credential profile name override.</li>
-<li><a href="#cg-settings-delete-contribution-dir"><strong><code>contribution-dir</code></strong></a> — Delete (unset) the default contribution working directory override.</li>
-<li><a href="#cg-settings-delete-puzzle-dir"><strong><code>puzzle-dir</code></strong></a> — Delete (unset) the default puzzle working directory override.</li>
+<li><a href="#cg-settings-delete-project-dir"><strong><code>project-dir</code></strong></a> — Delete (unset) the project directory override.</li>
 </ul>
 <h2 id="cg-settings-delete-default-profile"><code>cg settings delete default-profile</code><a class="headerlink" href="#cg-settings-delete-default-profile" title="Permanent link">&para;</a></h2>
 <p>Delete (unset) the default codingame-tools credential profile name override.</p>
 <div class="highlight"><pre><span></span><code>usage: cg settings delete default-profile [-h]
 </code></pre></div>
-<h2 id="cg-settings-delete-contribution-dir"><code>cg settings delete contribution-dir</code><a class="headerlink" href="#cg-settings-delete-contribution-dir" title="Permanent link">&para;</a></h2>
-<p>Delete (unset) the default contribution working directory override.</p>
-<div class="highlight"><pre><span></span><code>usage: cg settings delete contribution-dir [-h]
-</code></pre></div>
-<h2 id="cg-settings-delete-puzzle-dir"><code>cg settings delete puzzle-dir</code><a class="headerlink" href="#cg-settings-delete-puzzle-dir" title="Permanent link">&para;</a></h2>
-<p>Delete (unset) the default puzzle working directory override.</p>
-<div class="highlight"><pre><span></span><code>usage: cg settings delete puzzle-dir [-h]
+<h2 id="cg-settings-delete-project-dir"><code>cg settings delete project-dir</code><a class="headerlink" href="#cg-settings-delete-project-dir" title="Permanent link">&para;</a></h2>
+<p>Delete (unset) the project directory override.</p>
+<div class="highlight"><pre><span></span><code>usage: cg settings delete project-dir [-h]
 </code></pre></div>
 <hr />
 <p>Generated from the parser itself. For <em>when</em> to use these, see the <a href="../../">CLI guides</a>.</p>

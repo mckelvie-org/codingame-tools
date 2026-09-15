@@ -4667,6 +4667,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -6763,11 +6791,10 @@
 </ul>
 <h2 id="cg-contribution-import"><code>cg contribution import</code><a class="headerlink" href="#cg-contribution-import" title="Permanent link">&para;</a></h2>
 <p>Create a contribution working directory from an existing server-side contribution, downloading its cover image if one is set. Makes it the active contribution. DIRECTORY must not already exist. Ignores --contribution-dir.</p>
-<div class="highlight"><pre><span></span><code>usage: cg contribution import [-h] DIRECTORY CONTRIBUTION-ID
+<div class="highlight"><pre><span></span><code>usage: cg contribution import [-h] CONTRIBUTION-ID
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>DIRECTORY</code></strong> — New directory to create the working directory in, or an existing one whose contribution.json already tracks CONTRIBUTION-ID (to repair a missing git-dir--see also <code>cg contribution repair</code>). Always first, matching <code>cg contribution create</code> and <code>cg puzzle import</code>. Becomes the active contribution directory (see <code>cg contribution activate</code>).</li>
 <li><strong><code>CONTRIBUTION-ID</code></strong> — Opaque contribution ID string (see <code>cg api contribution find-contribution</code>).</li>
 </ul>
 <h2 id="cg-contribution-repair"><code>cg contribution repair</code><a class="headerlink" href="#cg-contribution-repair" title="Permanent link">&para;</a></h2>
@@ -6776,13 +6803,11 @@
 </code></pre></div>
 <h2 id="cg-contribution-create"><code>cg contribution create</code><a class="headerlink" href="#cg-contribution-create" title="Permanent link">&para;</a></h2>
 <p>Create a brand new contribution working directory, entirely locally -- no network access, and nothing exists on the server until your first <code>cg contribution push</code>. Seeds placeholder content for every file you will edit, consistent enough that <code>cg contribution play</code> passes on it immediately, and marks the contribution a private draft. Edit the files under data/, then push. DIRECTORY must not already exist. Ignores --contribution-dir.</p>
-<div class="highlight"><pre><span></span><code>usage: cg contribution create [-h] [--puzzle-type PUZZLE-TYPE] [--language LANGUAGE]
-                              DIRECTORY [TITLE]
+<div class="highlight"><pre><span></span><code>usage: cg contribution create [-h] [--puzzle-type PUZZLE-TYPE] [--language LANGUAGE] TITLE
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>DIRECTORY</code></strong> — New directory to create the working directory in. Must not already exist.</li>
-<li><strong><code>[TITLE]</code></strong> — Title for the new contribution. Defaults to 'Example puzzle <DIRECTORY's last path component>'.</li>
+<li><strong><code>TITLE</code></strong> — The contribution's title. Also names its working directory: "Simple Makefiles" creates contributions/simple-makefiles. Pass --contribution-dir to place it somewhere else.</li>
 </ul>
 <p><strong>Options</strong></p>
 <ul>
@@ -6938,7 +6963,7 @@
 </code></pre></div>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><strong><code>[DIRECTORY]</code></strong> <em>(default: <code>/home/runner/work/codingame-tools/codingame-tools</code>)</em> — The contribution working directory to activate. Defaults to the current directory, so <code>cd</code> into one and run this with no arguments.</li>
+<li><strong><code>[DIRECTORY]</code></strong> — The contribution working directory to activate. A bare name is looked up under the project's contributions/ directory, so <code>cg contribution activate simple-makefiles</code> works from anywhere; anything containing a path separator is a path, relative to the current directory. Omit it to activate the current directory.</li>
 </ul>
 <h2 id="cg-contribution-deactivate"><code>cg contribution deactivate</code><a class="headerlink" href="#cg-contribution-deactivate" title="Permanent link">&para;</a></h2>
 <p>Clear the active contribution, so <code>cg contribution</code> commands fall back to the configured default and the usual directory discovery. Touches no files -- only the selection.</p>

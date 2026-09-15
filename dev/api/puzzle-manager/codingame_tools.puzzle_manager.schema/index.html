@@ -16,7 +16,7 @@
         <link rel="prev" href="../codingame_tools.puzzle_manager.resolver/">
       
       
-        <link rel="next" href="../codingame_tools.puzzle_manager.statement_render/">
+        <link rel="next" href="../codingame_tools.puzzle_manager.solution_template/">
       
       
         
@@ -4341,6 +4341,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.interactive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interactive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.difficulty" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4460,6 +4482,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -6023,6 +6073,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.interactive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interactive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.difficulty" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -6409,7 +6481,7 @@ today--<code>puzzle_id</code> is what <code>repair()</code> actually queries wit
   </span>
 
 <a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CgPuzzleServerData</span><span class="p">(</span><span class="n">test_session_handle</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">puzzle_pretty_id</span><span class="p">,</span> <span class="n">extra_data</span><span class="o">=</span><span class="n"><span title="dict">dict</span></span><span class="p">(),</span> <span class="n">puzzle_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">difficulty</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CgPuzzleServerData</span><span class="p">(</span><span class="n">test_session_handle</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">puzzle_pretty_id</span><span class="p">,</span> <span class="n">extra_data</span><span class="o">=</span><span class="n"><span title="dict">dict</span></span><span class="p">(),</span> <span class="n">puzzle_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">difficulty</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6546,11 +6618,79 @@ from <code>Puzzle/findProgressByIds(puzzle_id)</code> and cross-checked against 
 
     <div class="doc doc-contents ">
 
-        <p>The puzzle's contribution type (e.g. "PUZZLE_INOUT"--currently the only type this package
-supports at all, so always that value in practice today), as of when this was last (re)
-written. Purely informational, same caching spirit as <code>title</code>/<code>puzzle_pretty_id</code>. <code>None</code>
-for a cache file written before this field existed--not re-backfilled automatically; run
-<code>cg puzzle repair</code> (after deleting <code>.meta/</code>) to populate it.</p>
+        <p>The puzzle's contribution type (e.g. "PUZZLE_INOUT", "PUZZLE_OPTI"), as of when this was
+last (re)written. <code>None</code> both for a puzzle CodinGame itself provides--which was never a
+community contribution, so has no type--and for a cache file written before this field
+existed. Not re-backfilled automatically; run <code>cg puzzle repair</code> to populate it.</p>
+<p>Prefer <code>mode</code> for deciding what a puzzle supports: it distinguishes the kinds even for
+official puzzles, where this is always <code>None</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="codingame_tools.puzzle_manager.schema.CgPuzzleServerData.mode" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">mode</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.mode" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">mode</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>How the puzzle is played: <code>"OPTIMIZATION"</code> for an optimization puzzle, <code>None</code> for a plain
+read-input/print-output one (the server omits the field rather than sending a value).</p>
+<p>Cached so that local commands know what they can offer without a network round trip. An
+optimization puzzle is scored by a referee running alongside the solution, so its test
+cases carry inputs but <strong>empty</strong> expected outputs, and comparing captured output against
+them is meaningless.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="codingame_tools.puzzle_manager.schema.CgPuzzleServerData.interactive" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">interactive</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#codingame_tools.puzzle_manager.schema.CgPuzzleServerData.interactive" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">interactive</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether the solution holds a turn-by-turn conversation with a referee, rather than reading
+one fixed input and printing one answer.</p>
+<p>True when the stub generator contains <code>gameloop</code>: the solution reads a turn's state, writes
+its move, and the referee computes the next turn's state from that move. Nothing local can
+run such a puzzle, because the referee is the other half of the conversation and only
+CodinGame has it -- and the downloaded test case is not even a stdin transcript, it is the
+referee's <em>world configuration</em>, in a format the solution never reads. Measured 2026-08-16:
+"Code vs Zombies" hands the referee human positions with no ids, while the stub reads an id
+per human; "Mars Lander" leads with two physics-configuration lines the stub never reads.</p>
+<p>Independent of <code>mode</code>. "Travelling Salesman" is an optimization puzzle that is <em>not</em>
+interactive -- one input, one answer -- so it runs and debugs locally even though it cannot
+be scored. "Mars Lander" is interactive but not an optimization puzzle. <code>None</code> for a cache
+written before this field existed; run <code>cg puzzle repair</code> to populate it.</p>
 
     </div>
 

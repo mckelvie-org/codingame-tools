@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://mckelvie-org.github.io/codingame-tools/dev/api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/">
       
       
-        <link rel="prev" href="../codingame_tools.puzzle_manager.schema/">
+        <link rel="prev" href="../codingame_tools.puzzle_manager.solution_template/">
       
       
         <link rel="next" href="../codingame_tools.puzzle_manager.test_cases_dir/">
@@ -4166,6 +4166,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -5976,13 +6004,13 @@ literal, whitespace-preserved example test-case text under an "Example" section)
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>codingame_tools/puzzle_manager/statement_render.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_statement_html</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CgStatementBlock</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_statement_html</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CgStatementBlock</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a puzzle&#39;s cached HTML statement into an ordered list of display blocks--see</span>
 <span class="sd">       `CgStatementBlock` and the module docstring.&quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">_StatementHTMLParser</span><span class="p">()</span>

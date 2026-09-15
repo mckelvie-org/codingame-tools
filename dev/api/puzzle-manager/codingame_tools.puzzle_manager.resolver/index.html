@@ -4196,10 +4196,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#codingame_tools.puzzle_manager.resolver.DEFAULT_PUZZLE_SUBDIR_NAME" class="md-nav__link">
+  <a href="#codingame_tools.puzzle_manager.resolver.PUZZLES_SUBDIR_NAME" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_PUZZLE_SUBDIR_NAME
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;PUZZLES_SUBDIR_NAME
       
     </span>
   </a>
@@ -4261,6 +4261,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.resolver.project_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;project_root
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.resolver.default_puzzles_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;default_puzzles_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4290,6 +4312,34 @@
     
   
     schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
   
 
     
@@ -5744,10 +5794,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#codingame_tools.puzzle_manager.resolver.DEFAULT_PUZZLE_SUBDIR_NAME" class="md-nav__link">
+  <a href="#codingame_tools.puzzle_manager.resolver.PUZZLES_SUBDIR_NAME" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_PUZZLE_SUBDIR_NAME
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;PUZZLES_SUBDIR_NAME
       
     </span>
   </a>
@@ -5803,6 +5853,28 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;infer_puzzle_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.resolver.project_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;project_root
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codingame_tools.puzzle_manager.resolver.default_puzzles_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;default_puzzles_dir
       
     </span>
   </a>
@@ -5901,21 +5973,24 @@ accepts the resolved <code>explicit</code> value).</p>
 
 
 
-<h3 id="codingame_tools.puzzle_manager.resolver.DEFAULT_PUZZLE_SUBDIR_NAME" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">DEFAULT_PUZZLE_SUBDIR_NAME</span>
+<h3 id="codingame_tools.puzzle_manager.resolver.PUZZLES_SUBDIR_NAME" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">PUZZLES_SUBDIR_NAME</span>
 
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
 
-<a href="#codingame_tools.puzzle_manager.resolver.DEFAULT_PUZZLE_SUBDIR_NAME" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEFAULT_PUZZLE_SUBDIR_NAME</span> <span class="o">=</span> <span class="s1">&#39;puzzle&#39;</span>
+<a href="#codingame_tools.puzzle_manager.resolver.PUZZLES_SUBDIR_NAME" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">PUZZLES_SUBDIR_NAME</span> <span class="o">=</span> <span class="s1">&#39;puzzles&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Name of the subdirectory of the current directory checked as a last-resort discovery step.</p>
+        <p>Name of the directory under the project root that holds one subdirectory per puzzle.</p>
+<p><code>cg puzzle import</code> creates <code>&lt;project&gt;/puzzles/&lt;pretty-id&gt;/</code>. A puzzle's pretty id is already a
+slug (<code>travelling-salesman</code>) and unique across the site, so it needs no further munging and two
+puzzles can never collide.</p>
 
     </div>
 
@@ -5941,9 +6016,9 @@ accepts the resolved <code>explicit</code> value).</p>
 
 
 
-        <p>Raised by <code>resolve_puzzle_dir()</code> (unless <code>allow_default=True</code>) when no puzzle working
-directory could be located by any discovery step. Does not indicate a bug--this is the
-normal outcome before a puzzle has been imported in the current directory.</p>
+        <p>Raised by <code>resolve_puzzle_dir()</code> when no puzzle working directory could be located by any
+discovery step. Does not indicate a bug--this is the normal outcome before any puzzle has
+been imported.</p>
 
 
 
@@ -5954,16 +6029,18 @@ normal outcome before a puzzle has been imported in the current directory.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>codingame_tools/puzzle_manager/resolver.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="s2">&quot;No puzzle working directory found (checked the current directory and &quot;</span>
-            <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">./puzzle</span><span class="se">\&quot;</span><span class="s2"> for a puzzle.json). Pass an explicit directory, set &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">CG_PUZZLE_DIR_ENV_VAR</span><span class="si">}</span><span class="s2">, or run `cg settings set puzzle-dir DIR`.&quot;</span>
+            <span class="s2">&quot;No puzzle working directory found: none is active, and this directory holds &quot;</span>
+            <span class="s2">&quot;no puzzle.json. Run `cg puzzle import PUZZLE` to make one, `cg puzzle activate &quot;</span>
+            <span class="s2">&quot;DIR` to select one you already have, pass --puzzle-dir, or set &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">CG_PUZZLE_DIR_ENV_VAR</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
                   </details>
@@ -6040,16 +6117,15 @@ directory.</p>
 <div class="highlight"><pre><span></span><code>1. `explicit` (typically the resolved value of a `--puzzle-dir` CLI flag), if given.
 2. The `CG_PUZZLE_DIR` environment variable, if set.
 3. `settings.current_puzzle_dir`--the *active* working directory, set by
-   `cg puzzle import`/`create` and `cg puzzle activate`. Outranks the configured default
-   below so that creating a working directory somewhere isn&#39;t silently overridden by a
-   standing `puzzle_dir` preference pointing elsewhere.
-4. `settings.puzzle_dir` (see `CgSettings.puzzle_dir`), if given and set.
-5. `start_dir` (or the current directory, if not given), if it contains a `puzzle.json`.
-6. `start_dir / &quot;puzzle&quot;`, if it contains a `puzzle.json`.
+   `cg puzzle import` and `cg puzzle activate`. This is what &quot;which puzzle am I working
+   on&quot; means now that every import creates its own directory.
+4. `start_dir` (or the current directory) itself, if it holds a `puzzle.json`.
 </code></pre></div>
-<p>Steps 1-4 are taken at face value--the resolved directory need not contain a <code>puzzle.json</code>
-   yet (e.g. before the first <code>cg puzzle import</code>). Steps 5-6 are implicit inference and are
-   deliberately conservative: they only match if a <code>puzzle.json</code> is actually already there.</p>
+<p>Steps 1-3 are taken at face value--the resolved directory need not exist yet. Step 4 checks
+   for the identity file, and checks that one directory only: no walk upward, and no <code>./puzzle</code>
+   convention. A puzzle nested under <code>puzzles/&lt;pretty-id&gt;/</code> is found by being active, not by
+   being nearby, so <code>cd</code> never changes which puzzle a command acts on unless you are standing
+   exactly in one and none is active.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
@@ -6073,14 +6149,7 @@ directory.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>codingame_tools/puzzle_manager/resolver.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span>
 <span class="normal">61</span>
@@ -6115,7 +6184,12 @@ directory.</p>
 <span class="normal">90</span>
 <span class="normal">91</span>
 <span class="normal">92</span>
-<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_puzzle_dir</span><span class="p">(</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_puzzle_dir</span><span class="p">(</span>
             <span class="n">explicit</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
             <span class="n">settings</span><span class="p">:</span> <span class="n">CgSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -6127,16 +6201,15 @@ directory.</p>
 <span class="sd">        1. `explicit` (typically the resolved value of a `--puzzle-dir` CLI flag), if given.</span>
 <span class="sd">        2. The `CG_PUZZLE_DIR` environment variable, if set.</span>
 <span class="sd">        3. `settings.current_puzzle_dir`--the *active* working directory, set by</span>
-<span class="sd">           `cg puzzle import`/`create` and `cg puzzle activate`. Outranks the configured default</span>
-<span class="sd">           below so that creating a working directory somewhere isn&#39;t silently overridden by a</span>
-<span class="sd">           standing `puzzle_dir` preference pointing elsewhere.</span>
-<span class="sd">        4. `settings.puzzle_dir` (see `CgSettings.puzzle_dir`), if given and set.</span>
-<span class="sd">        5. `start_dir` (or the current directory, if not given), if it contains a `puzzle.json`.</span>
-<span class="sd">        6. `start_dir / &quot;puzzle&quot;`, if it contains a `puzzle.json`.</span>
+<span class="sd">           `cg puzzle import` and `cg puzzle activate`. This is what &quot;which puzzle am I working</span>
+<span class="sd">           on&quot; means now that every import creates its own directory.</span>
+<span class="sd">        4. `start_dir` (or the current directory) itself, if it holds a `puzzle.json`.</span>
 
-<span class="sd">       Steps 1-4 are taken at face value--the resolved directory need not contain a `puzzle.json`</span>
-<span class="sd">       yet (e.g. before the first `cg puzzle import`). Steps 5-6 are implicit inference and are</span>
-<span class="sd">       deliberately conservative: they only match if a `puzzle.json` is actually already there.</span>
+<span class="sd">       Steps 1-3 are taken at face value--the resolved directory need not exist yet. Step 4 checks</span>
+<span class="sd">       for the identity file, and checks that one directory only: no walk upward, and no `./puzzle`</span>
+<span class="sd">       convention. A puzzle nested under `puzzles/&lt;pretty-id&gt;/` is found by being active, not by</span>
+<span class="sd">       being nearby, so `cd` never changes which puzzle a command acts on unless you are standing</span>
+<span class="sd">       exactly in one and none is active.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The resolved puzzle directory path, or None if nothing was found at all. This function</span>
@@ -6149,14 +6222,13 @@ directory.</p>
         <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_value</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">current_puzzle_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">current_puzzle_dir</span>
-    <span class="k">if</span> <span class="n">settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">puzzle_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">puzzle_dir</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">start_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="k">if</span> <span class="n">start_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+    <span class="c1"># The current directory itself, and only itself -- no search upward, and no conventional</span>
+    <span class="c1"># subdirectory. Guarded on the identity file so that running a command from somewhere</span>
+    <span class="c1"># unrelated reports &quot;no puzzle working directory&quot; rather than failing further in with a</span>
+    <span class="c1"># confusing complaint about this directory&#39;s missing data/.</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">start</span> <span class="o">/</span> <span class="n">PUZZLE_IDENTITY_FILE_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">start</span>
-    <span class="n">default_subdir</span> <span class="o">=</span> <span class="n">start</span> <span class="o">/</span> <span class="n">DEFAULT_PUZZLE_SUBDIR_NAME</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">default_subdir</span> <span class="o">/</span> <span class="n">PUZZLE_IDENTITY_FILE_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">return</span> <span class="n">default_subdir</span>
     <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6172,24 +6244,19 @@ directory.</p>
 
 
 <a href="#codingame_tools.puzzle_manager.resolver.resolve_puzzle_dir" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">resolve_puzzle_dir</span><span class="p">(</span><span class="n">explicit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">resolve_puzzle_dir</span><span class="p">(</span><span class="n">explicit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Locate the puzzle working directory, following the discovery precedence documented on
    <code>find_puzzle_dir</code>.</p>
-<p>If <code>allow_default</code> is True and no directory can be found, falls back to
-   <code>start_dir / "puzzle"</code> (or <code>./puzzle</code> under the current directory)--useful for <code>cg puzzle
-   import</code>, which is happy to treat "nothing found" as "start a fresh working directory
-   there". Deliberately <em>not</em> bare <code>start_dir</code>/cwd itself--unlike a contribution working
-   directory (whose own <code>import</code> always requires an explicit target directory, so its
-   resolver's <code>allow_default</code> fallback is never actually exercised in practice), <code>cg puzzle
-   import</code> relies on this fallback for its everyday no-argument usage, and dropping
-   <code>puzzle.json</code>/<code>data/</code> directly into whatever the current directory happens to be would be
-   a real footgun--confirmed live (2026-07-30): an earlier version of this fell back to bare
-   cwd and did exactly that. <code>submit()</code>-style callers, where there must already be a working
-   directory, should leave <code>allow_default</code> False.</p>
+<p>There is no "default" directory to fall back to any more: <code>cg puzzle import</code> computes its
+   own destination from the puzzle's pretty id (see <code>default_puzzles_dir</code>), and every other
+   command needs a working directory that already exists. The older fallback returned
+   <code>./puzzle</code>, and the version before that returned bare cwd--which dropped <code>puzzle.json</code> and
+   <code>data/</code> into whatever directory you happened to be standing in (confirmed live
+   2026-07-30). Computing the destination from the puzzle's name removes the guess entirely.</p>
 
 
 <p><span class="doc-section-title">Raises:</span></p>
@@ -6198,8 +6265,7 @@ directory.</p>
               <code><a class="autorefs autorefs-internal" title="            CgPuzzleDirNotFoundError (codingame_tools.puzzle_manager.resolver.CgPuzzleDirNotFoundError)" href="#codingame_tools.puzzle_manager.resolver.CgPuzzleDirNotFoundError">CgPuzzleDirNotFoundError</a></code>
             –
           <div class="doc-md-description">
-            <p>if no directory could be located anywhere, and <code>allow_default</code>
-                       is False.</p>
+            <p>if no directory could be located anywhere.</p>
           </div>
         </li>
     </ul>
@@ -6207,12 +6273,7 @@ directory.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>codingame_tools/puzzle_manager/resolver.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
@@ -6234,43 +6295,28 @@ directory.</p>
 <span class="normal">120</span>
 <span class="normal">121</span>
 <span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolve_puzzle_dir</span><span class="p">(</span>
+<span class="normal">123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolve_puzzle_dir</span><span class="p">(</span>
             <span class="n">explicit</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
             <span class="n">settings</span><span class="p">:</span> <span class="n">CgSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">start_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">allow_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Locate the puzzle working directory, following the discovery precedence documented on</span>
 <span class="sd">       `find_puzzle_dir`.</span>
 
-<span class="sd">       If `allow_default` is True and no directory can be found, falls back to</span>
-<span class="sd">       `start_dir / &quot;puzzle&quot;` (or `./puzzle` under the current directory)--useful for `cg puzzle</span>
-<span class="sd">       import`, which is happy to treat &quot;nothing found&quot; as &quot;start a fresh working directory</span>
-<span class="sd">       there&quot;. Deliberately *not* bare `start_dir`/cwd itself--unlike a contribution working</span>
-<span class="sd">       directory (whose own `import` always requires an explicit target directory, so its</span>
-<span class="sd">       resolver&#39;s `allow_default` fallback is never actually exercised in practice), `cg puzzle</span>
-<span class="sd">       import` relies on this fallback for its everyday no-argument usage, and dropping</span>
-<span class="sd">       `puzzle.json`/`data/` directly into whatever the current directory happens to be would be</span>
-<span class="sd">       a real footgun--confirmed live (2026-07-30): an earlier version of this fell back to bare</span>
-<span class="sd">       cwd and did exactly that. `submit()`-style callers, where there must already be a working</span>
-<span class="sd">       directory, should leave `allow_default` False.</span>
+<span class="sd">       There is no &quot;default&quot; directory to fall back to any more: `cg puzzle import` computes its</span>
+<span class="sd">       own destination from the puzzle&#39;s pretty id (see `default_puzzles_dir`), and every other</span>
+<span class="sd">       command needs a working directory that already exists. The older fallback returned</span>
+<span class="sd">       `./puzzle`, and the version before that returned bare cwd--which dropped `puzzle.json` and</span>
+<span class="sd">       `data/` into whatever directory you happened to be standing in (confirmed live</span>
+<span class="sd">       2026-07-30). Computing the destination from the puzzle&#39;s name removes the guess entirely.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        CgPuzzleDirNotFoundError: if no directory could be located anywhere, and `allow_default`</span>
-<span class="sd">                                   is False.</span>
+<span class="sd">        CgPuzzleDirNotFoundError: if no directory could be located anywhere.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">found</span> <span class="o">=</span> <span class="n">find_puzzle_dir</span><span class="p">(</span><span class="n">explicit</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span> <span class="n">start_dir</span><span class="o">=</span><span class="n">start_dir</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">found</span>
-    <span class="k">if</span> <span class="n">allow_default</span><span class="p">:</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">start_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="k">if</span> <span class="n">start_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">start</span> <span class="o">/</span> <span class="n">DEFAULT_PUZZLE_SUBDIR_NAME</span>
     <span class="k">raise</span> <span class="n">CgPuzzleDirNotFoundError</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6323,7 +6369,12 @@ directory.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>codingame_tools/puzzle_manager/resolver.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
@@ -6353,12 +6404,7 @@ directory.</p>
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">infer_puzzle_dir</span><span class="p">(</span><span class="n">target_file</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal">166</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">infer_puzzle_dir</span><span class="p">(</span><span class="n">target_file</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infer a puzzle working directory&#39;s root from a solution file somewhere within it--e.g. VS</span>
 <span class="sd">       Code&#39;s `${file}` macro, however many symlink hops away from `data/solution.src` it might</span>
 <span class="sd">       be (a puzzle working directory&#39;s own `solution.&lt;ext&gt;` convenience symlink, or some other</span>
@@ -6394,6 +6440,123 @@ directory.</p>
         <span class="k">raise</span> <span class="n">CgPuzzleDirInferenceError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2"> has no </span><span class="si">{</span><span class="n">PUZZLE_IDENTITY_FILE_NAME</span><span class="si">}</span><span class="s2">--not a puzzle working directory.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">root</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="codingame_tools.puzzle_manager.resolver.project_root" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">project_root</span>
+
+
+<a href="#codingame_tools.puzzle_manager.resolver.project_root" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">project_root</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The directory the <code>puzzles/</code> and <code>contributions/</code> trees hang off.</p>
+<p>In order: <code>settings.project_dir</code> when configured; the project the <em>resolved config</em> belongs
+to, when that config is a project-style <code>&lt;root&gt;/.cg/config/config.yaml</code>; the nearest
+ancestor of the current directory holding a <code>.cg/</code>; and finally the current directory.</p>
+<p>The config comes before the current directory so that <code>--config</code> selects a whole project,
+not merely its settings. Otherwise pointing at another project's config would read that
+project's settings while creating working directories in this one -- and it would disagree
+with <code>sdk_dir</code>, which has always derived from the resolved config.</p>
+<p>Anchoring on <code>.cg/</code> rather than the current directory is what stops <code>cg puzzle import</code> from
+creating a second <code>puzzles/</code> tree every time it is run from a subdirectory.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>codingame_tools/puzzle_manager/resolver.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">project_root</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">CgSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The directory the `puzzles/` and `contributions/` trees hang off.</span>
+
+<span class="sd">       In order: `settings.project_dir` when configured; the project the *resolved config* belongs</span>
+<span class="sd">       to, when that config is a project-style `&lt;root&gt;/.cg/config/config.yaml`; the nearest</span>
+<span class="sd">       ancestor of the current directory holding a `.cg/`; and finally the current directory.</span>
+
+<span class="sd">       The config comes before the current directory so that `--config` selects a whole project,</span>
+<span class="sd">       not merely its settings. Otherwise pointing at another project&#39;s config would read that</span>
+<span class="sd">       project&#39;s settings while creating working directories in this one -- and it would disagree</span>
+<span class="sd">       with `sdk_dir`, which has always derived from the resolved config.</span>
+
+<span class="sd">       Anchoring on `.cg/` rather than the current directory is what stops `cg puzzle import` from</span>
+<span class="sd">       creating a second `puzzles/` tree every time it is run from a subdirectory.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..config.resolver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PROJECT_CONFIG_MARKER_DIR_NAME</span>
+
+    <span class="k">if</span> <span class="n">settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">project_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">project_dir</span>
+    <span class="k">if</span> <span class="n">settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_dir</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">if</span> <span class="n">marker</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">PROJECT_CONFIG_MARKER_DIR_NAME</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">marker</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">start_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="k">if</span> <span class="n">start_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="o">*</span><span class="n">start</span><span class="o">.</span><span class="n">parents</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">candidate</span> <span class="o">/</span> <span class="n">PROJECT_CONFIG_MARKER_DIR_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">candidate</span>
+    <span class="k">return</span> <span class="n">start</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="codingame_tools.puzzle_manager.resolver.default_puzzles_dir" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">default_puzzles_dir</span>
+
+
+<a href="#codingame_tools.puzzle_manager.resolver.default_puzzles_dir" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">default_puzzles_dir</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Where <code>cg puzzle import</code> creates working directories: <code>&lt;project root&gt;/puzzles/</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>codingame_tools/puzzle_manager/resolver.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">default_puzzles_dir</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">CgSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                        <span class="n">start_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Where `cg puzzle import` creates working directories: `&lt;project root&gt;/puzzles/`.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">project_root</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">start_dir</span><span class="o">=</span><span class="n">start_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">PUZZLES_SUBDIR_NAME</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

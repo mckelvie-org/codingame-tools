@@ -962,6 +962,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cg-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg sdk
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cg-sdk-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg sdk install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cg-sdk-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg sdk status
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -4381,6 +4414,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -5956,6 +6017,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cg-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg sdk
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cg-sdk-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg sdk install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cg-sdk-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cg sdk status
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -6050,6 +6144,18 @@
 <td><a href="#cg-topics"><code>cg topics</code></a></td>
 <td>List or search the catalogue of puzzle topics a contribution can be tagged with (Topic/getAllChildrenTopicsWithPuzzleCount).</td>
 </tr>
+<tr>
+<td><a href="#cg-sdk"><code>cg sdk</code></a></td>
+<td>Commands for the CodinGame SDK--the Java toolkit for writing a contribution's referee and viewer, and for playing a game locally.</td>
+</tr>
+<tr>
+<td><a href="#cg-sdk-install"><code>cg sdk install</code></a></td>
+<td>Install the SDK toolchain for this project, under .cg/sdk/: a Maven repository holding the SDK and its dependencies, and--if the system has none--a portable...</td>
+</tr>
+<tr>
+<td><a href="#cg-sdk-status"><code>cg sdk status</code></a></td>
+<td>Report the project's SDK toolchain: what <code>cg sdk install</code> resolved, and whether it is still there.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="cg"><code>cg</code><a class="headerlink" href="#cg" title="Permanent link">&para;</a></h2>
@@ -6087,6 +6193,7 @@
 <li><a href="#cg-contributions"><strong><code>contributions</code></strong></a> — List server-side contributions, one line each: handle, id, status, puzzle type, title. By default lists every author's pending contributions from the community review queue (Contribution/getAllPendingContributions); --personal lists only your own, in any status (Contribution/getPersonalContributions). With --json, prints the raw list instead: CgPendingContribution or CgPersonalContribution depending on which was listed -- there is no unified schema between the two.</li>
 <li><a href="#cg-topics"><strong><code>topics</code></strong></a> — List or search the catalogue of puzzle topics a contribution can be tagged with (Topic/getAllChildrenTopicsWithPuzzleCount). With no SEARCH, lists every topic; with one, matches it against handles and display labels, ignoring case. Topics carry a label per CodinGame UI language region, and SEARCH matches any of them, so either the English or the French label finds a topic. The catalogue is global CodinGame data, cached per user for a week; --refresh refetches it. With --json, prints the raw CgTopic list instead of a table.</li>
 <li><a href="../contribution/#cg-contribution"><strong><code>contribution</code></strong></a> — Author and maintain your own CodinGame contributions in a local working directory. data/ is backed by a real git repository, so syncing with the server is a genuine fetch/merge workflow rather than a one-shot overwrite. See <code>cg api contribution</code> and <code>cg api-helper contribution</code> for the raw, stateless API underneath.</li>
+<li><a href="#cg-sdk"><strong><code>sdk</code></strong></a> — Commands for the CodinGame SDK--the Java toolkit for writing a contribution's referee and viewer, and for playing a game locally. An interactive puzzle is run by a referee that trades moves with the solution, which is why one cannot be tested locally without it. The toolchain is shared by every contribution in a project and installed once, under .cg/sdk/.</li>
 <li><a href="../puzzle/#cg-puzzle"><strong><code>puzzle</code></strong></a> — Solve an existing CodinGame puzzle in a local working directory: import it, edit one file, run its test cases locally, and submit. Currently supports classic PUZZLE_INOUT puzzles.</li>
 <li><a href="../docker/#cg-docker"><strong><code>docker</code></strong></a> — Manage the Docker containers and images cg builds for languages that run in a container. One image carries every language cg can containerize (see <code>cg docker toolchain list</code>); C++ is currently the one with a container-backed build, run and debug path. Nothing here holds anything you authored--see <code>cg docker clean</code>.</li>
 <li><a href="../config/#cg-config"><strong><code>config</code></strong></a> — Configuration commands.</li>
@@ -6223,6 +6330,27 @@
 <li><strong><code>--all-labels</code></strong> — Show every language region's label rather than just the English one.</li>
 <li><strong><code>--refresh</code></strong> — Refetch the catalogue instead of using the cached copy.</li>
 </ul>
+<h2 id="cg-sdk"><code>cg sdk</code><a class="headerlink" href="#cg-sdk" title="Permanent link">&para;</a></h2>
+<p>Commands for the CodinGame SDK--the Java toolkit for writing a contribution's referee and viewer, and for playing a game locally. An interactive puzzle is run by a referee that trades moves with the solution, which is why one cannot be tested locally without it. The toolchain is shared by every contribution in a project and installed once, under .cg/sdk/.</p>
+<div class="highlight"><pre><span></span><code>usage: cg sdk [-h] COMMAND ...
+</code></pre></div>
+<p><strong>Subcommands</strong></p>
+<ul>
+<li><a href="#cg-sdk-install"><strong><code>install</code></strong></a> — Install the SDK toolchain for this project, under .cg/sdk/: a Maven repository holding the SDK and its dependencies, and--if the system has none--a portable Maven. Needs a JDK 17 or newer, which it reports rather than installs. Shared by every contribution beneath the project, reached through a classpath rather than copied, so this is run once and not per contribution. Everything it writes is reproducible and machine-specific, so .cg/ belongs in .gitignore; this warns if it isn't.</li>
+<li><a href="#cg-sdk-status"><strong><code>status</code></strong></a> — Report the project's SDK toolchain: what <code>cg sdk install</code> resolved, and whether it is still there. Purely local, no network. With --json, renders as JSON.</li>
+</ul>
+<h2 id="cg-sdk-install"><code>cg sdk install</code><a class="headerlink" href="#cg-sdk-install" title="Permanent link">&para;</a></h2>
+<p>Install the SDK toolchain for this project, under .cg/sdk/: a Maven repository holding the SDK and its dependencies, and--if the system has none--a portable Maven. Needs a JDK 17 or newer, which it reports rather than installs. Shared by every contribution beneath the project, reached through a classpath rather than copied, so this is run once and not per contribution. Everything it writes is reproducible and machine-specific, so .cg/ belongs in .gitignore; this warns if it isn't.</p>
+<div class="highlight"><pre><span></span><code>usage: cg sdk install [-h] [--sdk-version VERSION]
+</code></pre></div>
+<p><strong>Options</strong></p>
+<ul>
+<li><strong><code>--sdk-version VERSION</code></strong> <em>(default: <code>4.5.0</code>)</em> — SDK version to resolve. Defaults to 4.5.0.</li>
+</ul>
+<h2 id="cg-sdk-status"><code>cg sdk status</code><a class="headerlink" href="#cg-sdk-status" title="Permanent link">&para;</a></h2>
+<p>Report the project's SDK toolchain: what <code>cg sdk install</code> resolved, and whether it is still there. Purely local, no network. With --json, renders as JSON.</p>
+<div class="highlight"><pre><span></span><code>usage: cg sdk status [-h]
+</code></pre></div>
 <hr />
 <p>Generated from the parser itself. For <em>when</em> to use these, see the <a href="../../">CLI guides</a>.</p>
 

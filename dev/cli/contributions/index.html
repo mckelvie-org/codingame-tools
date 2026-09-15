@@ -4374,6 +4374,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/puzzle-manager/codingame_tools.puzzle_manager.solution_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    solution_template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/puzzle-manager/codingame_tools.puzzle_manager.statement_render/" class="md-nav__link">
         
   
@@ -5970,8 +5998,8 @@ statement, constraints, descriptions, stub generator, test cases, reference solu
 can change on the server while you're working, so syncing is a real merge workflow rather than an
 overwrite.</p>
 <h2 id="two-ways-to-start">Two ways to start<a class="headerlink" href="#two-ways-to-start" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>create<span class="w"> </span>./my-puzzle<span class="w"> </span><span class="s2">&quot;My Puzzle&quot;</span><span class="w">   </span><span class="c1"># brand new, purely local</span>
-cg<span class="w"> </span>contribution<span class="w"> </span>import<span class="w"> </span>./my-puzzle<span class="w"> </span>&lt;handle&gt;<span class="w">      </span><span class="c1"># existing server-side contribution</span>
+<div class="highlight"><pre><span></span><code>cg<span class="w"> </span>contribution<span class="w"> </span>create<span class="w"> </span><span class="s2">&quot;My Puzzle&quot;</span><span class="w">   </span><span class="c1"># brand new, purely local</span>
+cg<span class="w"> </span>contribution<span class="w"> </span>import<span class="w"> </span>&lt;handle&gt;<span class="w">      </span><span class="c1"># existing server-side contribution</span>
 </code></pre></div>
 <p><code>create</code> makes <strong>no network call</strong> and creates nothing server-side. Nothing exists remotely until
 your first <code>push</code>, so you can start, change your mind, and delete the directory without ever having
@@ -5983,7 +6011,9 @@ integer, print it back" puzzle. The pieces agree with each other until you repla
 <p><strong><code>data/cover.png</code> is a garish "UNDER CONSTRUCTION" placeholder.</strong> <code>push</code> uploads whatever is in
 that file, so replace it before you publish. New contributions are private drafts until then.</p>
 </blockquote>
-<p>Both commands take the directory first, and both make it the
+<p>Both create <code>contributions/&lt;name&gt;</code> under the project root — the directory holding <code>.cg/</code>, or the
+current one if there is none — with the name derived from the title (<code>"Simple Makefiles"</code> becomes
+<code>simple-makefiles</code>). <code>--contribution-dir</code> overrides it. Both make the new directory the
 <a href="../../concepts/profiles/#active-working-directories">active contribution</a>, so later commands find it
 wherever you run them from.</p>
 <p><code>import</code> needs the contribution's handle. To list your own:</p>
